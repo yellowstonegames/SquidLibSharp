@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using SquidLib.SquidMath;
 
 
-namespace SquidLib.SquidGrid
-{
+namespace SquidLib.SquidGrid {
     /**
      * Basic radius strategy implementations likely to be used for roguelikes.
      */
-    public enum Radius
-    {
+    public enum Radius {
 
         /**
          * In an unobstructed area the FOV would be a square.
@@ -62,35 +60,29 @@ namespace SquidLib.SquidGrid
         ROUGH_CIRCLE
     }
 
-    public static class RadiusExtensions
-    {
+    public static class RadiusExtensions {
 
         private const double PI2 = Math.PI * 2;
-        public static double radius(this Radius r, int startx, int starty, int startz, int endx, int endy, int endz)
-        {
+        public static double radius(this Radius r, int startx, int starty, int startz, int endx, int endy, int endz) {
             return radius(r, (double)startx, (double)starty, (double)startz, (double)endx, (double)endy, (double)endz);
         }
 
-        public static double radius(this Radius r, double startx, double starty, double startz, double endx, double endy, double endz)
-        {
+        public static double radius(this Radius r, double startx, double starty, double startz, double endx, double endy, double endz) {
             double dx = Math.Abs(startx - endx);
             double dy = Math.Abs(starty - endy);
             double dz = Math.Abs(startz - endz);
             return radius(r, dx, dy, dz);
         }
 
-        public static double radius(this Radius r, int dx, int dy, int dz)
-        {
+        public static double radius(this Radius r, int dx, int dy, int dz) {
             return radius(r, (float)dx, (float)dy, (float)dz);
         }
 
-        public static double radius(this Radius r, double dx, double dy, double dz)
-        {
+        public static double radius(this Radius r, double dx, double dy, double dz) {
             dx = Math.Abs(dx);
             dy = Math.Abs(dy);
             dz = Math.Abs(dz);
-            switch (r)
-            {
+            switch (r) {
                 case Radius.SQUARE:
                 case Radius.CUBE:
                     return Math.Max(dx, Math.Max(dy, dz));//radius is longest axial distance
@@ -106,37 +98,30 @@ namespace SquidLib.SquidGrid
             }
         }
 
-        public static double radius(this Radius r, int startx, int starty, int endx, int endy)
-        {
+        public static double radius(this Radius r, int startx, int starty, int endx, int endy) {
             return radius(r, (double)startx, (double)starty, (double)endx, (double)endy);
         }
-        public static double radius(this Radius r, Coord start, Coord end)
-        {
+        public static double radius(this Radius r, Coord start, Coord end) {
             return radius(r, (double)start.x, (double)start.y, (double)end.x, (double)end.y);
         }
-        public static double radius(this Radius r, Coord end)
-        {
+        public static double radius(this Radius r, Coord end) {
             return radius(0.0, 0.0, (double)end.x, (double)end.y);
         }
 
-        public static double radius(this Radius r, double startx, double starty, double endx, double endy)
-        {
+        public static double radius(this Radius r, double startx, double starty, double endx, double endy) {
             double dx = startx - endx;
             double dy = starty - endy;
             return radius(r, dx, dy);
         }
 
-        public static double radius(this Radius r, int dx, int dy)
-        {
+        public static double radius(this Radius r, int dx, int dy) {
             return radius(r, (double)dx, (double)dy);
         }
 
-        public static double radius(this Radius r, double dx, double dy)
-        {
+        public static double radius(this Radius r, double dx, double dy) {
             dx = Math.Abs(dx);
             dy = Math.Abs(dy);
-            switch (r)
-            {
+            switch (r) {
                 case Radius.SQUARE:
                 case Radius.CUBE:
                     return Math.Max(dx, dy);//radius is longest axial distance
@@ -152,11 +137,9 @@ namespace SquidLib.SquidGrid
             }
         }
 
-        public static Coord onUnitShape(this Radius r, double distance, IRNG rng)
-        {
+        public static Coord onUnitShape(this Radius r, double distance, IRNG rng) {
             int x = 0, y = 0;
-            switch (r)
-            {
+            switch (r) {
                 case Radius.SQUARE:
                 case Radius.CUBE:
                     x = rng.between((int)-distance, (int)distance + 1);
@@ -166,30 +149,20 @@ namespace SquidLib.SquidGrid
                 case Radius.OCTAHEDRON:
                     x = rng.between((int)-distance, (int)distance + 1);
                     y = rng.between((int)-distance, (int)distance + 1);
-                    if (radius(r, x, y) > distance)
-                    {
-                        if (x > 0)
-                        {
-                            if (y > 0)
-                            {
+                    if (radius(r, x, y) > distance) {
+                        if (x > 0) {
+                            if (y > 0) {
                                 x = (int)(distance - x);
                                 y = (int)(distance - y);
-                            }
-                            else
-                            {
+                            } else {
                                 x = (int)(distance - x);
                                 y = (int)(-distance - y);
                             }
-                        }
-                        else
-                        {
-                            if (y > 0)
-                            {
+                        } else {
+                            if (y > 0) {
                                 x = (int)(-distance - x);
                                 y = (int)(distance - y);
-                            }
-                            else
-                            {
+                            } else {
                                 x = (int)(-distance - x);
                                 y = (int)(-distance - y);
                             }
@@ -207,11 +180,9 @@ namespace SquidLib.SquidGrid
             return Coord.get(x, y);
         }
 
-        public static Coord3D onUnitShape3D(this Radius r, double distance, IRNG rng)
-        {
+        public static Coord3D onUnitShape3D(this Radius r, double distance, IRNG rng) {
             int x = 0, y = 0, z = 0;
-            switch (r)
-            {
+            switch (r) {
                 case Radius.SQUARE:
                 case Radius.DIAMOND:
                 case Radius.CIRCLE:
@@ -225,8 +196,7 @@ namespace SquidLib.SquidGrid
                     break;
                 case Radius.OCTAHEDRON:
                 case Radius.SPHERE:
-                    do
-                    {
+                    do {
                         x = rng.between((int)-distance, (int)distance + 1);
                         y = rng.between((int)-distance, (int)distance + 1);
                         z = rng.between((int)-distance, (int)distance + 1);
@@ -236,10 +206,8 @@ namespace SquidLib.SquidGrid
 
             return new Coord3D(x, y, z);
         }
-        public static double volume2D(this Radius r, double radiusLength)
-        {
-            switch (r)
-            {
+        public static double volume2D(this Radius r, double radiusLength) {
+            switch (r) {
                 case Radius.SQUARE:
                 case Radius.CUBE:
                     return (radiusLength * 2 + 1) * (radiusLength * 2 + 1);
@@ -250,18 +218,15 @@ namespace SquidLib.SquidGrid
                     return Math.PI * radiusLength * radiusLength + 1;
             }
         }
-        public static double volume3D(this Radius r, double radiusLength)
-        {
-            switch (r)
-            {
+        public static double volume3D(this Radius r, double radiusLength) {
+            switch (r) {
                 case Radius.SQUARE:
                 case Radius.CUBE:
                     return (radiusLength * 2 + 1) * (radiusLength * 2 + 1) * (radiusLength * 2 + 1);
                 case Radius.DIAMOND:
                 case Radius.OCTAHEDRON:
                     double total = radiusLength * (radiusLength + 1) * 2 + 1;
-                    for (double i = radiusLength - 1; i >= 0; i--)
-                    {
+                    for (double i = radiusLength - 1; i >= 0; i--) {
                         total += (i * (i + 1) * 2 + 1) * 2;
                     }
                     return total;
@@ -273,35 +238,28 @@ namespace SquidLib.SquidGrid
 
 
 
-        private static int clamp(int n, int min, int max)
-        {
+        private static int clamp(int n, int min, int max) {
             return Math.Min(Math.Max(min, n), max - 1);
         }
 
-        public static OrderedSet<Coord> perimeter(this Radius r, Coord center, int radiusLength, bool surpassEdges, int width, int height)
-        {
+        public static OrderedSet<Coord> perimeter(this Radius r, Coord center, int radiusLength, bool surpassEdges, int width, int height) {
             OrderedSet<Coord> rim = new OrderedSet<Coord>(4 * radiusLength);
             if (!surpassEdges && (center.x < 0 || center.x >= width || center.y < 0 || center.y > height))
                 return rim;
-            if (radiusLength < 1)
-            {
+            if (radiusLength < 1) {
                 rim.Add(center);
                 return rim;
             }
-            switch (r)
-            {
+            switch (r) {
                 case Radius.SQUARE:
-                case Radius.CUBE:
-                {
-                    for (int i = center.x - radiusLength; i <= center.x + radiusLength; i++)
-                    {
+                case Radius.CUBE: {
+                    for (int i = center.x - radiusLength; i <= center.x + radiusLength; i++) {
                         int x = i;
                         if (!surpassEdges) x = clamp(i, 0, width);
                         rim.Add(Coord.get(x, clamp(center.y - radiusLength, 0, height)));
                         rim.Add(Coord.get(x, clamp(center.y + radiusLength, 0, height)));
                     }
-                    for (int j = center.y - radiusLength; j <= center.y + radiusLength; j++)
-                    {
+                    for (int j = center.y - radiusLength; j <= center.y + radiusLength; j++) {
                         int y = j;
                         if (!surpassEdges) y = clamp(j, 0, height);
                         rim.Add(Coord.get(clamp(center.x - radiusLength, 0, height), y));
@@ -310,12 +268,10 @@ namespace SquidLib.SquidGrid
                 }
                 break;
                 case Radius.DIAMOND:
-                case Radius.OCTAHEDRON:
-                {
+                case Radius.OCTAHEDRON: {
                     int xUp = center.x + radiusLength, xDown = center.x - radiusLength,
                             yUp = center.y + radiusLength, yDown = center.y - radiusLength;
-                    if (!surpassEdges)
-                    {
+                    if (!surpassEdges) {
                         xDown = clamp(xDown, 0, width);
                         xUp = clamp(xUp, 0, width);
                         yDown = clamp(yDown, 0, height);
@@ -327,15 +283,13 @@ namespace SquidLib.SquidGrid
                     rim.Add(Coord.get(center.x, yDown));
                     rim.Add(Coord.get(center.x, yUp));
 
-                    for (int i = xDown + 1, c = 1; i < center.x; i++, c++)
-                    {
+                    for (int i = xDown + 1, c = 1; i < center.x; i++, c++) {
                         int x = i;
                         if (!surpassEdges) x = clamp(i, 0, width);
                         rim.Add(Coord.get(x, clamp(center.y - c, 0, height)));
                         rim.Add(Coord.get(x, clamp(center.y + c, 0, height)));
                     }
-                    for (int i = center.x + 1, c = 1; i < center.x + radiusLength; i++, c++)
-                    {
+                    for (int i = center.x + 1, c = 1; i < center.x + radiusLength; i++, c++) {
                         int x = i;
                         if (!surpassEdges) x = clamp(i, 0, width);
                         rim.Add(Coord.get(x, clamp(center.y + radiusLength - c, 0, height)));
@@ -343,22 +297,18 @@ namespace SquidLib.SquidGrid
                     }
                 }
                 break;
-                default:
-                {
+                default: {
                     double theta;
                     int x, y, denom = 1;
                     bool anySuccesses;
-                    while (denom <= 256)
-                    {
+                    while (denom <= 256) {
                         anySuccesses = false;
-                        for (int i = 1; i <= denom; i += 2)
-                        {
+                        for (int i = 1; i <= denom; i += 2) {
                             theta = i * (PI2 / denom);
                             x = (int)(Math.Cos(theta) * (radiusLength + 0.25)) + center.x;
                             y = (int)(Math.Sin(theta) * (radiusLength + 0.25)) + center.y;
 
-                            if (!surpassEdges)
-                            {
+                            if (!surpassEdges) {
                                 x = clamp(x, 0, width);
                                 y = clamp(y, 0, height);
                             }
@@ -378,40 +328,31 @@ namespace SquidLib.SquidGrid
             }
             return rim;
         }
-        public static Coord extend(this Radius r, Coord center, Coord middle, int radiusLength, bool surpassEdges, int width, int height)
-        {
+        public static Coord extend(this Radius r, Coord center, Coord middle, int radiusLength, bool surpassEdges, int width, int height) {
             if (!surpassEdges && (center.x < 0 || center.x >= width || center.y < 0 || center.y > height ||
                     middle.x < 0 || middle.x >= width || middle.y < 0 || middle.y > height))
                 return Coord.get(0, 0);
-            if (radiusLength < 1)
-            {
+            if (radiusLength < 1) {
                 return center;
             }
             double theta = Math.Atan2(middle.y - center.y, middle.x - center.x),
                     cosTheta = Math.Cos(theta), sinTheta = Math.Sin(theta);
 
             Coord end = Coord.get(middle.x, middle.y);
-            switch (r)
-            {
+            switch (r) {
                 case Radius.SQUARE:
                 case Radius.CUBE:
                 case Radius.DIAMOND:
-                case Radius.OCTAHEDRON:
-                {
+                case Radius.OCTAHEDRON: {
                     int rad2 = 0;
-                    if (surpassEdges)
-                    {
-                        while (radius(r, center.x, center.y, end.x, end.y) < radiusLength)
-                        {
+                    if (surpassEdges) {
+                        while (radius(r, center.x, center.y, end.x, end.y) < radiusLength) {
                             rad2++;
                             end = Coord.get(Convert.ToInt32(cosTheta * rad2) + center.x
                                     , Convert.ToInt32(sinTheta * rad2) + center.y);
                         }
-                    }
-                    else
-                    {
-                        while (radius(r, center.x, center.y, end.x, end.y) < radiusLength)
-                        {
+                    } else {
+                        while (radius(r, center.x, center.y, end.x, end.y) < radiusLength) {
                             rad2++;
                             end = Coord.get(clamp(Convert.ToInt32(cosTheta * rad2) + center.x, 0, width)
                                           , clamp(Convert.ToInt32(sinTheta * rad2) + center.y, 0, height));
@@ -422,38 +363,30 @@ namespace SquidLib.SquidGrid
 
                     return end;
                 }
-                default:
-                {
+                default: {
                     end = Coord.get(clamp(Convert.ToInt32(cosTheta * radiusLength) + center.x, 0, width)
                             , clamp(Convert.ToInt32(sinTheta * radiusLength) + center.y, 0, height));
-                    if (!surpassEdges)
-                    {
+                    if (!surpassEdges) {
                         long edgeLength = 0;
                         //                    if (end.x == 0 || end.x == width - 1 || end.y == 0 || end.y == height - 1)
-                        if (end.x < 0)
-                        {
+                        if (end.x < 0) {
                             // wow, we lucked out here. the only situation where cos(angle) is 0 is if the angle aims
                             // straight up or down, and then x cannot be < 0 or >= width.
                             edgeLength = Convert.ToInt32((0 - center.x) / cosTheta);
                             end = end.setY(clamp(Convert.ToInt32(sinTheta * edgeLength) + center.y, 0, height));
-                        }
-                        else if (end.x >= width)
-                        {
+                        } else if (end.x >= width) {
                             // wow, we lucked out here. the only situation where cos(angle) is 0 is if the angle aims
                             // straight up or down, and then x cannot be < 0 or >= width.
                             edgeLength = Convert.ToInt32((width - 1 - center.x) / cosTheta);
                             end = end.setY(clamp(Convert.ToInt32(sinTheta * edgeLength) + center.y, 0, height));
                         }
 
-                        if (end.y < 0)
-                        {
+                        if (end.y < 0) {
                             // wow, we lucked out here. the only situation where sin(angle) is 0 is if the angle aims
                             // straight left or right, and then y cannot be < 0 or >= height.
                             edgeLength = Convert.ToInt32((0 - center.y) / sinTheta);
                             end = end.setX(clamp(Convert.ToInt32(cosTheta * edgeLength) + center.x, 0, width));
-                        }
-                        else if (end.y >= height)
-                        {
+                        } else if (end.y >= height) {
                             // wow, we lucked out here. the only situation where sin(angle) is 0 is if the angle aims
                             // straight left or right, and then y cannot be < 0 or >= height.
                             edgeLength = Convert.ToInt32((height - 1 - center.y) / sinTheta);
@@ -471,10 +404,8 @@ namespace SquidLib.SquidGrid
          * @param other the Radius to compare this to
          * @return true if the 2D versions of both Radius enums are the same shape.
          */
-        public static bool equals2D(this Radius r, Radius other)
-        {
-            switch (r)
-            {
+        public static bool equals2D(this Radius r, Radius other) {
+            switch (r) {
                 case Radius.ROUGH_CIRCLE:
                     return other == Radius.ROUGH_CIRCLE;
                 case Radius.CIRCLE:
@@ -487,21 +418,17 @@ namespace SquidLib.SquidGrid
                     return other == Radius.DIAMOND || other == Radius.OCTAHEDRON;
             }
         }
-        public static bool inRange(this Radius r, int startx, int starty, int endx, int endy, int minRange, int maxRange)
-        {
+        public static bool inRange(this Radius r, int startx, int starty, int endx, int endy, int minRange, int maxRange) {
             double dist = radius(r, startx, starty, endx, endy);
             return dist >= minRange - 0.001 && dist <= maxRange + 0.001;
         }
 
-        public static int roughDistance(this Radius r, int xPos, int yPos)
-        {
+        public static int roughDistance(this Radius r, int xPos, int yPos) {
             int x = Math.Abs(xPos), y = Math.Abs(yPos);
-            switch (r)
-            {
+            switch (r) {
                 case Radius.CIRCLE:
                 case Radius.SPHERE:
-                case Radius.ROUGH_CIRCLE:
-                {
+                case Radius.ROUGH_CIRCLE: {
                     if (x == y) return 3 * x;
                     else if (x < y) return 3 * x + 2 * (y - x);
                     else return 3 * y + 2 * (x - y);
@@ -514,35 +441,27 @@ namespace SquidLib.SquidGrid
             }
         }
 
-        public static List<Coord> pointsInside(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height)
-        {
+        public static List<Coord> pointsInside(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) {
             return pointsInside(r, centerX, centerY, radiusLength, surpassEdges, width, height, null);
         }
-        public static List<Coord> pointsInside(this Radius r, Coord center, int radiusLength, bool surpassEdges, int width, int height)
-        {
+        public static List<Coord> pointsInside(this Radius r, Coord center, int radiusLength, bool surpassEdges, int width, int height) {
             if (center == null) return null;
             return pointsInside(r, center.x, center.y, radiusLength, surpassEdges, width, height, null);
         }
 
-        public static List<Coord> pointsInside(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf)
-        {
+        public static List<Coord> pointsInside(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) {
             List<Coord> contents = buf == null ? new List<Coord>((int)Math.Ceiling(volume2D(r, radiusLength))) : buf;
             if (!surpassEdges && (centerX < 0 || centerX >= width || centerY < 0 || centerY >= height))
                 return contents;
-            if (radiusLength < 1)
-            {
+            if (radiusLength < 1) {
                 contents.Add(Coord.get(centerX, centerY));
                 return contents;
             }
-            switch (r)
-            {
+            switch (r) {
                 case Radius.SQUARE:
-                case Radius.CUBE:
-                {
-                    for (int i = centerX - radiusLength; i <= centerX + radiusLength; i++)
-                    {
-                        for (int j = centerY - radiusLength; j <= centerY + radiusLength; j++)
-                        {
+                case Radius.CUBE: {
+                    for (int i = centerX - radiusLength; i <= centerX + radiusLength; i++) {
+                        for (int j = centerY - radiusLength; j <= centerY + radiusLength; j++) {
                             if (!surpassEdges && (i < 0 || j < 0 || i >= width || j >= height))
                                 continue;
                             contents.Add(Coord.get(i, j));
@@ -551,12 +470,9 @@ namespace SquidLib.SquidGrid
                 }
                 break;
                 case Radius.DIAMOND:
-                case Radius.OCTAHEDRON:
-                {
-                    for (int i = centerX - radiusLength; i <= centerX + radiusLength; i++)
-                    {
-                        for (int j = centerY - radiusLength; j <= centerY + radiusLength; j++)
-                        {
+                case Radius.OCTAHEDRON: {
+                    for (int i = centerX - radiusLength; i <= centerX + radiusLength; i++) {
+                        for (int j = centerY - radiusLength; j <= centerY + radiusLength; j++) {
                             if ((Math.Abs(centerX - i) + Math.Abs(centerY - j) > radiusLength) ||
                                     (!surpassEdges && (i < 0 || j < 0 || i >= width || j >= height)))
                                 continue;
@@ -565,20 +481,17 @@ namespace SquidLib.SquidGrid
                     }
                 }
                 break;
-                default:
-                {
+                default: {
                     float high, changedX;
                     int rndX, rndY;
-                    for (int dx = -radiusLength; dx <= radiusLength; ++dx)
-                    {
+                    for (int dx = -radiusLength; dx <= radiusLength; ++dx) {
                         changedX = dx - 0.25f * Math.Sign(dx);
                         rndX = Convert.ToInt32(changedX);
                         high = (float)Math.Sqrt(radiusLength * radiusLength - changedX * changedX);
                         if (surpassEdges || !(centerX + rndX < 0 ||
                                 centerX + rndX >= width))
                             contents.Add(Coord.get(centerX + rndX, centerY));
-                        for (float dy = high; dy >= 0.75f; --dy)
-                        {
+                        for (float dy = high; dy >= 0.75f; --dy) {
                             rndY = Convert.ToInt32(dy - 0.25f);
                             if (surpassEdges || !(centerX + rndX < 0 || centerY + rndY < 0 ||
                                     centerX + rndX >= width || centerY + rndY >= height))
@@ -609,8 +522,7 @@ namespace SquidLib.SquidGrid
          * @return a new List containing the points within radiusLength of the center
 
          */
-        public static List<Coord> inSquare(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height)
-        {
+        public static List<Coord> inSquare(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) {
             return Radius.SQUARE.pointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, null);
         }
         /**
@@ -627,8 +539,7 @@ namespace SquidLib.SquidGrid
          * @param height the height of the area this can place Coords (exclusive, not relative to center, usually map height)
          * @return a new List containing the points within radiusLength of the center
          */
-        public static List<Coord> inDiamond(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height)
-        {
+        public static List<Coord> inDiamond(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) {
             return Radius.DIAMOND.pointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, null);
         }
         /**
@@ -645,8 +556,7 @@ namespace SquidLib.SquidGrid
          * @param height the height of the area this can place Coords (exclusive, not relative to center, usually map height)
          * @return a new List containing the points within radiusLength of the center
          */
-        public static List<Coord> inCircle(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height)
-        {
+        public static List<Coord> inCircle(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) {
             return Radius.CIRCLE.pointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, null);
         }
 
@@ -665,8 +575,7 @@ namespace SquidLib.SquidGrid
          * @param buf the List of Coord to append points to; may be null to create a new List
          * @return buf, after appending Coords to it, or a new List if buf was null
          */
-        public static List<Coord> inSquare(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf)
-        {
+        public static List<Coord> inSquare(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) {
             return Radius.SQUARE.pointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, buf);
         }
         /**
@@ -684,8 +593,7 @@ namespace SquidLib.SquidGrid
          * @param buf the List of Coord to append points to; may be null to create a new List
          * @return buf, after appending Coords to it, or a new List if buf was null
          */
-        public static List<Coord> inDiamond(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf)
-        {
+        public static List<Coord> inDiamond(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) {
             return Radius.DIAMOND.pointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, buf);
         }
         /**
@@ -703,8 +611,7 @@ namespace SquidLib.SquidGrid
          * @param buf the List of Coord to append points to; may be null to create a new List
          * @return buf, after appending Coords to it, or a new List if buf was null
          */
-        public static List<Coord> inCircle(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf)
-        {
+        public static List<Coord> inCircle(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) {
             return Radius.CIRCLE.pointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, buf);
         }
 
@@ -721,15 +628,12 @@ namespace SquidLib.SquidGrid
          * @param points an Iterable (such as a List or Set) of Coord that this will make a "thickened" version of
          * @return a Set of Coord that covers a wider area than what points covers; each Coord will be unique (it's a Set)
          */
-        public static OrderedSet<Coord> expand(this Radius r, int distance, int width, int height, IEnumerable<Coord> points)
-        {
+        public static OrderedSet<Coord> expand(this Radius r, int distance, int width, int height, IEnumerable<Coord> points) {
             List<Coord> around = pointsInside(r, Coord.get(distance, distance), distance, false, width, height);
             OrderedSet<Coord> expanded = new OrderedSet<Coord>(around.Capacity * 16, 0.25f);
             int tx, ty;
-            foreach (Coord pt in points)
-            {
-                foreach (Coord ar in around)
-                {
+            foreach (Coord pt in points) {
+                foreach (Coord ar in around) {
                     tx = pt.x + ar.x - distance;
                     ty = pt.y + ar.y - distance;
                     if (tx >= 0 && tx < width && ty >= 0 && ty < height)
