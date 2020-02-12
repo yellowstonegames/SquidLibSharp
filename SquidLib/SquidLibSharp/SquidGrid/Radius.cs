@@ -68,7 +68,7 @@ namespace SquidLib.SquidGrid
         private const double PI2 = Math.PI * 2;
         public static double radius(this Radius r, int startx, int starty, int startz, int endx, int endy, int endz)
         {
-            return radius(r, (double)startx, (double)starty, (double)startz, (double)endx, (double)endy, (double)endz);
+            return radius(r, startx, starty, startz, endx, endy, (double)endz);
         }
 
         public static double radius(this Radius r, double startx, double starty, double startz, double endx, double endy, double endz)
@@ -81,7 +81,7 @@ namespace SquidLib.SquidGrid
 
         public static double radius(this Radius r, int dx, int dy, int dz)
         {
-            return radius(r, (float)dx, (float)dy, (float)dz);
+            return radius(r, dx, dy, dz);
         }
 
         public static double radius(this Radius r, double dx, double dy, double dz)
@@ -108,15 +108,15 @@ namespace SquidLib.SquidGrid
 
         public static double radius(this Radius r, int startx, int starty, int endx, int endy)
         {
-            return radius(r, (double)startx, (double)starty, (double)endx, (double)endy);
+            return radius(r, startx, starty, endx, endy);
         }
         public static double radius(this Radius r, Coord start, Coord end)
         {
-            return radius(r, (double)start.x, (double)start.y, (double)end.x, (double)end.y);
+            return radius(r, start.x, start.y, end.x, end.y);
         }
         public static double radius(this Radius r, Coord end)
         {
-            return radius(0.0, 0.0, (double)end.x, (double)end.y);
+            return radius(0.0, 0.0, end.x, end.y);
         }
 
         public static double radius(this Radius r, double startx, double starty, double endx, double endy)
@@ -128,7 +128,7 @@ namespace SquidLib.SquidGrid
 
         public static double radius(this Radius r, int dx, int dy)
         {
-            return radius(r, (double)dx, (double)dy);
+            return radius(r, dx, (double)dy);
         }
 
         public static double radius(this Radius r, double dx, double dy)
