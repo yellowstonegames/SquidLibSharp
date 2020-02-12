@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>SquidLib</AssemblyName>
+    <RootNamespace>SquidLib</RootNamespace>
+    <ApplicationIcon>tentacle.ico</ApplicationIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.1</Version>
+  </PropertyGroup>
+
+</Project>
