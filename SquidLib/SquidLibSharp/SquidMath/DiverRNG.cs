@@ -174,7 +174,7 @@ namespace SquidLib.SquidMath {
         public double nextDouble() {
             ulong z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
             z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
-            return ((z ^ z >> 25) & 0x1FFFFFFFFFFFFFL) * 0x1e - 53;
+            return ((z ^ z >> 25) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53));
 
         }
 
@@ -188,7 +188,7 @@ namespace SquidLib.SquidMath {
         public double nextDouble(double outer) {
             ulong z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
             z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
-            return ((z ^ z >> 25) & 0x1FFFFFFFFFFFFFL) * 0x1e - 53 * outer;
+            return ((z ^ z >> 25) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53)) * outer;
         }
 
         /**
@@ -392,7 +392,7 @@ namespace SquidLib.SquidMath {
          * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
          */
         public static double determineDouble(ulong state) =>
-            (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0x1FFFFFFFFFFFFFL) * 0x1e - 53;
+            (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53));
 
         /**
          * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
@@ -414,7 +414,7 @@ namespace SquidLib.SquidMath {
          * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
          */
         public static double randomizeDouble(ulong state) =>
-            (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0x1FFFFFFFFFFFFFL) * 0x1e - 53;
+            (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53));
 
 
         public float nextFloat(float outer) => throw new NotImplementedException();
