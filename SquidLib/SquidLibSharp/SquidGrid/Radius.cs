@@ -63,8 +63,7 @@ namespace SquidLib.SquidGrid {
     public static class RadiusExtensions {
 
         private const double PI2 = Math.PI * 2;
-        public static double radius(this Radius r, int startx, int starty, int startz, int endx, int endy, int endz)
-        {
+        public static double radius(this Radius r, int startx, int starty, int startz, int endx, int endy, int endz) {
             return radius(r, startx, starty, startz, endx, endy, (double)endz);
         }
 
@@ -75,8 +74,7 @@ namespace SquidLib.SquidGrid {
             return radius(r, dx, dy, dz);
         }
 
-        public static double radius(this Radius r, int dx, int dy, int dz)
-        {
+        public static double radius(this Radius r, int dx, int dy, int dz) {
             return radius(r, dx, dy, dz);
         }
 
@@ -100,16 +98,13 @@ namespace SquidLib.SquidGrid {
             }
         }
 
-        public static double radius(this Radius r, int startx, int starty, int endx, int endy)
-        {
+        public static double radius(this Radius r, int startx, int starty, int endx, int endy) {
             return radius(r, startx, starty, endx, endy);
         }
-        public static double radius(this Radius r, Coord start, Coord end)
-        {
+        public static double radius(this Radius r, Coord start, Coord end) {
             return radius(r, start.x, start.y, end.x, end.y);
         }
-        public static double radius(this Radius r, Coord end)
-        {
+        public static double radius(this Radius r, Coord end) {
             return radius(0.0, 0.0, end.x, end.y);
         }
 
@@ -119,8 +114,7 @@ namespace SquidLib.SquidGrid {
             return radius(r, dx, dy);
         }
 
-        public static double radius(this Radius r, int dx, int dy)
-        {
+        public static double radius(this Radius r, int dx, int dy) {
             return radius(r, dx, (double)dy);
         }
 
@@ -451,7 +445,6 @@ namespace SquidLib.SquidGrid {
             return pointsInside(r, centerX, centerY, radiusLength, surpassEdges, width, height, null);
         }
         public static List<Coord> pointsInside(this Radius r, Coord center, int radiusLength, bool surpassEdges, int width, int height) {
-            if (center == null) return null;
             return pointsInside(r, center.x, center.y, radiusLength, surpassEdges, width, height, null);
         }
 
