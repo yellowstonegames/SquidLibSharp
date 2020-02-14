@@ -47,8 +47,6 @@ namespace SquidLib.SquidMath {
      */
     public sealed class DiverRNG : IStatefulRNG {
 
-        private const long serialVersionUID = 153186732328748834L;
-
         static private Random localRNG = new Random();
 
         private ulong state; /* The state can be seeded with any value. */
@@ -114,7 +112,7 @@ namespace SquidLib.SquidMath {
         public int nextInt(int bound) {
             ulong z = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
             z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
-            return (int)(((ulong)bound * ((z ^ z >> 25) & 0xFFFFFFFFL)) >> 32);
+            return (int)((bound * (long)((z ^ z >> 25) & 0xFFFFFFFFL)) >> 32);
         }
 
         /**
@@ -128,31 +126,40 @@ namespace SquidLib.SquidMath {
             return inner + nextInt(outer - inner);
         }
 
+        public ulong nextULong(ulong bound) {
+            ulong rand = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
+            rand = (rand << 27 | rand >> 37) * 0xDB4F0B9175AE2165L;
+            rand ^= rand >> 25;
+            return MathExtras.MultiplyHigh(rand, bound);
+        }
         /**
          * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
          * If bound is negative this returns a negative long; if bound is positive this returns a positive long. The bound
          * can even be 0, which will cause this to return 0L every time.
          * <br>
-         * Credit for this method goes to <a href="https://oroboro.com/large-random-in-range/">Rafael Baptista's blog</a>
-         * for the original idea, and the JDK10 Math class' usage of Hacker's Delight code for the current algorithm. 
-         * This method is drastically faster than the previous implementation when the bound varies often (roughly 4x
-         * faster, possibly more). It also always gets exactly one random long, so by default it advances the state as much
+         * Credit goes to https://gist.github.com/cocowalla/6070a53445e872f2bb24304712a3e1d2 ,
+         * who ported this StackOverflow answer by catid https://stackoverflow.com/a/51587262 .
+         * It also always gets exactly one random long, so by default it advances the state as much
          * as {@link #nextLong()}.
          *
          * @param bound the outer exclusive bound; can be positive or negative
          * @return a random long between 0 (inclusive) and bound (exclusive)
          */
-        public long nextLong(long inBound) {
-            ulong bound = (ulong)inBound;
-            ulong rand = (state = (state ^ 0x6C8E9CF570932BD5L) * 0xC6BC279692B5CC83L);
-            rand = (rand << 27 | rand >> 37) * 0xDB4F0B9175AE2165L;
-            rand ^= rand >> 25;
-            ulong randLow = rand & 0xFFFFFFFFL;
-            ulong boundLow = bound & 0xFFFFFFFFL;
-            rand >>= 32;
-            bound >>= 32;
-            ulong t = rand * boundLow + (randLow * boundLow >> 32);
-            return (long)(rand * bound + (t >> 32) + (randLow * bound + (t & 0xFFFFFFFFL) >> 32));
+        public long nextLong(long bound) {
+            long sign = bound >> 63;
+            return (long)(nextULong((ulong)(sign == -1L ? -bound : bound)))
+                + sign ^ sign; // cheaper "times the sign" when you already have the sign.
+
+            //ulong ubound = (ulong)bound;
+            //ulong rand = (state = (state ^ 0x632BE59BD9B4E019UL) * 0xC6BC279692B5CC83L);
+            //rand = (rand << 27 | rand >> 37) * 0xDB4F0B9175AE2165L;
+            //rand ^= rand >> 25;
+            //ulong randLow = rand & 0xFFFFFFFFL;
+            //ulong boundLow = ubound & 0xFFFFFFFFL;
+            //rand >>= 32;
+            //ubound >>= 32;
+            //ulong t = rand * boundLow + (randLow * boundLow >> 32);
+            //return (long)(rand * ubound + (t >> 32) + (randLow * ubound + (t & 0xFFFFFFFFL) >> 32));
         }
         /**
          * Inclusive inner, exclusive outer; lower and upper can be positive or negative and there's no requirement for one
@@ -232,18 +239,6 @@ namespace SquidLib.SquidMath {
 
         public string toString() => $"DiverRNG with state 0x{state:X}UL";
 
-        public bool equals(Object o) {
-            if (this == o) return true;
-            if (o is DiverRNG test)
-                return state == test.state;
-            else
-                return false;
-        }
-
-        public int hashCode() {
-            return (int)(state ^ (state >> 32));
-        }
-
         /**
          * Fast static randomizing method that takes its state as a parameter; state is expected to change between calls to
          * this. It is recommended that you use {@code DiverRNG.determine(++state)} or {@code DiverRNG.determine(--state)}
@@ -262,7 +257,7 @@ namespace SquidLib.SquidMath {
          * @return any long
          */
         public static ulong determine(ulong state) =>
-            (state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25;
+            (state = ((state = (((state * 0x632BE59BD9B4E019UL) ^ 0x9E3779B97F4A7C15UL) * 0xC6BC279692B5CC83UL)) ^ state >> 27) * 0xAEF17502108EF2D9UL) ^ state >> 25;
 
         /**
          * High-quality static randomizing method that takes its state as a parameter; state is expected to change between
@@ -305,7 +300,7 @@ namespace SquidLib.SquidMath {
          * @return an int between 0 (inclusive) and bound (exclusive)
          */
         public static int determineBounded(ulong state, int bound) =>
-            (int)(((ulong)bound * (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0xFFFFFFFFL)) >> 32);
+            (int)(((ulong)bound * (((state = ((state = (((state * 0x632BE59BD9B4E019UL) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0xFFFFFFFFL)) >> 32);
         /**
          * High-quality static randomizing method that takes its state as a parameter and limits output to an int between 0
          * (inclusive) and bound (exclusive); state is expected to change between calls to this. It is suggested that you
@@ -349,7 +344,7 @@ namespace SquidLib.SquidMath {
          * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
          */
         public static float determineFloat(ulong state) =>
-            ((((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) >> 40) * 0x1e - 24f;
+            ((((state = (((state * 0x632BE59BD9B4E019UL) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) >> 40) * 0x1e - 24f;
 
         /**
          * Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
@@ -392,7 +387,7 @@ namespace SquidLib.SquidMath {
          * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
          */
         public static double determineDouble(ulong state) =>
-            (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53));
+            (((state = ((state = (((state * 0x632BE59BD9B4E019UL) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53));
 
         /**
          * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
@@ -414,7 +409,7 @@ namespace SquidLib.SquidMath {
          * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
          */
         public static double randomizeDouble(ulong state) =>
-            (((state = ((state = (((state * 0x632BE59BD9B4E019L) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53));
+           (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53));
 
 
         public float nextFloat(float outer) => throw new NotImplementedException();
