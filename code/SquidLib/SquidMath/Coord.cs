@@ -41,6 +41,9 @@ namespace SquidLib.SquidMath {
         public static bool operator !=(Coord left, Coord right) {
             return !(left == right);
         }
+
+        override
+        public String ToString() => $"[{x},{y}]";
     }
 
     public struct Coord3D {
@@ -60,5 +63,8 @@ namespace SquidLib.SquidMath {
         public Coord3D setZ(int z) => get(x, y, z);
 
         public static Coord3D get(int x, int y, int z) => new Coord3D(x, y, z);
+
+        override
+        public String ToString() => $"[{x},{y},{z}]";
     }
 }
