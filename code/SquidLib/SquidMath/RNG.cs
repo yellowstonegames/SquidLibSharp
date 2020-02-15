@@ -18,10 +18,9 @@ namespace SquidLib.SquidMath {
         static private Random localRNG = new Random();
 
         private (ulong a, ulong b) state;
-
-        /**
-         * Creates a new generator seeded using Math.random.
-         */
+        /// <summary>
+        /// Creates a new RNG using a static System.Random to generate two seed values.
+        /// </summary>
         public RNG() :
             this((ulong)(localRNG.NextDouble() * 0x10000000000000UL)
                     ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL),
@@ -84,12 +83,25 @@ namespace SquidLib.SquidMath {
 
         /**
          * Exclusive on the outer bound.  The inner bound is 0.
-         * The bound can be negative, which makes this produce either a negative int or 0.
+         * If the bound is negative, this returns 0 but still advances the state normally.
          *
          * @param bound the upper bound; should be positive
          * @return a random int between 0 (inclusive) and bound (exclusive)
          */
         public int nextInt(int bound) {
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
+        }
+
+        /**
+         * Exclusive on the outer bound.  The inner bound is 0.
+         * The bound can be negative, which makes this produce either a negative int or 0.
+         *
+         * @param bound the upper bound; should be positive
+         * @return a random int between 0 (inclusive) and bound (exclusive)
+         */
+        public int nextSignedInt(int bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (int)((bound * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
@@ -113,6 +125,21 @@ namespace SquidLib.SquidMath {
         }
         /**
          * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
+         * If the bound is negative, this returns 0 but still advances the state normally.
+         * <br>
+         * Credit goes to https://gist.github.com/cocowalla/6070a53445e872f2bb24304712a3e1d2 ,
+         * who ported this StackOverflow answer by catid https://stackoverflow.com/a/51587262 .
+         * It also always gets exactly one random long, so by default it advances the state as much
+         * as {@link #nextLong()}.
+         *
+         * @param bound the outer exclusive bound; can be positive or negative
+         * @return a random long between 0 (inclusive) and bound (exclusive)
+         */
+        public long nextLong(long bound) {
+            return (long)nextULong((ulong)Math.Max(0L, bound));
+        }
+        /**
+         * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
          * If bound is negative this returns a negative long; if bound is positive this returns a positive long. The bound
          * can even be 0, which will cause this to return 0L every time.
          * <br>
@@ -124,7 +151,7 @@ namespace SquidLib.SquidMath {
          * @param bound the outer exclusive bound; can be positive or negative
          * @return a random long between 0 (inclusive) and bound (exclusive)
          */
-        public long nextLong(long bound) {
+        public long nextSignedLong(long bound) {
             long sign = bound >> 63;
             return (long)(nextULong((ulong)(sign == -1L ? -bound : bound)))
                 + sign ^ sign; // cheaper "times the sign" when you already have the sign.
@@ -176,6 +203,11 @@ namespace SquidLib.SquidMath {
             return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * FLOAT_DIVISOR;
         }
 
+        public float nextFloat(float outer) {
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * FLOAT_DIVISOR * outer;
+        }
+
         /**
          * Gets a random value, true or false.
          * Calls nextLong() once.
@@ -202,8 +234,8 @@ namespace SquidLib.SquidMath {
         }
 
         public void setState(string seed) {
-            state.a = ulong.Parse(seed.Substring(0, 16), System.Globalization.NumberStyles.HexNumber);
-            state.b = ulong.Parse(seed.Substring(16, 32), System.Globalization.NumberStyles.HexNumber);
+            state.a = ulong.Parse(seed.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+            state.b = ulong.Parse(seed.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
         }
 
         public string getState() => $"{state.a:X16}{state.b:X16}";
@@ -383,15 +415,20 @@ namespace SquidLib.SquidMath {
            (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * DOUBLE_DIVISOR;
 
 
-        public float nextFloat(float outer) => throw new NotImplementedException();
-        public long nextSignedLong(long bound) => throw new NotImplementedException();
-        public int nextSignedInt(int bound) => throw new NotImplementedException();
-        public int between(int min, int max) => throw new NotImplementedException();
-        public long between(long min, long max) => throw new NotImplementedException();
-        public double between(double min, double max) => throw new NotImplementedException();
-        public T getRandomElement<T>(T[] array) => throw new NotImplementedException();
-        public T getRandomElement<T>(List<T> list) => throw new NotImplementedException();
-        public T getRandomElement<T>(ICollection<T> coll) => throw new NotImplementedException();
+        public int between(int min, int max) => min + nextSignedInt(max - min);
+        public long between(long min, long max) => min + nextSignedLong(max - min);
+        public double between(double min, double max) => min + nextDouble(max - min);
+        public T getRandomElement<T>(T[] array) => array[nextInt(array.Length)];
+        public T getRandomElement<T>(List<T> list) => list[nextInt(list.Count)];
+        
+        public T getRandomElement<T>(ICollection<T> coll) {
+            var e = coll.GetEnumerator();
+            for (int target = nextInt(coll.Count); target > 0; target--) {
+                e.MoveNext();
+            }
+            return e.Current;
+                
+        }
         public T[] shuffle<T>(T[] elements) => throw new NotImplementedException();
         public T[] shuffleInPlace<T>(T[] elements) => throw new NotImplementedException();
         public T[] shuffle<T>(T[] elements, T[] dest) => throw new NotImplementedException();
