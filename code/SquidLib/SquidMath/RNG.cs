@@ -2,86 +2,64 @@
 using System.Collections.Generic;
 
 namespace SquidLib.SquidMath {
-    /**
-     * A very-high-quality StatefulRandomness that is the fastest 64-bit generator in this library that passes statistical
-     * tests and is one-dimensionally equidistributed across all 64-bit outputs. Has 64 bits of state and natively outputs
-     * 64 bits at a time, changing the state with an "XLCG" or xor linear congruential generator (XLCGs are very similar to
-     * normal LCGs but have slightly better random qualities on the high bits; the code for this XLCG is
-     * {@code state = (state ^ 7822362180758744021) * -4126379630918251389}, and the only requirements for an XLCG are that
-     * the constant used with XOR, when treated as unsigned and modulo 8, equals 5, while the multiplier, again treated as
-     * unsigned and modulo 8, equals 3). Starting with that XLCG's output, it bitwise-left-rotates by 27, multiplies by a
-     * very large negative long (see next), then returns a right-xorshift by 25. The large negative long is
-     * -2643881736870682267, which when treated as unsigned is 2 to the 64 divided by an irrational number that generalizes
-     * the golden ratio. This specific irrational number is the solution to {@code x}<sup>{@code 5}</sup>{@code = x + 1}.
-     * Other multipliers also seem to work well as long as they have enough set bits (fairly-small multipliers fail tests).
-     * For whatever reason, the output of this simple function passes all 32TB of PractRand with one anomaly ("unusual"
-     * at 256GB), meaning its statistical quality is excellent. {@link ThrustAltRNG} is slightly faster, but isn't
-     * equidistributed; unlike ThrustAltRNG, this can produce all long values as output. ThrustAltRNG bunches some outputs
-     * and makes producing them more likely, while others can't be produced at all. Notably, this generator is faster than
-     * {@link LinnormRNG}, which it is based on, while improving its quality, is faster than {@link LightRNG} while keeping
-     * the same or higher quality, and is also faster than {@link XoRoRNG} while passing tests that XoRoRNG always or
-     * frequently fails, such as binary matrix rank tests.
-     * <br>
-     * This generator is a StatefulRandomness but not a SkippingRandomness, so it can't (efficiently) have the skip() method
-     * that LightRNG has. A method could be written to run the generator's state backwards, though, as well as to get the
-     * state from an output of {@link #nextLong()}.
-     * <br>
-     * The static determine() methods in this class are a completely different algorithm from the {@link #nextLong()} and
-     * similar instance methods here; they're a little faster than {@link LinnormRNG#determine(long)} and its family while
-     * actually having much better stability in case an increment is a poor fit for the internals of the generator. Like
-     * {@link #nextLong()}, {@link #determine(long)} can produce all possible long outputs and can take any long input; 
-     * among determine() methods in this library that satisfy that constraint on input and output, this class' appears to be
-     * the fastest.
-     * <br>
-     * The name comes in a roundabout way from Xmulzencab, Maya mythology's bee god who is also called the Diving God,
-     * because the state transition is built around Xor and MUL. I was also listening to a Dio song, Holy Diver, at the
-     * time, and Diver is much more reasonable to pronounce than Xmulzencab.
-     * <br>
-     * Written December 14, 2018 by Tommy Ettinger. Thanks to M.E. O'Neill for her insights into the family of generators
-     * both this and her PCG-Random fall into, and to the team that worked on SplitMix64 for SplittableRandom in JDK 8.
-     * Chris Doty-Humphrey's work on PractRand has been invaluable, and I wouldn't know about XLCGs without his findings.
-     * Martin Roberts showed the technique for generalizing the golden ratio that produced the high-quality multiplier this
-     * uses in one place. Other constants were found empirically or via searching for probable primes with desirable values
-     * for use in an XLCG.
-     * @author Tommy Ettinger
-     */
-    public class DiverRNG : IStatefulRNG {
+    /// <summary>
+    /// Based on TangleRNG's algrithm, which is extremely fast, has a more-than-good-enough period of 2 to the 64,
+    /// and has 2 to the 63 possible "streams" of random numbers it can produce. While not all streams have been tested
+    /// (that's basically impossible), all of them tested so far have passed PractRand testing to 32TB of generated data.
+    /// An individual stream is not equidistributed and will produce some results more than once over the period, while
+    /// other numbers will never appear in that stream (roughly 1/3 of possible ulong results won't appear). If you look
+    /// across all possible streams, however, the full set of generators is equidistributed, one-dimensionally. It is
+    /// encouraged to make lots of these RNGs where their results need to be independent, rather than skipping around in
+    /// just one generator.
+    /// </summary>
+    public class RNG : IStatefulRNG {
         private const double DOUBLE_DIVISOR = 1.0 / (1 << 53);
         private const float FLOAT_DIVISOR = 1.0f / (1 << 24);
-
         static private Random localRNG = new Random();
 
-        private ulong state; /* The state can be seeded with any value. */
+        private (ulong a, ulong b) state;
 
         /**
          * Creates a new generator seeded using Math.random.
          */
-        public DiverRNG() :
-            this((long)((localRNG.NextDouble() - 0.5) * 0x10000000000000L)
-                    ^ (long)(((localRNG.NextDouble() - 0.5) * 2.0) * long.MinValue)) { }
+        public RNG() :
+            this((ulong)(localRNG.NextDouble() * 0x10000000000000UL)
+                    ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL),
+                (ulong)(localRNG.NextDouble() * 0x10000000000000UL)
+                    ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL)) { }
 
+        public RNG(long seed) => state = ((ulong)seed, randomize((ulong)seed) | 1UL);
 
-        public DiverRNG(long seed) => state = (ulong)seed;
+        public RNG(ulong seed) => state = (seed, randomize(seed) | 1UL);
 
-        public DiverRNG(ulong seed) => state = seed;
+        public RNG(ulong seedA, ulong seedB) => state = (seedA, seedB | 1UL);
 
-        public DiverRNG(string seed) => state = randomize((ulong)seed.GetHashCode()); // WAS - CrossHash.hash64(seed);
+        /// <summary>
+        /// I am pretty sure this will share the given sharedState with any other RNG that uses it.
+        /// </summary>
+        /// <param name="sharedState">Will not be copied; will be used by reference and generation calls will mutate this</param>
+        public RNG((ulong a, ulong b) sharedState) {
+            state = sharedState;
+            state.b |= 1UL;
+        }
+        public RNG(string seed) : this(randomize((ulong)seed.GetHashCode())) { } // WAS - CrossHash.hash64(seed);
 
         public int next(int bits) {
-            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
-            return (int)(z ^ z >> 25) >> (32 - bits);
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return (int)((z ^ z >> 26) >> 64 - bits);
         }
 
-        /**
-         * Can return any long, positive or negative, of any size permissible in a 64-bit signed integer.
-         *
-         * @return any long, all 64 bits are random
-         */
+        public ulong nextULong() {
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return z ^ z >> 26;
+        }
+
         public long nextLong() {
-            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
-            return (long)(z ^ z >> 25);
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return (long)(z ^ z >> 26);
         }
 
         /**
@@ -91,7 +69,7 @@ namespace SquidLib.SquidMath {
          *
          * @return a copy of this RandomnessSource
          */
-        public IRNG copy() => new DiverRNG(state);
+        public IRNG copy() => new RNG(state);
 
         /**
          * Can return any int, positive or negative, of any size permissible in a 32-bit signed integer.
@@ -99,9 +77,9 @@ namespace SquidLib.SquidMath {
          * @return any int, all 32 bits are random
          */
         public int nextInt() {
-            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
-            return (int)(z ^ z >> 25);
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return (int)(z ^ z >> 26);
         }
 
         /**
@@ -112,9 +90,9 @@ namespace SquidLib.SquidMath {
          * @return a random int between 0 (inclusive) and bound (exclusive)
          */
         public int nextInt(int bound) {
-            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
-            return (int)((bound * (long)((z ^ z >> 25) & 0xFFFFFFFFL)) >> 32);
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return (int)((bound * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
         }
 
         /**
@@ -129,10 +107,9 @@ namespace SquidLib.SquidMath {
         }
 
         public ulong nextULong(ulong bound) {
-            ulong rand = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            rand = (rand << 27 | rand >> 37) * 0xDB4F0B9175AE2165L;
-            rand ^= rand >> 25;
-            return MathExtras.MultiplyHigh(rand, bound);
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return MathExtras.MultiplyHigh(z ^ z >> 26, bound);
         }
         /**
          * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
@@ -151,17 +128,6 @@ namespace SquidLib.SquidMath {
             long sign = bound >> 63;
             return (long)(nextULong((ulong)(sign == -1L ? -bound : bound)))
                 + sign ^ sign; // cheaper "times the sign" when you already have the sign.
-
-            //ulong ubound = (ulong)bound;
-            //ulong rand = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            //rand = (rand << 27 | rand >> 37) * 0xDB4F0B9175AE2165L;
-            //rand ^= rand >> 25;
-            //ulong randLow = rand & 0xFFFFFFFFL;
-            //ulong boundLow = ubound & 0xFFFFFFFFL;
-            //rand >>= 32;
-            //ubound >>= 32;
-            //ulong t = rand * boundLow + (randLow * boundLow >> 32);
-            //return (long)(rand * ubound + (t >> 32) + (randLow * ubound + (t & 0xFFFFFFFFL) >> 32));
         }
         /**
          * Inclusive inner, exclusive outer; lower and upper can be positive or negative and there's no requirement for one
@@ -181,9 +147,9 @@ namespace SquidLib.SquidMath {
          * @return a random double at least equal to 0.0 and less than 1.0
          */
         public double nextDouble() {
-            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
-            return ((z ^ z >> 25) & 0x1FFFFFFFFFFFFFUL) * DOUBLE_DIVISOR;
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * DOUBLE_DIVISOR;
 
         }
 
@@ -195,9 +161,9 @@ namespace SquidLib.SquidMath {
          * @return a random double between 0.0 (inclusive) and outer (exclusive)
          */
         public double nextDouble(double outer) {
-            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
-            return ((z ^ z >> 25) & 0x1FFFFFFFFFFFFFUL) * DOUBLE_DIVISOR * outer;
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * DOUBLE_DIVISOR * outer;
         }
 
         /**
@@ -206,8 +172,8 @@ namespace SquidLib.SquidMath {
          * @return a random float at least equal to 0.0 and less than 1.0
          */
         public float nextFloat() {
-            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            return ((z << 27 | z >> 37) * 0xDB4F0B9175AE2165L >> 40) * FLOAT_DIVISOR;
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * FLOAT_DIVISOR;
         }
 
         /**
@@ -217,8 +183,8 @@ namespace SquidLib.SquidMath {
          * @return a random true or false value.
          */
         public bool nextBoolean() {
-            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
-            return ((z << 27 | z >> 37) * 0xDB4F0B9175AE2165L) < 0x8000000000000000UL;
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            return (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) < 0x8000000000000000UL;
         }
 
         /**
@@ -231,19 +197,22 @@ namespace SquidLib.SquidMath {
             int i = bytes.Length, n;
             while (i != 0) {
                 n = Math.Min(i, 8);
-                for (long bits = nextLong(); n-- != 0; bits >>= 8) bytes[--i] = (byte)bits;
+                for (ulong bits = nextULong(); n-- != 0; bits >>= 8) bytes[--i] = (byte)bits;
             }
         }
 
-        public void setState(string seed) => state = ulong.Parse(seed, System.Globalization.NumberStyles.HexNumber);
+        public void setState(string seed) {
+            state.a = ulong.Parse(seed.Substring(0, 16), System.Globalization.NumberStyles.HexNumber);
+            state.b = ulong.Parse(seed.Substring(16, 32), System.Globalization.NumberStyles.HexNumber);
+        }
 
-        public string getState() => $"{state:X16}";
+        public string getState() => $"{state.a:X16}{state.b:X16}";
 
-        public string toString() => $"DiverRNG with state 0x{state:X}UL";
+        public string toString() => $"RNG with state (0x{state.a:X16}UL,0x{state.b:X16}UL)";
 
         /**
          * Fast static randomizing method that takes its state as a parameter; state is expected to change between calls to
-         * this. It is recommended that you use {@code DiverRNG.determine(++state)} or {@code DiverRNG.determine(--state)}
+         * this. It is recommended that you use {@code RNG.determine(++state)} or {@code RNG.determine(--state)}
          * to produce a sequence of different numbers, and you may have slightly worse quality with increments or decrements
          * other than 1. All longs are accepted by this method, and all longs can be produced; unlike several other classes'
          * determine() methods, passing 0 here does not return 0.
@@ -263,8 +232,8 @@ namespace SquidLib.SquidMath {
 
         /**
          * High-quality static randomizing method that takes its state as a parameter; state is expected to change between
-         * calls to this. It is suggested that you use {@code DiverRNG.randomize(++state)} or
-         * {@code DiverRNG.randomize(--state)} to produce a sequence of different numbers, but any increments are allowed
+         * calls to this. It is suggested that you use {@code RNG.randomize(++state)} or
+         * {@code RNG.randomize(--state)} to produce a sequence of different numbers, but any increments are allowed
          * (even-number increments won't be able to produce all outputs, but their quality will be fine for the numbers they
          * can produce). All longs are accepted by this method, and all longs can be produced; unlike several other classes'
          * determine() methods, passing 0 here does not return 0.
@@ -285,7 +254,7 @@ namespace SquidLib.SquidMath {
         /**
          * Fast static randomizing method that takes its state as a parameter and limits output to an int between 0
          * (inclusive) and bound (exclusive); state is expected to change between calls to this. It is recommended that you
-         * use {@code DiverRNG.determineBounded(++state, bound)} or {@code DiverRNG.determineBounded(--state, bound)} to
+         * use {@code RNG.determineBounded(++state, bound)} or {@code RNG.determineBounded(--state, bound)} to
          * produce a sequence of different numbers. All longs are accepted
          * by this method, but not all ints between 0 and bound are guaranteed to be produced with equal likelihood (for any
          * odd-number values for bound, this isn't possible for most generators). The bound can be negative.
@@ -306,7 +275,7 @@ namespace SquidLib.SquidMath {
         /**
          * High-quality static randomizing method that takes its state as a parameter and limits output to an int between 0
          * (inclusive) and bound (exclusive); state is expected to change between calls to this. It is suggested that you
-         * use {@code DiverRNG.randomizeBounded(++state)} or {@code DiverRNG.randomize(--state)} to produce a sequence of
+         * use {@code RNG.randomizeBounded(++state)} or {@code RNG.randomize(--state)} to produce a sequence of
          * different numbers, but any increments are allowed (even-number increments won't be able to produce all outputs,
          * but their quality will be fine for the numbers they can produce). All longs are accepted by this method, but not
          * all ints between 0 and bound are guaranteed to be produced with equal likelihood (for any odd-number values for
@@ -389,7 +358,7 @@ namespace SquidLib.SquidMath {
          * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
          */
         public static double determineDouble(ulong state) =>
-            (((state = ((state = (((state * 0x632BE59BD9B4E019UL) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53));
+            (((state = ((state = (((state * 0x632BE59BD9B4E019UL) ^ 0x9E3779B97F4A7C15L) * 0xC6BC279692B5CC83L)) ^ state >> 27) * 0xAEF17502108EF2D9L) ^ state >> 25) & 0x1FFFFFFFFFFFFFL) * DOUBLE_DIVISOR;
 
         /**
          * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
@@ -411,7 +380,7 @@ namespace SquidLib.SquidMath {
          * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
          */
         public static double randomizeDouble(ulong state) =>
-           (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * (1.0 / (1 << 53));
+           (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * DOUBLE_DIVISOR;
 
 
         public float nextFloat(float outer) => throw new NotImplementedException();
