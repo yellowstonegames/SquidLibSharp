@@ -23,6 +23,7 @@ namespace SquidLib.SquidMath {
          * @return a random long between Long.MIN_VALUE and Long.MAX_VALUE (both inclusive)
          */
         long nextLong();
+        ulong nextULong();
 
         /**
          * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
@@ -39,6 +40,8 @@ namespace SquidLib.SquidMath {
          */
         int nextInt();
 
+        uint nextUInt();
+
         /**
          * Returns a random non-negative integer below the given bound, or 0 if the bound is 0 or
          * negative.
@@ -47,6 +50,7 @@ namespace SquidLib.SquidMath {
          * @return the found number
          */
         int nextInt(int bound);
+        uint nextUInt(uint bound);
 
         /**
          * Returns a random long below the given bound, or 0 if the bound is 0 or
@@ -56,6 +60,8 @@ namespace SquidLib.SquidMath {
          * @return the found number
          */
         long nextLong(long bound);
+
+        ulong nextULong(ulong bound);
 
         /**
          * Get a random bit of state, interpreted as true or false with approximately equal likelihood.

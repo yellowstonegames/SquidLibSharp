@@ -432,6 +432,24 @@ namespace SquidLib.SquidMath {
         public int[] randomOrdering(int length) => throw new NotImplementedException();
         public int[] randomOrdering(int length, int[] dest) => throw new NotImplementedException();
         public T[] randomPortion<T>(T[] data, T[] output) => throw new NotImplementedException();
+
+        public ulong nextULong() {
+            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
+            z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
+            return z ^ z >> 25;
+        }
+
+        public uint nextUInt() {
+            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
+            z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
+            return (uint)(z ^ z >> 25);
+        }
+
+        public uint nextUInt(uint bound) {
+            ulong z = (state = (state ^ 0x6C8E9CF570932BD5UL) * 0xC6BC279692B5CC83L);
+            z = (z << 27 | z >> 37) * 0xDB4F0B9175AE2165L;
+            return (uint)((bound * ((z ^ z >> 25) & 0xFFFFFFFFL)) >> 32);
+        }
     }
 
 }

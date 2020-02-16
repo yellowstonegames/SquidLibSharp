@@ -80,6 +80,11 @@ namespace SquidLib.SquidMath {
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (int)(z ^ z >> 26);
         }
+        public uint nextUInt() {
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return (uint)(z ^ z >> 26);
+        }
 
         /**
          * Exclusive on the outer bound.  The inner bound is 0.
@@ -93,11 +98,18 @@ namespace SquidLib.SquidMath {
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
         }
+        public uint nextUInt(uint bound) {
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return (uint)(bound * ((z ^ z >> 26) & 0xFFFFFFFFUL) >> 32);
+        }
 
         /**
          * Exclusive on the outer bound.  The inner bound is 0.
          * The bound can be negative, which makes this produce either a negative int or 0.
-         *
+         * This should perform like NextUInt(uint), that is, a little faster than NextInt(int).
+         * Keep in mind, NextSignedLong(long) does not perform as well as NextULong(ulong).
+         * 
          * @param bound the upper bound; should be positive
          * @return a random int between 0 (inclusive) and bound (exclusive)
          */
