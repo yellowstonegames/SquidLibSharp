@@ -430,19 +430,39 @@ namespace SquidLib.SquidMath {
         public int between(int min, int max) => min + nextSignedInt(max - min);
         public long between(long min, long max) => min + nextSignedLong(max - min);
         public double between(double min, double max) => min + nextDouble(max - min);
-        public T getRandomElement<T>(T[] array) => array[nextInt(array.Length)];
-        public T getRandomElement<T>(List<T> list) => list[nextInt(list.Count)];
+        public T getRandomElement<T>(T[] array) => array[nextSignedInt(array.Length)];
+        public T getRandomElement<T>(List<T> list) => list[nextSignedInt(list.Count)];
         
         public T getRandomElement<T>(ICollection<T> coll) {
             var e = coll.GetEnumerator();
-            for (int target = nextInt(coll.Count); target > 0; target--) {
+            for (int target = nextSignedInt(coll.Count); target > 0; target--) {
                 e.MoveNext();
             }
-            return e.Current;
-                
+            return e.Current;        
         }
-        public T[] shuffle<T>(T[] elements) => throw new NotImplementedException();
-        public T[] shuffleInPlace<T>(T[] elements) => throw new NotImplementedException();
+
+        private static void swap<T>(ref T a, ref T b) {
+            T temp = a;
+            a = b;
+            b = temp;
+        }
+
+        public T[] shuffle<T>(T[] elements) {
+            int size = elements.Length;
+            T[] array = new T[size];
+            elements.CopyTo(array, 0);
+            for (int i = size; i > 1; i--) {
+                swap(ref array[i - 1], ref array[nextSignedInt(i)]);
+            }
+            return array;
+        }
+        public T[] shuffleInPlace<T>(T[] elements) {
+            int size = elements.Length;
+            for (int i = size; i > 1; i--) {
+                swap(ref elements[i - 1], ref elements[nextSignedInt(i)]);
+            }
+            return elements;
+        }
         public T[] shuffle<T>(T[] elements, T[] dest) => throw new NotImplementedException();
         public List<T> shuffle<T>(ICollection<T> elements) => throw new NotImplementedException();
         public List<T> shuffle<T>(ICollection<T> elements, List<T> buf) => throw new NotImplementedException();
