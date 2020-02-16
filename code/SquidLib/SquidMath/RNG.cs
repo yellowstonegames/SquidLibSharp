@@ -526,8 +526,23 @@ namespace SquidLib.SquidMath {
             return elements;
 
         }
-        public int[] randomOrdering(int length) => throw new NotImplementedException();
-        public int[] randomOrdering(int length, int[] dest) => throw new NotImplementedException();
+        public int[] randomOrdering(int length) {
+            return randomOrdering(length, new int[length]);
+        }
+        public int[] randomOrdering(int length, int[] dest) {
+            int n = Math.Min(length, dest.Length);
+            for (int i = 0; i < n; i++) {
+                dest[i] = i;
+            }
+            for (int i = n - 1; i > 0; i--) {
+                int r = nextSignedInt(i + 1),
+                        t = dest[r];
+                dest[r] = dest[i];
+                dest[i] = t;
+            }
+            return dest;
+
+        }
     }
 
 }
