@@ -118,6 +118,19 @@ namespace SquidLib.SquidMath {
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (int)((bound * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
         }
+        /// <summary>
+        /// Gets what the previous call to nextSignedInt(int) would have produced, given the same
+        /// state, and rolls back the state further so the next call to this will go earlier.
+        /// </summary>
+        /// <param name="bound"></param>
+        /// <returns></returns>
+        public int previousSignedInt(int bound) {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return (int)((bound * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
+        }
 
         /**
          * Inclusive inner, exclusive outer.
@@ -463,13 +476,36 @@ namespace SquidLib.SquidMath {
             }
             return elements;
         }
-        public T[] shuffle<T>(T[] elements, T[] dest) => throw new NotImplementedException();
+        public T[] reverseShuffleInPlace<T>(T[] elements) {
+            int size = elements.Length;
+            for (int i = 2; i <= size; i++) {
+                swap(ref elements[i - 1], ref elements[previousSignedInt(i)]);
+            }
+            return elements;
+        }
+        public T[] shuffle<T>(T[] elements, T[] dest) {
+            int size = elements.Length, target = dest.Length;
+            if (size != target) return randomPortion(elements, dest);
+            elements.CopyTo(dest, 0);
+            shuffleInPlace(dest);
+            return dest;
+        }
+        public T[] randomPortion<T>(T[] elements, T[] dest) {
+            int size = elements.Length, target = dest.Length, runs = (target + size - 1) / size;
+            for(int i = 0; i < runs; i++) {
+                shuffleInPlace(elements);
+                Array.Copy(elements, 0, dest, i * size, Math.Min(size, target - i * size));
+            }
+            for (int i = 0; i < runs; i++) {
+                reverseShuffleInPlace(elements);
+            }
+            return dest;
+        }
         public List<T> shuffle<T>(ICollection<T> elements) => throw new NotImplementedException();
-        public List<T> shuffle<T>(ICollection<T> elements, List<T> buf) => throw new NotImplementedException();
+        public List<T> shuffle<T>(ICollection<T> elements, List<T> dest) => throw new NotImplementedException();
         public List<T> shuffleInPlace<T>(List<T> elements) => throw new NotImplementedException();
         public int[] randomOrdering(int length) => throw new NotImplementedException();
         public int[] randomOrdering(int length, int[] dest) => throw new NotImplementedException();
-        public T[] randomPortion<T>(T[] data, T[] output) => throw new NotImplementedException();
     }
 
 }
