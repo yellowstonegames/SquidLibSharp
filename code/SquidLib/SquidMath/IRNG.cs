@@ -254,7 +254,7 @@ namespace SquidLib.SquidMath {
          * @param <T>      can be any non-primitive type.
          * @return a shuffled ArrayList containing the whole of elements in pseudo-random order.
          */
-        List<T> shuffle<T>(ICollection<T> elements);
+        List<T> shuffle<T>(IEnumerable<T> elements);
 
         /**
          * Shuffles a {@link Collection} of T using the Fisher-Yates algorithm and puts it in a buffer.
@@ -268,7 +268,7 @@ namespace SquidLib.SquidMath {
          * @param <T>      can be any non-primitive type.
          * @return a shuffled ArrayList containing the whole of elements in pseudo-random order, which may be {@code buf}
          */
-        List<T> shuffle<T>(ICollection<T> elements, List<T> buf);
+        List<T> shuffle<T>(IEnumerable<T> elements, List<T> buf);
         /**
          * Shuffles a Collection of T items in-place using the Fisher-Yates algorithm.
          * This only shuffles List data structures.

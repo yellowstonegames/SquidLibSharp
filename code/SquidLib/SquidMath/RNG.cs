@@ -460,6 +460,12 @@ namespace SquidLib.SquidMath {
             b = temp;
         }
 
+        private static void swap<T>(ref List<T> list, int a, int b) {
+            T temp = list[a];
+            list[a] = list[b];
+            list[b] = temp;
+        }
+
         public T[] shuffle<T>(T[] elements) {
             int size = elements.Length;
             T[] array = new T[size];
@@ -501,9 +507,25 @@ namespace SquidLib.SquidMath {
             }
             return dest;
         }
-        public List<T> shuffle<T>(ICollection<T> elements) => throw new NotImplementedException();
-        public List<T> shuffle<T>(ICollection<T> elements, List<T> dest) => throw new NotImplementedException();
-        public List<T> shuffleInPlace<T>(List<T> elements) => throw new NotImplementedException();
+        public List<T> shuffle<T>(IEnumerable<T> elements) {
+            List<T> dest = new List<T>(elements);
+            return shuffleInPlace(dest);
+        }
+        public List<T> shuffle<T>(IEnumerable<T> elements, List<T> dest) {
+            if (dest == null)
+                dest = new List<T>(elements);
+            else
+                dest.AddRange(elements);
+            return shuffleInPlace(dest);
+        }
+        public List<T> shuffleInPlace<T>(List<T> elements) {
+            int size = elements.Count;
+            for (int i = size; i > 1; i--) {
+                swap(ref elements, i - 1, nextSignedInt(i));
+            }
+            return elements;
+
+        }
         public int[] randomOrdering(int length) => throw new NotImplementedException();
         public int[] randomOrdering(int length, int[] dest) => throw new NotImplementedException();
     }
