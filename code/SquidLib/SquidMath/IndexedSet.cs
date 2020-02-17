@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace SquidLib.SquidMath {
-    class IndexedSet<T> : ISet<T> {
+    public class IndexedSet<T> : ISet<T> {
         public HashSet<T> set;
         public List<T> items;
         public IndexedSet() {
@@ -15,12 +15,16 @@ namespace SquidLib.SquidMath {
             foreach(var t in collection)
                 Add(t);
         }
-        public IndexedSet(IEqualityComparer<T> comparer) : this() {
+        public IndexedSet(IEqualityComparer<T> comparer) {
             set = new HashSet<T>(comparer);
             items = new List<T>(16);
         }
+        public IndexedSet(IEnumerable<T> collection, IEqualityComparer<T> comparer) : this(comparer) {
+            foreach (var t in collection)
+                Add(t);
+        }
 
-        public int Count => set.Count;
+        public int Count => items.Count;
 
         public bool IsReadOnly => false;
 
@@ -60,6 +64,7 @@ namespace SquidLib.SquidMath {
 
         public void IntersectWith(IEnumerable<T> other) {
             set.IntersectWith(other);
+            items.RemoveAll(t => !set.Contains(t));
         }
 
         public bool IsProperSubsetOf(IEnumerable<T> other) {
@@ -88,9 +93,12 @@ namespace SquidLib.SquidMath {
 
         public void SymmetricExceptWith(IEnumerable<T> other) {
             set.SymmetricExceptWith(other);
+            items.RemoveAll(t => !set.Contains(t));
+            items.AddRange(other.Where(t => set.Contains(t)));
         }
 
         public void UnionWith(IEnumerable<T> other) {
+            items.AddRange(other.Where(t => !set.Contains(t)));
             set.UnionWith(other);
         }
 
