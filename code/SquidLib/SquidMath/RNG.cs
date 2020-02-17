@@ -470,9 +470,7 @@ namespace SquidLib.SquidMath {
             int size = elements.Length;
             T[] array = new T[size];
             elements.CopyTo(array, 0);
-            for (int i = size; i > 1; i--) {
-                swap(ref array[i - 1], ref array[nextSignedInt(i)]);
-            }
+            shuffleInPlace(array);
             return array;
         }
         public T[] shuffleInPlace<T>(T[] elements) {
@@ -507,10 +505,7 @@ namespace SquidLib.SquidMath {
             }
             return dest;
         }
-        public List<T> shuffle<T>(IEnumerable<T> elements) {
-            List<T> dest = new List<T>(elements);
-            return shuffleInPlace(dest);
-        }
+        public List<T> shuffle<T>(IEnumerable<T> elements) => shuffleInPlace(new List<T>(elements));
         public List<T> shuffle<T>(IEnumerable<T> elements, List<T> dest) {
             if (dest == null)
                 dest = new List<T>(elements);
@@ -524,11 +519,15 @@ namespace SquidLib.SquidMath {
                 swap(ref elements, i - 1, nextSignedInt(i));
             }
             return elements;
-
         }
-        public int[] randomOrdering(int length) {
-            return randomOrdering(length, new int[length]);
+        public List<T> reverseShuffleInPlace<T>(List<T> elements) {
+            int size = elements.Count;
+            for (int i = 2; i <= size; i++) {
+                swap(ref elements, i - 1, previousSignedInt(i));
+            }
+            return elements;
         }
+        public int[] randomOrdering(int length) => randomOrdering(length, new int[length]);
         public int[] randomOrdering(int length, int[] dest) {
             int n = Math.Min(length, dest.Length);
             for (int i = 0; i < n; i++) {
