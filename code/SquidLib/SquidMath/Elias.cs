@@ -24,9 +24,7 @@ namespace SquidLib.SquidMath {
         private int width, height;
         private double threshold = 0.0;
 
-        public Elias() {
-            path = new List<Coord>();
-        }
+        public Elias() => path = new List<Coord>();
 
         public double[][] lightMap(double startx, double starty, double endx, double endy) {
             line(startx, starty, endx, endy);
@@ -70,13 +68,9 @@ namespace SquidLib.SquidMath {
             return path;
         }
 
-        public List<Coord> line(Coord start, Coord end) {
-            return line(start.x, start.y, end.x, end.y);
-        }
+        public List<Coord> line(Coord start, Coord end) => line(start.x, start.y, end.x, end.y);
 
-        public List<Coord> line(Coord start, Coord end, double brightnessThreshold) {
-            return line(start.x, start.y, end.x, end.y, brightnessThreshold);
-        }
+        public List<Coord> line(Coord start, Coord end, double brightnessThreshold) => line(start.x, start.y, end.x, end.y, brightnessThreshold);
 
         public List<Coord> getLastPath() => path;
 
