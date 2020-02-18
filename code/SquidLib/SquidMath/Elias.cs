@@ -16,9 +16,6 @@ namespace SquidLib.SquidMath {
      * @author Eben Howard - http://squidpony.com - howard@squidpony.com
      */
     public class Elias {
-
-        private const long serialVersionUID = 5290834334572814012L;
-
         private List<Coord> path;
         private double[][] map;
         private int width, height;
@@ -26,8 +23,8 @@ namespace SquidLib.SquidMath {
 
         public Elias() => path = new List<Coord>();
 
-        public double[][] lightMap(double startx, double starty, double endx, double endy) {
-            line(startx, starty, endx, endy);
+        public double[][] LightMap(double startx, double starty, double endx, double endy) {
+            Line(startx, starty, endx, endy);
             return map;
         }
 
@@ -40,7 +37,7 @@ namespace SquidLib.SquidMath {
          * @param endy
          * @return
          */
-        public List<Coord> line(double startx, double starty, double endx, double endy) {
+        public List<Coord> Line(double startx, double starty, double endx, double endy) {
             path.Clear();
             width = (int)(Math.Max(startx, endx) + 1);
             height = (int)(Math.Max(starty, endy) + 1);
@@ -58,7 +55,7 @@ namespace SquidLib.SquidMath {
          * @param brightnessThreshold between 0.0 (default) and 1.0; only Points with higher brightness will be included
          * @return
          */
-        public List<Coord> line(double startx, double starty, double endx, double endy, double brightnessThreshold) {
+        public List<Coord> Line(double startx, double starty, double endx, double endy, double brightnessThreshold) {
             threshold = brightnessThreshold;
             path.Clear();
             width = (int)(Math.Max(startx, endx) + 1);
@@ -68,11 +65,11 @@ namespace SquidLib.SquidMath {
             return path;
         }
 
-        public List<Coord> line(Coord start, Coord end) => line(start.x, start.y, end.x, end.y);
+        public List<Coord> Line(Coord start, Coord end) => Line(start.x, start.y, end.x, end.y);
 
-        public List<Coord> line(Coord start, Coord end, double brightnessThreshold) => line(start.x, start.y, end.x, end.y, brightnessThreshold);
+        public List<Coord> Line(Coord start, Coord end, double brightnessThreshold) => Line(start.x, start.y, end.x, end.y, brightnessThreshold);
 
-        public List<Coord> getLastPath() => path;
+        public List<Coord> GetLastPath() => path;
 
         /**
          * Marks the location as having the visibility given.
@@ -84,7 +81,7 @@ namespace SquidLib.SquidMath {
         private void mark(double x, double y, double c) {
             //check bounds overflow from antialiasing
             if (x >= 0 && x < width && y >= 0 && y < height && c > threshold) {
-                path.Add(Coord.get((int)x, (int)y));
+                path.Add(Coord.Get((int)x, (int)y));
                 map[(int)x][(int)y] = c;
             }
         }

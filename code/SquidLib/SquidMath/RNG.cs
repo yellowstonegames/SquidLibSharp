@@ -18,6 +18,15 @@ namespace SquidLib.SquidMath {
         static private Random localRNG = new Random();
 
         private (ulong a, ulong b) state;
+
+        public string StateCode {
+            get => $"{state.a:X16}{state.b:X16}";
+            set {
+                state.a = ulong.Parse(value.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                state.b = ulong.Parse(value.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+            }
+        }
+
         /// <summary>
         /// Creates a new RNG using a static System.Random to generate two seed values.
         /// </summary>
@@ -43,44 +52,44 @@ namespace SquidLib.SquidMath {
         }
         public RNG(string seed) : this(randomize((ulong)seed.GetHashCode())) { } // WAS - CrossHash.hash64(seed);
 
-        public int next(int bits) {
+        public int NextBits(int bits) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (int)((z ^ z >> 26) >> 64 - bits);
         }
 
-        public ulong nextULong() {
+        public ulong NextULong() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return z ^ z >> 26;
         }
 
-        public long nextLong() {
+        public long NextLong() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (long)(z ^ z >> 26);
         }
 
         /**
-         * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
+         * Produces a copy of this RandomnessSource that, if next() and/or NextLong() are called on this object and the
          * copy, both will generate the same sequence of random numbers from the point copy() was called. This just need to
          * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
          *
          * @return a copy of this RandomnessSource
          */
-        public IRNG copy() => new RNG(state);
+        public IRNG Copy() => new RNG(state);
 
         /**
          * Can return any int, positive or negative, of any size permissible in a 32-bit signed integer.
          *
          * @return any int, all 32 bits are random
          */
-        public int nextInt() {
+        public int NextInt() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (int)(z ^ z >> 26);
         }
-        public uint nextUInt() {
+        public uint NextUInt() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (uint)(z ^ z >> 26);
@@ -93,12 +102,12 @@ namespace SquidLib.SquidMath {
          * @param bound the upper bound; should be positive
          * @return a random int between 0 (inclusive) and bound (exclusive)
          */
-        public int nextInt(int bound) {
+        public int NextInt(int bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
         }
-        public uint nextUInt(uint bound) {
+        public uint NextUInt(uint bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (uint)(bound * ((z ^ z >> 26) & 0xFFFFFFFFUL) >> 32);
@@ -113,13 +122,13 @@ namespace SquidLib.SquidMath {
          * @param bound the upper bound; should be positive
          * @return a random int between 0 (inclusive) and bound (exclusive)
          */
-        public int nextSignedInt(int bound) {
+        public int NextSignedInt(int bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (int)((bound * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
         }
         /// <summary>
-        /// Gets what the previous call to nextSignedInt(int) would have produced, given the same
+        /// Gets what the previous call to NextSignedInt(int) would have produced, given the same
         /// state, and rolls back the state further so the next call to this will go earlier.
         /// </summary>
         /// <param name="bound"></param>
@@ -139,11 +148,11 @@ namespace SquidLib.SquidMath {
          * @param outer the outer bound, exclusive, can be positive or negative, usually greater than inner
          * @return a random int between inner (inclusive) and outer (exclusive)
          */
-        public int nextInt(int inner, int outer) {
-            return inner + nextInt(outer - inner);
+        public int NextInt(int inner, int outer) {
+            return inner + NextInt(outer - inner);
         }
 
-        public ulong nextULong(ulong bound) {
+        public ulong NextULong(ulong bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return MathExtras.MultiplyHigh(z ^ z >> 26, bound);
@@ -155,13 +164,13 @@ namespace SquidLib.SquidMath {
          * Credit goes to https://gist.github.com/cocowalla/6070a53445e872f2bb24304712a3e1d2 ,
          * who ported this StackOverflow answer by catid https://stackoverflow.com/a/51587262 .
          * It also always gets exactly one random long, so by default it advances the state as much
-         * as {@link #nextLong()}.
+         * as {@link #NextLong()}.
          *
          * @param bound the outer exclusive bound; can be positive or negative
          * @return a random long between 0 (inclusive) and bound (exclusive)
          */
-        public long nextLong(long bound) {
-            return (long)nextULong((ulong)Math.Max(0L, bound));
+        public long NextLong(long bound) {
+            return (long)NextULong((ulong)Math.Max(0L, bound));
         }
         /**
          * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
@@ -171,14 +180,14 @@ namespace SquidLib.SquidMath {
          * Credit goes to https://gist.github.com/cocowalla/6070a53445e872f2bb24304712a3e1d2 ,
          * who ported this StackOverflow answer by catid https://stackoverflow.com/a/51587262 .
          * It also always gets exactly one random long, so by default it advances the state as much
-         * as {@link #nextLong()}.
+         * as {@link #NextLong()}.
          *
          * @param bound the outer exclusive bound; can be positive or negative
          * @return a random long between 0 (inclusive) and bound (exclusive)
          */
-        public long nextSignedLong(long bound) {
+        public long NextSignedLong(long bound) {
             long sign = bound >> 63;
-            return (long)(nextULong((ulong)(sign == -1L ? -bound : bound)))
+            return (long)(NextULong((ulong)(sign == -1L ? -bound : bound)))
                 + sign ^ sign; // cheaper "times the sign" when you already have the sign.
         }
         /**
@@ -189,8 +198,8 @@ namespace SquidLib.SquidMath {
          * @param upper the upper bound, exclusive, can be positive or negative
          * @return a random long that may be equal to lower and will otherwise be between lower and upper
          */
-        public long nextLong(long lower, long upper) {
-            return lower + nextLong(upper - lower);
+        public long NextLong(long lower, long upper) {
+            return lower + NextLong(upper - lower);
         }
 
         /**
@@ -198,7 +207,7 @@ namespace SquidLib.SquidMath {
          *
          * @return a random double at least equal to 0.0 and less than 1.0
          */
-        public double nextDouble() {
+        public double NextDouble() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * DOUBLE_DIVISOR;
@@ -212,7 +221,7 @@ namespace SquidLib.SquidMath {
          * @param outer the exclusive outer bound, can be negative
          * @return a random double between 0.0 (inclusive) and outer (exclusive)
          */
-        public double nextDouble(double outer) {
+        public double NextDouble(double outer) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * DOUBLE_DIVISOR * outer;
@@ -223,30 +232,30 @@ namespace SquidLib.SquidMath {
          *
          * @return a random float at least equal to 0.0 and less than 1.0
          */
-        public float nextFloat() {
+        public float NextFloat() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * FLOAT_DIVISOR;
         }
 
-        public float nextFloat(float outer) {
+        public float NextFloat(float outer) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * FLOAT_DIVISOR * outer;
         }
 
         /**
          * Gets a random value, true or false.
-         * Calls nextLong() once.
+         * Calls NextLong() once.
          *
          * @return a random true or false value.
          */
-        public bool nextBoolean() {
+        public bool NextBoolean() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             return (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) < 0x8000000000000000UL;
         }
 
         /**
          * Given a byte array as a parameter, this will fill the array with random bytes (modifying it
-         * in-place). Calls nextLong() {@code Math.ceil(bytes.length / 8.0)} times.
+         * in-place). Calls NextLong() {@code Math.ceil(bytes.length / 8.0)} times.
          *
          * @param bytes a byte array that will have its contents overwritten with random bytes.
          */
@@ -254,7 +263,7 @@ namespace SquidLib.SquidMath {
             int i = bytes.Length, n;
             while (i != 0) {
                 n = Math.Min(i, 8);
-                for (ulong bits = nextULong(); n-- != 0; bits >>= 8) bytes[--i] = (byte)bits;
+                for (ulong bits = NextULong(); n-- != 0; bits >>= 8) bytes[--i] = (byte)bits;
             }
         }
 
@@ -493,15 +502,15 @@ namespace SquidLib.SquidMath {
            (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * DOUBLE_DIVISOR;
 
 
-        public int between(int min, int max) => min + nextSignedInt(max - min);
-        public long between(long min, long max) => min + nextSignedLong(max - min);
-        public double between(double min, double max) => min + nextDouble(max - min);
-        public T getRandomElement<T>(T[] array) => array[nextSignedInt(array.Length)];
-        public T getRandomElement<T>(List<T> list) => list[nextSignedInt(list.Count)];
+        public int nextInt(int min, int max) => min + NextSignedInt(max - min);
+        public long nextLong(long min, long max) => min + NextSignedLong(max - min);
+        public double NextDouble(double min, double max) => min + NextDouble(max - min);
+        public T RandomElement<T>(T[] array) => array[NextSignedInt(array.Length)];
+        public T RandomElement<T>(List<T> list) => list[NextSignedInt(list.Count)];
         
-        public T getRandomElement<T>(ICollection<T> coll) {
+        public T RandomElement<T>(ICollection<T> coll) {
             var e = coll.GetEnumerator();
-            for (int target = nextSignedInt(coll.Count); target > 0; target--) {
+            for (int target = NextSignedInt(coll.Count); target > 0; target--) {
                 e.MoveNext();
             }
             return e.Current;        
@@ -519,17 +528,17 @@ namespace SquidLib.SquidMath {
             list[b] = temp;
         }
 
-        public T[] shuffle<T>(T[] elements) {
+        public T[] Shuffle<T>(T[] elements) {
             int size = elements.Length;
             T[] array = new T[size];
             elements.CopyTo(array, 0);
-            shuffleInPlace(array);
+            ShuffleInPlace(array);
             return array;
         }
-        public T[] shuffleInPlace<T>(T[] elements) {
+        public T[] ShuffleInPlace<T>(T[] elements) {
             int size = elements.Length;
             for (int i = size; i > 1; i--) {
-                swap(ref elements[i - 1], ref elements[nextSignedInt(i)]);
+                swap(ref elements[i - 1], ref elements[NextSignedInt(i)]);
             }
             return elements;
         }
@@ -540,17 +549,17 @@ namespace SquidLib.SquidMath {
             }
             return elements;
         }
-        public T[] shuffle<T>(T[] elements, T[] dest) {
+        public T[] Shuffle<T>(T[] elements, T[] dest) {
             int size = elements.Length, target = dest.Length;
-            if (size != target) return randomPortion(elements, dest);
+            if (size != target) return RandomPortion(elements, dest);
             elements.CopyTo(dest, 0);
-            shuffleInPlace(dest);
+            ShuffleInPlace(dest);
             return dest;
         }
-        public T[] randomPortion<T>(T[] elements, T[] dest) {
+        public T[] RandomPortion<T>(T[] elements, T[] dest) {
             int size = elements.Length, target = dest.Length, runs = (target + size - 1) / size;
             for(int i = 0; i < runs; i++) {
-                shuffleInPlace(elements);
+                ShuffleInPlace(elements);
                 Array.Copy(elements, 0, dest, i * size, Math.Min(size, target - i * size));
             }
             for (int i = 0; i < runs; i++) {
@@ -558,18 +567,18 @@ namespace SquidLib.SquidMath {
             }
             return dest;
         }
-        public List<T> shuffle<T>(IEnumerable<T> elements) => shuffleInPlace(new List<T>(elements));
-        public List<T> shuffle<T>(IEnumerable<T> elements, List<T> dest) {
+        public List<T> Shuffle<T>(IEnumerable<T> elements) => ShuffleInPlace(new List<T>(elements));
+        public List<T> Shuffle<T>(IEnumerable<T> elements, List<T> dest) {
             if (dest == null)
                 dest = new List<T>(elements);
             else
                 dest.AddRange(elements);
-            return shuffleInPlace(dest);
+            return ShuffleInPlace(dest);
         }
-        public List<T> shuffleInPlace<T>(List<T> elements) {
+        public List<T> ShuffleInPlace<T>(List<T> elements) {
             int size = elements.Count;
             for (int i = size; i > 1; i--) {
-                swap(ref elements, i - 1, nextSignedInt(i));
+                swap(ref elements, i - 1, NextSignedInt(i));
             }
             return elements;
         }
@@ -580,14 +589,14 @@ namespace SquidLib.SquidMath {
             }
             return elements;
         }
-        public int[] randomOrdering(int length) => randomOrdering(length, new int[length]);
-        public int[] randomOrdering(int length, int[] dest) {
+        public int[] RandomOrdering(int length) => RandomOrdering(length, new int[length]);
+        public int[] RandomOrdering(int length, int[] dest) {
             int n = Math.Min(length, dest.Length);
             for (int i = 0; i < n; i++) {
                 dest[i] = i;
             }
             for (int i = n - 1; i > 0; i--) {
-                int r = nextSignedInt(i + 1),
+                int r = NextSignedInt(i + 1),
                         t = dest[r];
                 dest[r] = dest[i];
                 dest[i] = t;

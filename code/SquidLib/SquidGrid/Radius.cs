@@ -142,13 +142,13 @@ namespace SquidLib.SquidGrid {
             switch (r) {
                 case Radius.SQUARE:
                 case Radius.CUBE:
-                    x = rng.between((int)-distance, (int)distance + 1);
-                    y = rng.between((int)-distance, (int)distance + 1);
+                    x = rng.NextInt((int)-distance, (int)distance + 1);
+                    y = rng.NextInt((int)-distance, (int)distance + 1);
                     break;
                 case Radius.DIAMOND:
                 case Radius.OCTAHEDRON:
-                    x = rng.between((int)-distance, (int)distance + 1);
-                    y = rng.between((int)-distance, (int)distance + 1);
+                    x = rng.NextInt((int)-distance, (int)distance + 1);
+                    y = rng.NextInt((int)-distance, (int)distance + 1);
                     if (radius(r, x, y) > distance) {
                         if (x > 0) {
                             if (y > 0) {
@@ -170,14 +170,14 @@ namespace SquidLib.SquidGrid {
                     }
                     break;
                 default: // includes CIRCLE, SPHERE, and ROUGH_CIRCLE
-                    double result = distance * Math.Sqrt(rng.nextDouble());
-                    double theta = rng.between(0, PI2);
+                    double result = distance * Math.Sqrt(rng.NextDouble());
+                    double theta = rng.NextDouble(0, PI2);
                     x = Convert.ToInt32(Math.Cos(theta) * result);
                     y = Convert.ToInt32(Math.Sin(theta) * result);
                     break;
             }
 
-            return Coord.get(x, y);
+            return Coord.Get(x, y);
         }
 
         public static Coord3D onUnitShape3D(this Radius r, double distance, IRNG rng) {
@@ -190,16 +190,16 @@ namespace SquidLib.SquidGrid {
                     Coord p = onUnitShape(r, distance, rng);
                     return new Coord3D(p.x, p.y, 0);//2D strategies
                 case Radius.CUBE:
-                    x = rng.between((int)-distance, (int)distance + 1);
-                    y = rng.between((int)-distance, (int)distance + 1);
-                    z = rng.between((int)-distance, (int)distance + 1);
+                    x = rng.NextInt((int)-distance, (int)distance + 1);
+                    y = rng.NextInt((int)-distance, (int)distance + 1);
+                    z = rng.NextInt((int)-distance, (int)distance + 1);
                     break;
                 case Radius.OCTAHEDRON:
                 case Radius.SPHERE:
                     do {
-                        x = rng.between((int)-distance, (int)distance + 1);
-                        y = rng.between((int)-distance, (int)distance + 1);
-                        z = rng.between((int)-distance, (int)distance + 1);
+                        x = rng.NextInt((int)-distance, (int)distance + 1);
+                        y = rng.NextInt((int)-distance, (int)distance + 1);
+                        z = rng.NextInt((int)-distance, (int)distance + 1);
                     } while (radius(r, x, y, z) > distance);
                     break;
             }
@@ -256,14 +256,14 @@ namespace SquidLib.SquidGrid {
                     for (int i = center.x - radiusLength; i <= center.x + radiusLength; i++) {
                         int x = i;
                         if (!surpassEdges) x = clamp(i, 0, width);
-                        rim.Add(Coord.get(x, clamp(center.y - radiusLength, 0, height)));
-                        rim.Add(Coord.get(x, clamp(center.y + radiusLength, 0, height)));
+                        rim.Add(Coord.Get(x, clamp(center.y - radiusLength, 0, height)));
+                        rim.Add(Coord.Get(x, clamp(center.y + radiusLength, 0, height)));
                     }
                     for (int j = center.y - radiusLength; j <= center.y + radiusLength; j++) {
                         int y = j;
                         if (!surpassEdges) y = clamp(j, 0, height);
-                        rim.Add(Coord.get(clamp(center.x - radiusLength, 0, height), y));
-                        rim.Add(Coord.get(clamp(center.x + radiusLength, 0, height), y));
+                        rim.Add(Coord.Get(clamp(center.x - radiusLength, 0, height), y));
+                        rim.Add(Coord.Get(clamp(center.x + radiusLength, 0, height), y));
                     }
                 }
                 break;
@@ -278,22 +278,22 @@ namespace SquidLib.SquidGrid {
                         yUp = clamp(yUp, 0, height);
                     }
 
-                    rim.Add(Coord.get(xDown, center.y));
-                    rim.Add(Coord.get(xUp, center.y));
-                    rim.Add(Coord.get(center.x, yDown));
-                    rim.Add(Coord.get(center.x, yUp));
+                    rim.Add(Coord.Get(xDown, center.y));
+                    rim.Add(Coord.Get(xUp, center.y));
+                    rim.Add(Coord.Get(center.x, yDown));
+                    rim.Add(Coord.Get(center.x, yUp));
 
                     for (int i = xDown + 1, c = 1; i < center.x; i++, c++) {
                         int x = i;
                         if (!surpassEdges) x = clamp(i, 0, width);
-                        rim.Add(Coord.get(x, clamp(center.y - c, 0, height)));
-                        rim.Add(Coord.get(x, clamp(center.y + c, 0, height)));
+                        rim.Add(Coord.Get(x, clamp(center.y - c, 0, height)));
+                        rim.Add(Coord.Get(x, clamp(center.y + c, 0, height)));
                     }
                     for (int i = center.x + 1, c = 1; i < center.x + radiusLength; i++, c++) {
                         int x = i;
                         if (!surpassEdges) x = clamp(i, 0, width);
-                        rim.Add(Coord.get(x, clamp(center.y + radiusLength - c, 0, height)));
-                        rim.Add(Coord.get(x, clamp(center.y - radiusLength + c, 0, height)));
+                        rim.Add(Coord.Get(x, clamp(center.y + radiusLength - c, 0, height)));
+                        rim.Add(Coord.Get(x, clamp(center.y - radiusLength + c, 0, height)));
                     }
                 }
                 break;
@@ -312,7 +312,7 @@ namespace SquidLib.SquidGrid {
                                 x = clamp(x, 0, width);
                                 y = clamp(y, 0, height);
                             }
-                            Coord p = Coord.get(x, y);
+                            Coord p = Coord.Get(x, y);
                             bool test = !rim.Contains(p);
 
                             rim.Add(p);
@@ -331,14 +331,14 @@ namespace SquidLib.SquidGrid {
         public static Coord extend(this Radius r, Coord center, Coord middle, int radiusLength, bool surpassEdges, int width, int height) {
             if (!surpassEdges && (center.x < 0 || center.x >= width || center.y < 0 || center.y > height ||
                     middle.x < 0 || middle.x >= width || middle.y < 0 || middle.y > height))
-                return Coord.get(0, 0);
+                return Coord.Get(0, 0);
             if (radiusLength < 1) {
                 return center;
             }
             double theta = Math.Atan2(middle.y - center.y, middle.x - center.x),
                     cosTheta = Math.Cos(theta), sinTheta = Math.Sin(theta);
 
-            Coord end = Coord.get(middle.x, middle.y);
+            Coord end = Coord.Get(middle.x, middle.y);
             switch (r) {
                 case Radius.SQUARE:
                 case Radius.CUBE:
@@ -348,13 +348,13 @@ namespace SquidLib.SquidGrid {
                     if (surpassEdges) {
                         while (radius(r, center.x, center.y, end.x, end.y) < radiusLength) {
                             rad2++;
-                            end = Coord.get(Convert.ToInt32(cosTheta * rad2) + center.x
+                            end = Coord.Get(Convert.ToInt32(cosTheta * rad2) + center.x
                                     , Convert.ToInt32(sinTheta * rad2) + center.y);
                         }
                     } else {
                         while (radius(r, center.x, center.y, end.x, end.y) < radiusLength) {
                             rad2++;
-                            end = Coord.get(clamp(Convert.ToInt32(cosTheta * rad2) + center.x, 0, width)
+                            end = Coord.Get(clamp(Convert.ToInt32(cosTheta * rad2) + center.x, 0, width)
                                           , clamp(Convert.ToInt32(sinTheta * rad2) + center.y, 0, height));
                             if (end.x == 0 || end.x == width - 1 || end.y == 0 || end.y == height - 1)
                                 return end;
@@ -364,7 +364,7 @@ namespace SquidLib.SquidGrid {
                     return end;
                 }
                 default: {
-                    end = Coord.get(clamp(Convert.ToInt32(cosTheta * radiusLength) + center.x, 0, width)
+                    end = Coord.Get(clamp(Convert.ToInt32(cosTheta * radiusLength) + center.x, 0, width)
                             , clamp(Convert.ToInt32(sinTheta * radiusLength) + center.y, 0, height));
                     if (!surpassEdges) {
                         long edgeLength = 0;
@@ -373,24 +373,24 @@ namespace SquidLib.SquidGrid {
                             // wow, we lucked out here. the only situation where cos(angle) is 0 is if the angle aims
                             // straight up or down, and then x cannot be < 0 or >= width.
                             edgeLength = Convert.ToInt32((0 - center.x) / cosTheta);
-                            end = end.setY(clamp(Convert.ToInt32(sinTheta * edgeLength) + center.y, 0, height));
+                            end = end.ChangeY(clamp(Convert.ToInt32(sinTheta * edgeLength) + center.y, 0, height));
                         } else if (end.x >= width) {
                             // wow, we lucked out here. the only situation where cos(angle) is 0 is if the angle aims
                             // straight up or down, and then x cannot be < 0 or >= width.
                             edgeLength = Convert.ToInt32((width - 1 - center.x) / cosTheta);
-                            end = end.setY(clamp(Convert.ToInt32(sinTheta * edgeLength) + center.y, 0, height));
+                            end = end.ChangeY(clamp(Convert.ToInt32(sinTheta * edgeLength) + center.y, 0, height));
                         }
 
                         if (end.y < 0) {
                             // wow, we lucked out here. the only situation where sin(angle) is 0 is if the angle aims
                             // straight left or right, and then y cannot be < 0 or >= height.
                             edgeLength = Convert.ToInt32((0 - center.y) / sinTheta);
-                            end = end.setX(clamp(Convert.ToInt32(cosTheta * edgeLength) + center.x, 0, width));
+                            end = end.ChangeX(clamp(Convert.ToInt32(cosTheta * edgeLength) + center.x, 0, width));
                         } else if (end.y >= height) {
                             // wow, we lucked out here. the only situation where sin(angle) is 0 is if the angle aims
                             // straight left or right, and then y cannot be < 0 or >= height.
                             edgeLength = Convert.ToInt32((height - 1 - center.y) / sinTheta);
-                            end = end.setX(clamp(Convert.ToInt32(cosTheta * edgeLength) + center.x, 0, width));
+                            end = end.ChangeX(clamp(Convert.ToInt32(cosTheta * edgeLength) + center.x, 0, width));
                         }
                     }
                     return end;
@@ -453,7 +453,7 @@ namespace SquidLib.SquidGrid {
             if (!surpassEdges && (centerX < 0 || centerX >= width || centerY < 0 || centerY >= height))
                 return contents;
             if (radiusLength < 1) {
-                contents.Add(Coord.get(centerX, centerY));
+                contents.Add(Coord.Get(centerX, centerY));
                 return contents;
             }
             switch (r) {
@@ -463,7 +463,7 @@ namespace SquidLib.SquidGrid {
                         for (int j = centerY - radiusLength; j <= centerY + radiusLength; j++) {
                             if (!surpassEdges && (i < 0 || j < 0 || i >= width || j >= height))
                                 continue;
-                            contents.Add(Coord.get(i, j));
+                            contents.Add(Coord.Get(i, j));
                         }
                     }
                 }
@@ -475,7 +475,7 @@ namespace SquidLib.SquidGrid {
                             if ((Math.Abs(centerX - i) + Math.Abs(centerY - j) > radiusLength) ||
                                     (!surpassEdges && (i < 0 || j < 0 || i >= width || j >= height)))
                                 continue;
-                            contents.Add(Coord.get(i, j));
+                            contents.Add(Coord.Get(i, j));
                         }
                     }
                 }
@@ -489,15 +489,15 @@ namespace SquidLib.SquidGrid {
                         high = (float)Math.Sqrt(radiusLength * radiusLength - changedX * changedX);
                         if (surpassEdges || !(centerX + rndX < 0 ||
                                 centerX + rndX >= width))
-                            contents.Add(Coord.get(centerX + rndX, centerY));
+                            contents.Add(Coord.Get(centerX + rndX, centerY));
                         for (float dy = high; dy >= 0.75f; --dy) {
                             rndY = Convert.ToInt32(dy - 0.25f);
                             if (surpassEdges || !(centerX + rndX < 0 || centerY + rndY < 0 ||
                                     centerX + rndX >= width || centerY + rndY >= height))
-                                contents.Add(Coord.get(centerX + rndX, centerY + rndY));
+                                contents.Add(Coord.Get(centerX + rndX, centerY + rndY));
                             if (surpassEdges || !(centerX + rndX < 0 || centerY - rndY < 0 ||
                                     centerX + rndX >= width || centerY - rndY >= height))
-                                contents.Add(Coord.get(centerX + rndX, centerY - rndY));
+                                contents.Add(Coord.Get(centerX + rndX, centerY - rndY));
                         }
                     }
                 }
@@ -628,7 +628,7 @@ namespace SquidLib.SquidGrid {
          * @return a Set of Coord that covers a wider area than what points covers; each Coord will be unique (it's a Set)
          */
         public static IndexedSet<Coord> expand(this Radius r, int distance, int width, int height, IEnumerable<Coord> points) {
-            List<Coord> around = pointsInside(r, Coord.get(distance, distance), distance, false, width, height);
+            List<Coord> around = pointsInside(r, Coord.Get(distance, distance), distance, false, width, height);
             IndexedSet<Coord> expanded = new IndexedSet<Coord>();
             int tx, ty;
             foreach (Coord pt in points) {
@@ -636,7 +636,7 @@ namespace SquidLib.SquidGrid {
                     tx = pt.x + ar.x - distance;
                     ty = pt.y + ar.y - distance;
                     if (tx >= 0 && tx < width && ty >= 0 && ty < height)
-                        expanded.Add(Coord.get(tx, ty));
+                        expanded.Add(Coord.Get(tx, ty));
                 }
             }
             return expanded;

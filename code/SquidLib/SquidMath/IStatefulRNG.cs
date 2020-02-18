@@ -10,13 +10,6 @@
          * an IStatefulRNG implementation with the same class can load the state back with setState().
          * @return the current internal state of this object.
          */
-        string getState();
-
-        /**
-         * Set the current internal state of this StatefulRandomness with a long.
-         *
-         * @param state a 64-bit long. You should avoid passing 0, even though some implementations can handle that.
-         */
-        void setState(string state);
+        string StateCode { get; set; }
     }
 }

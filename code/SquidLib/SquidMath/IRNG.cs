@@ -12,7 +12,7 @@ namespace SquidLib.SquidMath {
          * @param bits an int between 1 and 32, both inclusive
          * @return a random number that fits in the specified number of bits
          */
-        int next(int bits);
+        int NextBits(int bits);
 
         /**
          *
@@ -22,25 +22,25 @@ namespace SquidLib.SquidMath {
          * Get a random long between Long.MIN_VALUE and Long.MAX_VALUE (both inclusive).
          * @return a random long between Long.MIN_VALUE and Long.MAX_VALUE (both inclusive)
          */
-        long nextLong();
-        ulong nextULong();
+        long NextLong();
+        ulong NextULong();
 
         /**
-         * Produces a copy of this RandomnessSource that, if next() and/or nextLong() are called on this object and the
+         * Produces a copy of this RandomnessSource that, if next() and/or NextLong() are called on this object and the
          * copy, both will generate the same sequence of random numbers from the point copy() was called. This just needs to
          * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
          * @return a copy of this RandomnessSource
          */
-        IRNG copy();
+        IRNG Copy();
 
         /**
          * Get a random integer between Integer.MIN_VALUE to Integer.MAX_VALUE (both inclusive).
          *
          * @return a 32-bit random int.
          */
-        int nextInt();
+        int NextInt();
 
-        uint nextUInt();
+        uint NextUInt();
 
         /**
          * Returns a random non-negative integer below the given bound, or 0 if the bound is 0 or
@@ -49,8 +49,8 @@ namespace SquidLib.SquidMath {
          * @param bound the upper bound (exclusive)
          * @return the found number
          */
-        int nextInt(int bound);
-        uint nextUInt(uint bound);
+        int NextInt(int bound);
+        uint NextUInt(uint bound);
 
         /**
          * Returns a random long below the given bound, or 0 if the bound is 0 or
@@ -59,15 +59,15 @@ namespace SquidLib.SquidMath {
          * @param bound the upper bound (exclusive)
          * @return the found number
          */
-        long nextLong(long bound);
+        long NextLong(long bound);
 
-        ulong nextULong(ulong bound);
+        ulong NextULong(ulong bound);
 
         /**
          * Get a random bit of state, interpreted as true or false with approximately equal likelihood.
          * @return a random boolean.
          */
-        bool nextBoolean();
+        bool NextBoolean();
 
         /**
          * Gets a random double between 0.0 inclusive and 1.0 exclusive.
@@ -75,7 +75,7 @@ namespace SquidLib.SquidMath {
          *
          * @return a double between 0.0 (inclusive) and 0.9999999999999999 (inclusive)
          */
-        double nextDouble();
+        double NextDouble();
         /**
          * This returns a random double between 0.0 (inclusive) and outer (exclusive). The value for outer can be positive
          * or negative. Because of how math on doubles works, there are at most 2 to the 53 values this can return for any
@@ -84,7 +84,7 @@ namespace SquidLib.SquidMath {
          * @param outer the outer exclusive bound as a double; can be negative or positive
          * @return a double between 0.0 (inclusive) and outer (exclusive)
          */
-        double nextDouble(double outer);
+        double NextDouble(double outer);
 
         /**
          * Gets a random float between 0.0f inclusive and 1.0f exclusive.
@@ -92,7 +92,7 @@ namespace SquidLib.SquidMath {
          *
          * @return a float between 0f (inclusive) and 0.99999994f (inclusive)
          */
-        float nextFloat();
+        float NextFloat();
         /**
          * This returns a random float between 0.0f (inclusive) and outer (exclusive). The value for outer can be positive
          * or negative. Because of how math on floats works, there are at most 2 to the 24 values this can return for any
@@ -101,7 +101,7 @@ namespace SquidLib.SquidMath {
          * @param outer the outer exclusive bound as a float; can be negative or positive
          * @return a float between 0f (inclusive) and outer (exclusive)
          */
-        float nextFloat(float outer);
+        float NextFloat(float outer);
         /**
          * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
          * If bound is negative this returns a negative long; if bound is positive this returns a positive long. The bound
@@ -109,12 +109,12 @@ namespace SquidLib.SquidMath {
          * large ranges, but the amount of bias is incredibly small (expected to be under 1/1000 if enough random ranged
          * numbers are requested, which is about the same as an unbiased method that was also considered). It may have
          * noticeable bias if the generator's period is exhausted by only calls to this method. Unlike all unbiased methods,
-         * this advances the state by an equivalent to exactly one call to {@link #nextLong()}, where rejection sampling
+         * this advances the state by an equivalent to exactly one call to {@link #NextLong()}, where rejection sampling
          * would sometimes advance by one call, but other times by arbitrarily many more.
          * @param bound the outer exclusive bound; can be positive or negative
          * @return a random long between 0 (inclusive) and bound (exclusive)
          */
-        long nextSignedLong(long bound);
+        long NextSignedLong(long bound);
 
         /**
          * Returns a random non-negative integer between 0 (inclusive) and the given bound (exclusive),
@@ -125,7 +125,7 @@ namespace SquidLib.SquidMath {
          * @param bound the outer bound (exclusive), can be negative or positive
          * @return the found number
          */
-        int nextSignedInt(int bound);
+        int NextSignedInt(int bound);
         /**
          * Returns a value between min (inclusive) and max (exclusive) as ints.
          * <br>
@@ -141,7 +141,7 @@ namespace SquidLib.SquidMath {
          *            the maximum bound on the return value (exclusive)
          * @return the found value
          */
-        int between(int min, int max);
+        int NextInt(int min, int max);
 
         /**
          * Returns a value between min (inclusive) and max (exclusive) as longs.
@@ -158,7 +158,7 @@ namespace SquidLib.SquidMath {
          *            the maximum bound on the return value (exclusive)
          * @return the found value
          */
-        long between(long min, long max);
+        long NextLong(long min, long max);
 
         /**
          * Returns a value from a uniform distribution from min (inclusive) to max
@@ -168,7 +168,7 @@ namespace SquidLib.SquidMath {
          * @param max the maximum bound on the return value (exclusive)
          * @return the found value
          */
-        double between(double min, double max);
+        double NextDouble(double min, double max);
 
         /**
          * Returns a random element from the provided array and maintains object
@@ -178,7 +178,7 @@ namespace SquidLib.SquidMath {
          * @param array the array to get an element from
          * @return the randomly selected element
          */
-        T getRandomElement<T>(T[] array);
+        T RandomElement<T>(T[] array);
         /**
          * Returns a random element from the provided list. If the list is empty
          * then null is returned.
@@ -187,27 +187,24 @@ namespace SquidLib.SquidMath {
          * @param list the list to get an element from
          * @return the randomly selected element
          */
-        T getRandomElement<T>(List<T> list);
+        T RandomElement<T>(List<T> list);
 
         /**
          * Returns a random element from the provided ICollection, which should have predictable iteration order if you want
          * predictable behavior for identical RNG seeds, though it will get a random element just fine for any Collection
-         * (just not predictably in all cases). If you give this a Set, it should be a LinkedHashSet or some form of sorted
-         * Set like TreeSet if you want predictable results. Any List or Queue should be fine. Map does not implement
-         * Collection, thank you very much Java library designers, so you can't actually pass a Map to this, though you can
-         * pass the keys or values. If coll is empty, returns null.
+         * (just not predictably in all cases). If coll is empty, returns null.
          * <br>
          * Requires iterating through a random amount of coll's elements, so performance depends on the size of coll but is
          * likely to be decent, as long as iteration isn't unusually slow. This replaces {@code getRandomElement(Queue)},
          * since Queue implements Collection and the older Queue-using implementation was probably less efficient.
          * <br>
-         * You should generally prefer {@link #getRandomElement(List)} whenever possible, or in some cases you can use
+         * You should generally prefer {@link #RandomElement(List)} whenever possible, or in some cases you can use
          * methods that get a random value on the Collection (or Map, in the case of OrderedMap) itself.
          * @param <T>  the type of the returned object
          * @param coll the Collection to get an element from; remember, Map does not implement Collection
          * @return the randomly selected element
          */
-        T getRandomElement<T>(ICollection<T> coll);
+        T RandomElement<T>(ICollection<T> coll);
         /**
          * Shuffle an array using the Fisher-Yates algorithm and returns a shuffled copy, freshly-allocated, without
          * modifying elements.
@@ -218,7 +215,7 @@ namespace SquidLib.SquidMath {
          * @param <T>      can be any non-primitive type.
          * @return a shuffled copy of elements
          */
-        T[] shuffle<T>(T[] elements);
+        T[] Shuffle<T>(T[] elements);
         /**
          * Shuffles an array in-place using the Fisher-Yates algorithm.
          * If you don't want the array modified, use {@link #shuffle(Object[], Object[])}.
@@ -229,7 +226,7 @@ namespace SquidLib.SquidMath {
          * @param <T>      can be any non-primitive type.
          * @return elements after shuffling it in-place
          */
-        T[] shuffleInPlace<T>(T[] elements);
+        T[] ShuffleInPlace<T>(T[] elements);
         /**
          * Shuffle an array using the Fisher-Yates algorithm. DO NOT give the same array for both elements and
          * dest, since the prior contents of dest are rearranged before elements is used, and if they refer to the same
@@ -245,7 +242,7 @@ namespace SquidLib.SquidMath {
          *                 randomPortion method of this class to fill the smaller dest. MUST NOT be the same array as elements!
          * @return {@code dest} after modifications
          */
-        T[] shuffle<T>(T[] elements, T[] dest);
+        T[] Shuffle<T>(T[] elements, T[] dest);
         /**
          * Shuffles a {@link Collection} of T using the Fisher-Yates algorithm and returns an ArrayList of T.
          * <br>
@@ -254,7 +251,7 @@ namespace SquidLib.SquidMath {
          * @param <T>      can be any non-primitive type.
          * @return a shuffled ArrayList containing the whole of elements in pseudo-random order.
          */
-        List<T> shuffle<T>(IEnumerable<T> elements);
+        List<T> Shuffle<T>(IEnumerable<T> elements);
 
         /**
          * Shuffles a {@link Collection} of T using the Fisher-Yates algorithm and puts it in a buffer.
@@ -268,7 +265,7 @@ namespace SquidLib.SquidMath {
          * @param <T>      can be any non-primitive type.
          * @return a shuffled ArrayList containing the whole of elements in pseudo-random order, which may be {@code buf}
          */
-        List<T> shuffle<T>(IEnumerable<T> elements, List<T> buf);
+        List<T> Shuffle<T>(IEnumerable<T> elements, List<T> buf);
         /**
          * Shuffles a Collection of T items in-place using the Fisher-Yates algorithm.
          * This only shuffles List data structures.
@@ -280,7 +277,7 @@ namespace SquidLib.SquidMath {
          * @param <T>      can be any non-primitive type.
          * @return elements after shuffling it in-place
          */
-        List<T> shuffleInPlace<T>(List<T> elements);
+        List<T> ShuffleInPlace<T>(List<T> elements);
         /**
          * Generates a random permutation of the range from 0 (inclusive) to length (exclusive).
          * Useful for passing to OrderedMap or OrderedSet's reorder() methods.
@@ -288,7 +285,7 @@ namespace SquidLib.SquidMath {
          * @param length the size of the ordering to produce
          * @return a random ordering containing all ints from 0 to length (exclusive)
          */
-        int[] randomOrdering(int length);
+        int[] RandomOrdering(int length);
 
         /**
          * Generates a random permutation of the range from 0 (inclusive) to length (exclusive) and stores it in
@@ -299,7 +296,7 @@ namespace SquidLib.SquidMath {
          * @param dest   the destination array; will be modified
          * @return dest, filled with a random ordering containing all ints from 0 to length (exclusive)
          */
-        int[] randomOrdering(int length, int[] dest);
+        int[] RandomOrdering(int length, int[] dest);
         /**
          * Gets a random portion of data (an array), assigns that portion to output (an array) so that it fills as much as
          * it can, and then returns output. Will only use a given position in the given data at most once.
@@ -309,7 +306,7 @@ namespace SquidLib.SquidMath {
          * @param <T>    can be any non-primitive type.
          * @return output, after {@code Math.min(output.length, data.length)} unique items have been put into it from data
          */
-        T[] randomPortion<T>(T[] data, T[] output);
+        T[] RandomPortion<T>(T[] data, T[] output);
     }
 
 }

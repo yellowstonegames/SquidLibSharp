@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace SquidLib.SquidMath {
-    // TODO - make this not a stub class
+    //TODO: more methods
     public struct Coord : IEquatable<Coord> {
         public readonly int x, y;
 
@@ -10,11 +10,11 @@ namespace SquidLib.SquidMath {
             this.y = y;
         }
 
-        public Coord setX(int x) => get(x, y);
+        public Coord ChangeX(int x) => Get(x, y);
 
-        public Coord setY(int y) => get(x, y);
+        public Coord ChangeY(int y) => Get(x, y);
 
-        public static Coord get(int x, int y) => new Coord(x, y);
+        public static Coord Get(int x, int y) => new Coord(x, y);
 
         public override bool Equals(object obj) {
             return obj is Coord coord && Equals(coord);
@@ -57,13 +57,13 @@ namespace SquidLib.SquidMath {
         }
 
 
-        public Coord3D setX(int x) => get(x, y, z);
+        public Coord3D ChangeX(int x) => Get(x, y, z);
 
-        public Coord3D setY(int y) => get(x, y, z);
+        public Coord3D ChangeY(int y) => Get(x, y, z);
 
-        public Coord3D setZ(int z) => get(x, y, z);
+        public Coord3D ChangeZ(int z) => Get(x, y, z);
 
-        public static Coord3D get(int x, int y, int z) => new Coord3D(x, y, z);
+        public static Coord3D Get(int x, int y, int z) => new Coord3D(x, y, z);
 
         override
         public String ToString() => $"[{x},{y},{z}]";

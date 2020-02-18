@@ -228,7 +228,7 @@ namespace SquidLib.SquidMath {
             if (ax >= ay) /* x dominant */ {
                 deltay = ay - (ax >> 1);
                 while (result.Count < maxLength) {
-                    result.Enqueue(Coord.get(x, y));
+                    result.Enqueue(Coord.Get(x, y));
                     if (x == endx) {
                         return result;
                     }
@@ -244,7 +244,7 @@ namespace SquidLib.SquidMath {
             } else /* y dominant */ {
                 deltax = ax - (ay >> 1);
                 while (result.Count < maxLength) {
-                    result.Enqueue(Coord.get(x, y));
+                    result.Enqueue(Coord.Get(x, y));
                     if (y == endy) {
                         return result;
                     }
@@ -323,7 +323,7 @@ namespace SquidLib.SquidMath {
                 deltay = ay - (ax >> 1);
                 Coord[] result = new Coord[Math.Min(maxLength, dx + 1)];
                 for (int i = 0; i <= dx && i < maxLength; i++) {
-                    result[i] = Coord.get(x, y);
+                    result[i] = Coord.Get(x, y);
 
                     if (deltay >= 0) {
                         y += signy;
@@ -338,7 +338,7 @@ namespace SquidLib.SquidMath {
                 deltax = ax - (ay >> 1);
                 Coord[] result = new Coord[Math.Min(maxLength, dy + 1)];
                 for (int i = 0; i <= dy && i < maxLength; i++) {
-                    result[i] = Coord.get(x, y);
+                    result[i] = Coord.Get(x, y);
 
                     if (deltax >= 0) {
                         x += signx;
