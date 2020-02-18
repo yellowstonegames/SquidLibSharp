@@ -27,8 +27,9 @@ using System.Drawing.Imaging;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace BearLib
-{
+namespace BearLib {
+#pragma warning disable IDE0055 // kills auto-formatting
+#pragma warning disable // no need to have warnings on this at this time
     public static class Terminal
     {
         public const int
@@ -170,7 +171,7 @@ namespace BearLib
         // Input result codes for terminal_read function.
         TK_INPUT_NONE       =    0,
         TK_INPUT_CANCELLED  =   -1;
-        
+
         private static string Format(string text, object[] args)
         {
         	if (args != null && args.Length > 0)
@@ -593,4 +594,5 @@ namespace BearLib
             return System.Drawing.Color.FromArgb(ColorFromNameImpl(name));
         }
     }
+#pragma warning restore
 }
