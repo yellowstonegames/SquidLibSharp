@@ -242,8 +242,8 @@ namespace SquidLib.SquidGrid {
             return Math.Min(Math.Max(min, n), max - 1);
         }
 
-        public static OrderedSet<Coord> perimeter(this Radius r, Coord center, int radiusLength, bool surpassEdges, int width, int height) {
-            OrderedSet<Coord> rim = new OrderedSet<Coord>(4 * radiusLength);
+        public static IndexedSet<Coord> perimeter(this Radius r, Coord center, int radiusLength, bool surpassEdges, int width, int height) {
+            IndexedSet<Coord> rim = new IndexedSet<Coord>();
             if (!surpassEdges && (center.x < 0 || center.x >= width || center.y < 0 || center.y > height))
                 return rim;
             if (radiusLength < 1) {
@@ -627,9 +627,9 @@ namespace SquidLib.SquidGrid {
          * @param points an Iterable (such as a List or Set) of Coord that this will make a "thickened" version of
          * @return a Set of Coord that covers a wider area than what points covers; each Coord will be unique (it's a Set)
          */
-        public static OrderedSet<Coord> expand(this Radius r, int distance, int width, int height, IEnumerable<Coord> points) {
+        public static IndexedSet<Coord> expand(this Radius r, int distance, int width, int height, IEnumerable<Coord> points) {
             List<Coord> around = pointsInside(r, Coord.get(distance, distance), distance, false, width, height);
-            OrderedSet<Coord> expanded = new OrderedSet<Coord>(around.Capacity * 16, 0.25f);
+            IndexedSet<Coord> expanded = new IndexedSet<Coord>();
             int tx, ty;
             foreach (Coord pt in points) {
                 foreach (Coord ar in around) {

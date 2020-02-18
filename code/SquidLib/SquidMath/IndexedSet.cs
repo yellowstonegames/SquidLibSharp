@@ -24,6 +24,16 @@ namespace SquidLib.SquidMath {
                 Add(t);
         }
 
+        public T this[int index] {
+            get => items[index];
+            set {
+                if (index < 0 || index >= items.Count || set.Contains(value)) return;
+                set.Remove(items[index]);
+                set.Add(value);
+                items[index] = value;
+            }
+        }
+
         public int Count => items.Count;
 
         public bool IsReadOnly => false;
