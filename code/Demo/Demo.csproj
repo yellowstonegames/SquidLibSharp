@@ -82,6 +82,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Aurora.ini" />
     <None Include="Iosevka-License.md" />
     <Content Include="Iosevka-Slab.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -94,6 +95,7 @@
   <ItemGroup>
     <Compile Include="BearLibTerminal.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="SColor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Drawing" />
