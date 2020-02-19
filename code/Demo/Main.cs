@@ -13,7 +13,7 @@ namespace Demo {
             Terminal.Open();
             Terminal.Set("log: level=trace");
             int width = 90, height = 30;
-            Terminal.Set($"window: title='SquidLibSharp Demo', size={width}x{height}; output: vsync=true");
+            Terminal.Set($"window: title='SquidLibSharp Demo', size={width}x{height}; output: vsync=true; font: Iosevka.ttf, size=9x21, hinting=autohint");
             Terminal.Refresh();
             
             // how to configure a font:
