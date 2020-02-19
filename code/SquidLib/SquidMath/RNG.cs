@@ -14,7 +14,7 @@ namespace SquidLib.SquidMath {
     /// encouraged to make lots of these RNGs where their results need to be independent, rather than skipping around in
     /// just one generator.
     /// </summary>
-    public class RNG : IStatefulRNG {
+    public class RNG : IRNG, IReversibleRNG {
         private const double doubleDivisor = 1.0 / (1 << 53);
         private const float floatDivisor = 1.0f / (1 << 24);
         static private Random localRNG = new Random();
@@ -499,6 +499,7 @@ namespace SquidLib.SquidMath {
             switch (enumerable) {
                 case T[] array when array.Length > 0:
                     return array[NextSignedInt(array.Length)];
+                    //TODO: IndexedSet and other shuffle-able sets/maps should implement IOrdered or something like it
                 case IList<T> list when list.Count > 0:
                     return list[NextSignedInt(list.Count)];
                 case ICollection<T> coll when coll.Count > 0:
@@ -624,6 +625,178 @@ namespace SquidLib.SquidMath {
             }
             return dest;
 
+        }
+
+        public int PreviousBits(int bits) {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return (int)((z ^ z >> 26) >> 64 - bits);
+
+        }
+
+        public long PreviousLong() {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return (long)(z ^ z >> 26);
+        }
+
+        public ulong PreviousULong() {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return z ^ z >> 26;
+        }
+
+        public int PreviousInt() {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return (int)(z ^ z >> 26);
+        }
+
+        public uint PreviousUInt() {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return (uint)(z ^ z >> 26);
+        }
+
+        public int PreviousInt(int bound) {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
+        }
+
+        public uint PreviousUInt(uint bound) {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return (uint)(bound * ((z ^ z >> 26) & 0xFFFFFFFFUL) >> 32);
+        }
+
+        public long PreviousLong(long bound) => (long)PreviousULong((ulong)Math.Max(0L, bound));
+
+        public ulong PreviousULong(ulong bound) {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return MathExtras.MultiplyHigh(z ^ z >> 26, bound);
+        }
+
+        public bool PreviousBoolean() {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return z < 0x8000000000000000UL;
+        }
+
+        public double PreviousDouble() {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
+        }
+
+        public double PreviousDouble(double outer) => PreviousDouble() * outer;
+
+        public float PreviousFloat() {
+            ulong s = state.a;
+            state.a -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * state.b;
+            state.b -= 0x9E3779B97F4A7C16UL;
+            return (z >> 40) * floatDivisor;
+        }
+
+        public float PreviousFloat(float outer) => PreviousFloat() * outer;
+
+        public long PreviousSignedLong(long bound) {
+            long sign = bound >> 63;
+            return (long)(PreviousULong((ulong)(sign == -1L ? -bound : bound))) + sign ^ sign; // cheaper "times the sign" when you already have the sign.
+        }
+
+        public int PreviousInt(int min, int max) => min + PreviousInt(max - min);
+
+        public long PreviousLong(long min, long max) => min + PreviousLong(max - min);
+
+        public double PreviousDouble(double min, double max) => min + PreviousDouble(max - min);
+
+        public T PreviousRandomElement<T>(IEnumerable<T> enumerable) {
+            switch (enumerable) {
+                case T[] array when array.Length > 0:
+                    return array[PreviousSignedInt(array.Length)];
+                //TODO: IndexedSet and other shuffle-able sets/maps should implement IOrdered or something like it
+                case IList<T> list when list.Count > 0:
+                    return list[PreviousSignedInt(list.Count)];
+                case ICollection<T> coll when coll.Count > 0:
+                    var e = coll.GetEnumerator();
+                    for (int target = PreviousSignedInt(coll.Count); target > 0; target--) {
+                        e.MoveNext();
+                    }
+                    return e.Current;
+                case null:
+                default:
+                    return default;
+            }
+        }
+
+        public T[] ReverseShuffle<T>(T[] elements) {
+            if (elements is null) {
+                return null;
+            }
+            int size = elements.Length;
+            T[] array = new T[size];
+            elements.CopyTo(array, 0);
+            ReverseShuffleInPlace(array);
+            return array;
+        }
+
+        public T[] ReverseShuffle<T>(T[] elements, T[] dest) {
+            if (elements is null || dest is null) {
+                return null;
+            }
+            int size = elements.Length, target = dest.Length;
+            if (size != target) return ReverseRandomPortion(elements, dest);
+            elements.CopyTo(dest, 0);
+            ReverseShuffleInPlace(dest);
+            return dest;
+        }
+
+        public List<T> ReverseShuffle<T>(IEnumerable<T> elements) => ReverseShuffleInPlace(new List<T>(elements));
+
+        public List<T> ReverseShuffle<T>(IEnumerable<T> elements, List<T> dest) {
+            if (dest == null)
+                dest = new List<T>(elements);
+            else
+                dest.AddRange(elements);
+            return ReverseShuffleInPlace(dest);
+        }
+
+        public T[] ReverseRandomPortion<T>(T[] elements, T[] dest) {
+            if (elements is null || dest is null) {
+                return null;
+            }
+            int size = elements.Length, target = dest.Length, runs = (target + size - 1) / size;
+            for (int i = 0; i < runs; i++) {
+                ReverseShuffleInPlace(elements);
+                Array.Copy(elements, 0, dest, i * size, Math.Min(size, target - i * size));
+            }
+            for (int i = 0; i < runs; i++) {
+                ShuffleInPlace(elements);
+            }
+            return dest;
         }
     }
 

@@ -17,9 +17,6 @@ namespace Demo {
             Terminal.Set($"window: title='SquidLibSharp Demo', size={width}x{height}; output: vsync=true; font: Iosevka.ttf, size=9x21, hinting=autohint");
             SColor.LoadSColor();
             Terminal.Refresh();
-            
-            // how to configure a font:
-            //BearLib.Terminal.Set("window: title='SquidLibSharp Demo', size=90x30; font: Rogue-Zodiac-12x24.png, size=12x24, codepage=custom.txt; output: vsync=true");
             while (keepRunning) {
                 switch (Terminal.Read()) {
                     case Terminal.TK_ESCAPE:
