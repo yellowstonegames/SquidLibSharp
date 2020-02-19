@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Schema;
 
 namespace SquidLib.SquidMath {
     /// <summary>
@@ -13,8 +15,8 @@ namespace SquidLib.SquidMath {
     /// just one generator.
     /// </summary>
     public class RNG : IStatefulRNG {
-        private const double DOUBLE_DIVISOR = 1.0 / (1 << 53);
-        private const float FLOAT_DIVISOR = 1.0f / (1 << 24);
+        private const double doubleDivisor = 1.0 / (1 << 53);
+        private const float floatDivisor = 1.0f / (1 << 24);
         static private Random localRNG = new Random();
 
         private (ulong a, ulong b) state;
@@ -22,6 +24,9 @@ namespace SquidLib.SquidMath {
         public string StateCode {
             get => $"{state.a:X16}{state.b:X16}";
             set {
+                if (value is null) {
+                    value = ""; //the following ulong.Parse() will throw a sensible exception
+                }
                 state.a = ulong.Parse(value.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
                 state.b = ulong.Parse(value.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
             }
@@ -36,9 +41,9 @@ namespace SquidLib.SquidMath {
                 (ulong)(localRNG.NextDouble() * 0x10000000000000UL)
                     ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL)) { }
 
-        public RNG(long seed) => state = ((ulong)seed, randomize((ulong)seed) | 1UL);
+        public RNG(long seed) => state = ((ulong)seed, Randomize((ulong)seed) | 1UL);
 
-        public RNG(ulong seed) => state = (seed, randomize(seed) | 1UL);
+        public RNG(ulong seed) => state = (seed, Randomize(seed) | 1UL);
 
         public RNG(ulong seedA, ulong seedB) => state = (seedA, seedB | 1UL);
 
@@ -50,7 +55,7 @@ namespace SquidLib.SquidMath {
             state = sharedState;
             state.b |= 1UL;
         }
-        public RNG(string seed) : this(randomize((ulong)seed.GetHashCode())) { } // WAS - CrossHash.hash64(seed);
+        public RNG(string seed) : this(Randomize((ulong)(seed is null ? "" : seed).GetHashCode())) { }
 
         public int NextBits(int bits) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
@@ -127,13 +132,14 @@ namespace SquidLib.SquidMath {
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return (int)((bound * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
         }
+
         /// <summary>
         /// Gets what the previous call to NextSignedInt(int) would have produced, given the same
         /// state, and rolls back the state further so the next call to this will go earlier.
         /// </summary>
         /// <param name="bound"></param>
         /// <returns></returns>
-        public int previousSignedInt(int bound) {
+        public int PreviousSignedInt(int bound) {
             ulong s = state.a;
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
@@ -141,22 +147,12 @@ namespace SquidLib.SquidMath {
             return (int)((bound * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
         }
 
-        /**
-         * Inclusive inner, exclusive outer.
-         *
-         * @param inner the inner bound, inclusive, can be positive or negative
-         * @param outer the outer bound, exclusive, can be positive or negative, usually greater than inner
-         * @return a random int between inner (inclusive) and outer (exclusive)
-         */
-        public int NextInt(int inner, int outer) {
-            return inner + NextInt(outer - inner);
-        }
-
         public ulong NextULong(ulong bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return MathExtras.MultiplyHigh(z ^ z >> 26, bound);
         }
+
         /**
          * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
          * If the bound is negative, this returns 0 but still advances the state normally.
@@ -169,9 +165,8 @@ namespace SquidLib.SquidMath {
          * @param bound the outer exclusive bound; can be positive or negative
          * @return a random long between 0 (inclusive) and bound (exclusive)
          */
-        public long NextLong(long bound) {
-            return (long)NextULong((ulong)Math.Max(0L, bound));
-        }
+        public long NextLong(long bound) => (long)NextULong((ulong)Math.Max(0L, bound));
+
         /**
          * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
          * If bound is negative this returns a negative long; if bound is positive this returns a positive long. The bound
@@ -187,19 +182,7 @@ namespace SquidLib.SquidMath {
          */
         public long NextSignedLong(long bound) {
             long sign = bound >> 63;
-            return (long)(NextULong((ulong)(sign == -1L ? -bound : bound)))
-                + sign ^ sign; // cheaper "times the sign" when you already have the sign.
-        }
-        /**
-         * Inclusive inner, exclusive outer; lower and upper can be positive or negative and there's no requirement for one
-         * to be greater than or less than the other.
-         *
-         * @param lower the lower bound, inclusive, can be positive or negative
-         * @param upper the upper bound, exclusive, can be positive or negative
-         * @return a random long that may be equal to lower and will otherwise be between lower and upper
-         */
-        public long NextLong(long lower, long upper) {
-            return lower + NextLong(upper - lower);
+            return (long)(NextULong((ulong)(sign == -1L ? -bound : bound))) + sign ^ sign; // cheaper "times the sign" when you already have the sign.
         }
 
         /**
@@ -210,7 +193,7 @@ namespace SquidLib.SquidMath {
         public double NextDouble() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * DOUBLE_DIVISOR;
+            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
 
         }
 
@@ -224,7 +207,7 @@ namespace SquidLib.SquidMath {
         public double NextDouble(double outer) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * DOUBLE_DIVISOR * outer;
+            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * outer;
         }
 
         /**
@@ -234,12 +217,12 @@ namespace SquidLib.SquidMath {
          */
         public float NextFloat() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
-            return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * FLOAT_DIVISOR;
+            return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * floatDivisor;
         }
 
         public float NextFloat(float outer) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
-            return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * FLOAT_DIVISOR * outer;
+            return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * floatDivisor * outer;
         }
 
         /**
@@ -259,7 +242,10 @@ namespace SquidLib.SquidMath {
          *
          * @param bytes a byte array that will have its contents overwritten with random bytes.
          */
-        public void nextBytes(byte[] bytes) {
+        public void NextBytes(byte[] bytes) {
+            if (bytes is null) {
+                return;
+            }
             int i = bytes.Length, n;
             while (i != 0) {
                 n = Math.Min(i, 8);
@@ -267,14 +253,17 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        public void setState(string seed) {
+        public void SetState(string seed) {
+            if (seed is null) {
+                seed = ""; // rely on following Parse to throw relevant exceptions
+            }
             state.a = ulong.Parse(seed.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
             state.b = ulong.Parse(seed.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
         }
 
-        public string getState() => $"{state.a:X16}{state.b:X16}";
+        public string GetState() => $"{state.a:X16}{state.b:X16}";
 
-        public string toString() => $"RNG with state (0x{state.a:X16}UL,0x{state.b:X16}UL)";
+        public override string ToString() => $"RNG with state (0x{state.a:X16}UL,0x{state.b:X16}UL)";
 
         /**
          * Fast static randomizing method that takes its state as a parameter; state is expected to change between calls to
@@ -297,7 +286,7 @@ namespace SquidLib.SquidMath {
          * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
          * @return any long
          */
-        public static ulong determine(ulong state) {
+        public static ulong Determine(ulong state) {
             state ^= state >> 27;
             state *= 0x3C79AC492BA7B653UL;
             state ^= state >> 33;
@@ -324,7 +313,7 @@ namespace SquidLib.SquidMath {
          * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
          * @return any long
          */
-        public static ulong randomize(ulong state) =>
+        public static ulong Randomize(ulong state) =>
             (state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28;
 
         /**
@@ -350,7 +339,7 @@ namespace SquidLib.SquidMath {
          * @param bound the outer exclusive bound, as an int
          * @return an int between 0 (inclusive) and bound (exclusive)
          */
-        public static int determineBounded(ulong state, int bound) {
+        public static int DetermineBounded(ulong state, int bound) {
             state ^= state >> 27;
             state *= 0x3C79AC492BA7B653UL;
             state ^= state >> 33;
@@ -384,7 +373,7 @@ namespace SquidLib.SquidMath {
          * @return an int between 0 (inclusive) and bound (exclusive)
          */
 
-        public static int randomizeBounded(ulong state, int bound) =>
+        public static int RandomizeBounded(ulong state, int bound) =>
             (int)(((ulong)bound * (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0xFFFFFFFFL)) >> 32);
 
         /**
@@ -409,13 +398,13 @@ namespace SquidLib.SquidMath {
          *              {@code determineFloat(--state)} to generate numbers in reverse order
          * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
          */
-        public static float determineFloat(ulong state) {
+        public static float DetermineFloat(ulong state) {
             state ^= state >> 27;
             state *= 0x3C79AC492BA7B653UL;
             state ^= state >> 33;
             state ^= state >> 11;
             state *= 0x1C69B3F74AC4AE35UL;
-            return (state >> 40) * FLOAT_DIVISOR;
+            return (state >> 40) * floatDivisor;
         }
 
         /**
@@ -441,8 +430,8 @@ namespace SquidLib.SquidMath {
          *              {@code randomizeFloat(--state)} to generate numbers in reverse order
          * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
          */
-        public static float randomizeFloat(ulong state) =>
-            (((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L >> 40) * FLOAT_DIVISOR;
+        public static float RandomizeFloat(ulong state) =>
+            (((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L >> 40) * floatDivisor;
 
         /**
          * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
@@ -466,13 +455,13 @@ namespace SquidLib.SquidMath {
          *              {@code determineDouble(--state)} to generate numbers in reverse order
          * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
          */
-        public static double determineDouble(ulong state) {
+        public static double DetermineDouble(ulong state) {
             state ^= state >> 27;
             state *= 0x3C79AC492BA7B653UL;
             state ^= state >> 33;
             state ^= state >> 11;
             state *= 0x1C69B3F74AC4AE35UL;
-            return ((state ^ state >> 27) & 0x1FFFFFFFFFFFFFL) * DOUBLE_DIVISOR;
+            return ((state ^ state >> 27) & 0x1FFFFFFFFFFFFFL) * doubleDivisor;
         }
 
         /**
@@ -498,37 +487,48 @@ namespace SquidLib.SquidMath {
          *              {@code randomizeDouble(--state)} to generate numbers in reverse order
          * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
          */
-        public static double randomizeDouble(ulong state) =>
-           (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * DOUBLE_DIVISOR;
+        public static double RandomizeDouble(ulong state) =>
+           (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * doubleDivisor;
 
 
-        public int nextInt(int min, int max) => min + NextSignedInt(max - min);
-        public long nextLong(long min, long max) => min + NextSignedLong(max - min);
+        public int NextInt(int min, int max) => min + NextSignedInt(max - min);
+        public long NextLong(long min, long max) => min + NextSignedLong(max - min);
         public double NextDouble(double min, double max) => min + NextDouble(max - min);
-        public T RandomElement<T>(T[] array) => array[NextSignedInt(array.Length)];
-        public T RandomElement<T>(List<T> list) => list[NextSignedInt(list.Count)];
-        
-        public T RandomElement<T>(ICollection<T> coll) {
-            var e = coll.GetEnumerator();
-            for (int target = NextSignedInt(coll.Count); target > 0; target--) {
-                e.MoveNext();
+
+        public T RandomElement<T>(IEnumerable<T> enumerable) {
+            switch (enumerable) {
+                case T[] array when array.Length > 0:
+                    return array[NextSignedInt(array.Length)];
+                case IList<T> list when list.Count > 0:
+                    return list[NextSignedInt(list.Count)];
+                case ICollection<T> coll when coll.Count > 0:
+                    var e = coll.GetEnumerator();
+                    for (int target = NextSignedInt(coll.Count); target > 0; target--) {
+                        e.MoveNext();
+                    }
+                    return e.Current;
+                case null:
+                default:
+                    return default;
             }
-            return e.Current;        
         }
 
-        private static void swap<T>(ref T a, ref T b) {
+        private static void Swap<T>(ref T a, ref T b) {
             T temp = a;
             a = b;
             b = temp;
         }
 
-        private static void swap<T>(ref List<T> list, int a, int b) {
+        private static void Swap<T>(ref List<T> list, int a, int b) {
             T temp = list[a];
             list[a] = list[b];
             list[b] = temp;
         }
 
         public T[] Shuffle<T>(T[] elements) {
+            if (elements is null) {
+                return null;
+            }
             int size = elements.Length;
             T[] array = new T[size];
             elements.CopyTo(array, 0);
@@ -536,20 +536,29 @@ namespace SquidLib.SquidMath {
             return array;
         }
         public T[] ShuffleInPlace<T>(T[] elements) {
+            if (elements is null) {
+                return null;
+            }
             int size = elements.Length;
             for (int i = size; i > 1; i--) {
-                swap(ref elements[i - 1], ref elements[NextSignedInt(i)]);
+                Swap(ref elements[i - 1], ref elements[NextSignedInt(i)]);
             }
             return elements;
         }
-        public T[] reverseShuffleInPlace<T>(T[] elements) {
+        public T[] ReverseShuffleInPlace<T>(T[] elements) {
+            if (elements is null) {
+                return null;
+            }
             int size = elements.Length;
             for (int i = 2; i <= size; i++) {
-                swap(ref elements[i - 1], ref elements[previousSignedInt(i)]);
+                Swap(ref elements[i - 1], ref elements[PreviousSignedInt(i)]);
             }
             return elements;
         }
         public T[] Shuffle<T>(T[] elements, T[] dest) {
+            if (elements is null || dest is null) {
+                return null;
+            }
             int size = elements.Length, target = dest.Length;
             if (size != target) return RandomPortion(elements, dest);
             elements.CopyTo(dest, 0);
@@ -557,13 +566,16 @@ namespace SquidLib.SquidMath {
             return dest;
         }
         public T[] RandomPortion<T>(T[] elements, T[] dest) {
+            if (elements is null || dest is null) {
+                return null;
+            }
             int size = elements.Length, target = dest.Length, runs = (target + size - 1) / size;
-            for(int i = 0; i < runs; i++) {
+            for (int i = 0; i < runs; i++) {
                 ShuffleInPlace(elements);
                 Array.Copy(elements, 0, dest, i * size, Math.Min(size, target - i * size));
             }
             for (int i = 0; i < runs; i++) {
-                reverseShuffleInPlace(elements);
+                ReverseShuffleInPlace(elements);
             }
             return dest;
         }
@@ -576,21 +588,30 @@ namespace SquidLib.SquidMath {
             return ShuffleInPlace(dest);
         }
         public List<T> ShuffleInPlace<T>(List<T> elements) {
+            if (elements is null) {
+                return null;
+            }
             int size = elements.Count;
             for (int i = size; i > 1; i--) {
-                swap(ref elements, i - 1, NextSignedInt(i));
+                Swap(ref elements, i - 1, NextSignedInt(i));
             }
             return elements;
         }
-        public List<T> reverseShuffleInPlace<T>(List<T> elements) {
+        public List<T> ReverseShuffleInPlace<T>(List<T> elements) {
+            if (elements is null) {
+                return null;
+            }
             int size = elements.Count;
             for (int i = 2; i <= size; i++) {
-                swap(ref elements, i - 1, previousSignedInt(i));
+                Swap(ref elements, i - 1, PreviousSignedInt(i));
             }
             return elements;
         }
         public int[] RandomOrdering(int length) => RandomOrdering(length, new int[length]);
         public int[] RandomOrdering(int length, int[] dest) {
+            if (dest is null) {
+                return null;
+            }
             int n = Math.Min(length, dest.Length);
             for (int i = 0; i < n; i++) {
                 dest[i] = i;

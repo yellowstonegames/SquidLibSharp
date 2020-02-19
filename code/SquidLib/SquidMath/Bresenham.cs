@@ -10,26 +10,7 @@ namespace SquidLib.SquidMath {
      * @author Tommy Ettinger
      * @author smelC
      */
-    public class Bresenham {
-
-        /**
-         * Prevents any instances from being created
-         */
-        private Bresenham() {
-        }
-
-        /**
-         * Generates a 2D Bresenham line between two points. If you don't need
-         * the {@link Queue} interface for the returned reference, consider
-         * using {@link #line2D_(Coord, Coord)} to save some memory.
-         *
-         * @param a the starting point
-         * @param b the ending point
-         * @return The path between {@code a} and {@code b}.
-         */
-        public static Queue<Coord> line2D(Coord a, Coord b) {
-            return line2D(a.x, a.y, b.x, b.y);
-        }
+    public static class Bresenham {
 
         /**
          * Generates a 2D Bresenham line between two points.
@@ -38,9 +19,7 @@ namespace SquidLib.SquidMath {
          * @param b the ending point
          * @return The path between {@code a} and {@code b}.
          */
-        public static Coord[] line2D_(Coord a, Coord b) {
-            return line2D_(a.x, a.y, b.x, b.y);
-        }
+        public static Coord[] Line2D(Coord a, Coord b) => Line2D(a.X, a.Y, b.X, b.Y);
 
         /**
          * Generates a 3D Bresenham line between two points.
@@ -49,9 +28,8 @@ namespace SquidLib.SquidMath {
          * @param b Coord to end at. This will be the last element of the list.
          * @return A list of points between a and b.
          */
-        public static Queue<Coord3D> line3D(Coord3D a, Coord3D b) {
-            return line3D(a.x, a.y, a.z, b.x, b.y, b.z);
-        }
+         // TODO - make this return Coord3D[]
+        public static Queue<Coord3D> Line3D(Coord3D a, Coord3D b) => Line3D(a.X, a.Y, a.Z, b.X, b.Y, b.Z);
 
         /**
          * Generates a 3D Bresenham line between the given coordinates.
@@ -68,7 +46,7 @@ namespace SquidLib.SquidMath {
          * @param endz the z coordinate of the starting point
          * @return a Queue (internally, an Deque) of Coord3D points along the line
          */
-        public static Queue<Coord3D> line3D(int startx, int starty, int startz, int endx, int endy, int endz) {
+        public static Queue<Coord3D> Line3D(int startx, int starty, int startz, int endx, int endy, int endz) {
             int dx = endx - startx;
             int dy = endy - starty;
             int dz = endz - startz;
@@ -164,106 +142,6 @@ namespace SquidLib.SquidMath {
         }
 
         /**
-         * Generates a 2D Bresenham line between two points. If you don't need
-         * the {@link Queue} interface for the returned reference, consider
-         * using {@link #line2D_(int, int, int, int)} to save some memory.
-         * <br>
-         * Uses ordinary Coord values for points, and these can be pooled
-         * if they aren't beyond what the current pool allows (it starts,
-         * by default, pooling Coords with x and y between -3 and 255,
-         * inclusive). If the Coords are pool-able, it can significantly
-         * reduce the work the garbage collector needs to do, especially
-         * on Android.
-         *
-         * @param startx the x coordinate of the starting point
-         * @param starty the y coordinate of the starting point
-         * @param endx the x coordinate of the starting point
-         * @param endy the y coordinate of the starting point
-         * @return a Queue (internally, an ArrayDeque) of Coord points along the line
-         */
-        public static Queue<Coord> line2D(int startx, int starty, int endx, int endy) {
-            // largest positive int for maxLength; a Queue cannot actually be given that many elements on the JVM
-            return line2D(startx, starty, endx, endy, 0x7fffffff);
-        }
-
-        /**
-         * Generates a 2D Bresenham line between two points, stopping early if
-         * the number of Coords returned reaches maxLength. If you don't need
-         * the {@link Queue} interface for the returned reference, consider
-         * using {@link #line2D_(int, int, int, int, int)} to save some memory.
-         * <br>
-         * Uses ordinary Coord values for points, and these can be pooled
-         * if they aren't beyond what the current pool allows (it starts,
-         * by default, pooling Coords with x and y between -3 and 255,
-         * inclusive). If the Coords are pool-able, it can significantly
-         * reduce the work the garbage collector needs to do, especially
-         * on Android.
-         *
-         * @param startx the x coordinate of the starting point
-         * @param starty the y coordinate of the starting point
-         * @param endx the x coordinate of the starting point
-         * @param endy the y coordinate of the starting point
-         * @param maxLength the largest count of Coord points this can return; will stop early if reached
-         * @return a Queue (internally, a ArrayDeque) of Coord points along the line
-         */
-        public static Queue<Coord> line2D(int startx, int starty, int endx, int endy, int maxLength) {
-            int dx = endx - startx;
-            int dy = endy - starty;
-
-            int ax = Math.Abs(dx);
-            int ay = Math.Abs(dy);
-
-            Queue<Coord> result = new Queue<Coord>(Math.Max(ax, ay));
-
-            ax <<= 1;
-            ay <<= 1;
-
-            int signx = dx == 0 ? 0 : (dx >> 31 | 1); // signum with less converting to/from float
-            int signy = dy == 0 ? 0 : (dy >> 31 | 1); // signum with less converting to/from float
-
-            int x = startx;
-            int y = starty;
-
-            int deltax, deltay;
-            if (ax >= ay) /* x dominant */ {
-                deltay = ay - (ax >> 1);
-                while (result.Count < maxLength) {
-                    result.Enqueue(Coord.Get(x, y));
-                    if (x == endx) {
-                        return result;
-                    }
-
-                    if (deltay >= 0) {
-                        y += signy;
-                        deltay -= ax;
-                    }
-
-                    x += signx;
-                    deltay += ay;
-                }
-            } else /* y dominant */ {
-                deltax = ax - (ay >> 1);
-                while (result.Count < maxLength) {
-                    result.Enqueue(Coord.Get(x, y));
-                    if (y == endy) {
-                        return result;
-                    }
-
-                    if (deltax >= 0) {
-                        x += signx;
-                        deltax -= ay;
-                    }
-
-
-                    y += signy;
-                    deltax += ax;
-                }
-            }
-            return result;
-        }
-
-
-        /**
          * Generates a 2D Bresenham line between two points. Returns an array
          * of Coord instead of a Queue.
          * <br>
@@ -280,10 +158,8 @@ namespace SquidLib.SquidMath {
          * @param endy the y coordinate of the starting point
          * @return an array of Coord points along the line
          */
-        public static Coord[] line2D_(int startx, int starty, int endx, int endy) {
-            // largest positive int for maxLength; it is extremely unlikely that this could be reached
-            return line2D_(startx, starty, endx, endy, 0x7fffffff);
-        }
+        public static Coord[] Line2D(int startx, int starty, int endx, int endy) =>
+            Line2D(startx, starty, endx, endy, 0x7fffffff); // largest positive int for maxLength; it is extremely unlikely that this could be reached
 
 
         /**
@@ -305,7 +181,7 @@ namespace SquidLib.SquidMath {
          * @param maxLength the largest count of Coord points this can return; will stop early if reached
          * @return an array of Coord points along the line
          */
-        public static Coord[] line2D_(int startx, int starty, int endx, int endy, int maxLength) {
+        public static Coord[] Line2D(int startx, int starty, int endx, int endy, int maxLength) {
             int dx = endx - startx;
             int dy = endy - starty;
 

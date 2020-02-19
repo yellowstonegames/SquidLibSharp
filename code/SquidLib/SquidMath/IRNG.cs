@@ -171,40 +171,16 @@ namespace SquidLib.SquidMath {
         double NextDouble(double min, double max);
 
         /**
-         * Returns a random element from the provided array and maintains object
-         * type.
-         *
-         * @param <T>   the type of the returned object
-         * @param array the array to get an element from
-         * @return the randomly selected element
-         */
-        T RandomElement<T>(T[] array);
-        /**
-         * Returns a random element from the provided list. If the list is empty
-         * then null is returned.
-         *
-         * @param <T>  the type of the returned object
-         * @param list the list to get an element from
-         * @return the randomly selected element
-         */
-        T RandomElement<T>(List<T> list);
-
-        /**
-         * Returns a random element from the provided ICollection, which should have predictable iteration order if you want
+         * Returns a random element from the provided IEnumerable, which should have predictable iteration order if you want
          * predictable behavior for identical RNG seeds, though it will get a random element just fine for any Collection
          * (just not predictably in all cases). If coll is empty, returns null.
          * <br>
-         * Requires iterating through a random amount of coll's elements, so performance depends on the size of coll but is
-         * likely to be decent, as long as iteration isn't unusually slow. This replaces {@code getRandomElement(Queue)},
-         * since Queue implements Collection and the older Queue-using implementation was probably less efficient.
-         * <br>
-         * You should generally prefer {@link #RandomElement(List)} whenever possible, or in some cases you can use
-         * methods that get a random value on the Collection (or Map, in the case of OrderedMap) itself.
          * @param <T>  the type of the returned object
          * @param coll the Collection to get an element from; remember, Map does not implement Collection
          * @return the randomly selected element
          */
-        T RandomElement<T>(ICollection<T> coll);
+        T RandomElement<T>(IEnumerable<T> coll);
+
         /**
          * Shuffle an array using the Fisher-Yates algorithm and returns a shuffled copy, freshly-allocated, without
          * modifying elements.
@@ -216,6 +192,7 @@ namespace SquidLib.SquidMath {
          * @return a shuffled copy of elements
          */
         T[] Shuffle<T>(T[] elements);
+
         /**
          * Shuffles an array in-place using the Fisher-Yates algorithm.
          * If you don't want the array modified, use {@link #shuffle(Object[], Object[])}.
@@ -227,6 +204,7 @@ namespace SquidLib.SquidMath {
          * @return elements after shuffling it in-place
          */
         T[] ShuffleInPlace<T>(T[] elements);
+
         /**
          * Shuffle an array using the Fisher-Yates algorithm. DO NOT give the same array for both elements and
          * dest, since the prior contents of dest are rearranged before elements is used, and if they refer to the same

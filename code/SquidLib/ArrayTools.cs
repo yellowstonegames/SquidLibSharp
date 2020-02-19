@@ -13,7 +13,7 @@ namespace SquidLib {
      * and similar ordered collections plus ArrayList using {@link #reorder(ArrayList, int...)} in this class.
      * Created by Tommy Ettinger on 11/17/2016.
      */
-    public class ArrayTools {
+    public static class ArrayTools {
 
         static readonly char[] letters = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a',
@@ -34,8 +34,8 @@ namespace SquidLib {
          * @param end   the inclusive upper bound on the range, such as 'z'
          * @return the range of chars as a char array
          */
-        public static char[] charSpan(char start, char end) =>
-            Enumerable.Range(start, end - start + 1).Select(c => (char)c).ToArray<char>();
+        public static char[] CharSpan(char start, char end) =>
+            Enumerable.Range(start, end - start + 1).Select(c => (char)c).ToArray();
 
         /**
          * Stupidly simple convenience method that produces a char array containing only letters that can be reasonably
@@ -47,7 +47,7 @@ namespace SquidLib {
          * @param charCount the number of letters to return in an array; the maximum this will produce is 256
          * @return the range of letters as a char array
          */
-        public static char[] letterSpan(int charCount) {
+        public static char[] LetterSpan(int charCount) {
             char[] ret = new char[Math.Min(charCount, letters.Length)];
             Array.Copy(letters, ret, charCount);
             return ret;
@@ -62,7 +62,7 @@ namespace SquidLib {
          * @param index typically from 0 to 255, but all ints are allowed and will produce letters
          * @return the letter at the given index in a 256-element portion of the letters SquidLib usually supports
          */
-        public static char letterAt(int index) => letters[index & 255];
+        public static char LetterAt(int index) => letters[index & 255];
 
         /**
          * Gets a copy of the 2D char array, source, that has the same data but shares no references with source.
@@ -70,7 +70,7 @@ namespace SquidLib {
          * @param source a 2D array
          * @return a copy of source, or null if source is null
          */
-        public static T[][] copy<T>(T[][] source) {
+        public static T[][] Copy<T>(T[][] source) {
             if (source == null) {
                 return null;
             }
@@ -93,18 +93,18 @@ namespace SquidLib {
          * @param y      the y position in target to receive the items from the first cell in source
          * @return target, modified, with source inserted into it at the given position
          */
-        public static T[][] insert<T>(T[][] source, T[][] target, int x, int y) {
+        public static T[][] Insert<T>(T[][] source, T[][] target, int x, int y) {
             if (source == null || target == null || source[0] == null)
                 return target;
             if (source.Length < 1 || source[0].Length < 1)
-                return copy(target);
+                return Copy(target);
             for (int i = 0; i < source.Length && x + i < target.Length; i++) {
                 Array.Copy(source[i], 0, target[x + i], y, Math.Min(source[i].Length, target[x + i].Length - y));
             }
             return target;
         }
 
-        public static T[] create<T>(T content, int size) {
+        public static T[] Create<T>(T content, int size) {
             T[] ret = new T[size];
             for (int i = 0; i < size; i++) {
                 ret[i] = content;
@@ -120,19 +120,19 @@ namespace SquidLib {
          * @param height   the desired height
          * @return a freshly allocated 2D array of the requested dimensions, filled entirely with contents
          */
-        public static T[][] create<T>(T content, int width, int height) {
+        public static T[][] Create<T>(T content, int width, int height) {
             T[][] ret = Create<T>(width, height);
             for (int x = 0; x < width; x++) {
-                ret[x] = create(content, height);
+                ret[x] = Create(content, height);
             }
             return ret;
         }
 
-        public static void fill<T>(T[][] array2d, T value) {
+        public static void Fill<T>(T[][] array2d, T value) {
             if (array2d == null || array2d[0] == null) {
                 return;
             }
-            fill<T>(array2d, value, 0, 0, array2d.Length, array2d[0].Length);
+            Fill<T>(array2d, value, 0, 0, array2d.Length, array2d[0].Length);
         }
 
         /**
@@ -144,7 +144,7 @@ namespace SquidLib {
          * @param endX the last x position to fill (inclusive)
          * @param endY the last y position to fill (inclusive)
          */
-        public static void fill<T>(T[][] array2d, T value, int startX, int startY, int endX, int endY) {
+        public static void Fill<T>(T[][] array2d, T value, int startX, int startY, int endX, int endY) {
             if (array2d == null) {
                 return;
             }
@@ -166,7 +166,7 @@ namespace SquidLib {
          * @param array2d a 2D array that will be modified in-place
          * @param seed the seed for the random values, as a long
          */
-        public static void randomFill(long[][] array2d, ulong seed) {
+        public static void RandomFill(long[][] array2d, ulong seed) {
             if (array2d == null) {
                 return;
             }
@@ -190,7 +190,7 @@ namespace SquidLib {
          * @param array2d a 2D array that will be modified in-place
          * @param seed the seed for the random values, as a long
          */
-        public static void randomFill(int[][] array2d, ulong seed) {
+        public static void RandomFill(int[][] array2d, ulong seed) {
             if (array2d == null) {
                 return;
             }
@@ -215,7 +215,10 @@ namespace SquidLib {
          * @param bound the upper exclusive limit for the ints this can produce
          * @param seed the seed for the random values, as a long
          */
-        public static void randomFill(int[][] array2d, int bound, ulong seed) {
+        public static void RandomFill(int[][] array2d, int bound, ulong seed) {
+            if (array2d == null) {
+                return;
+            }
             int width = array2d.Length;
             int height = width == 0 ? 0 : array2d[0].Length;
             ulong r0 = seed, z;
@@ -237,7 +240,7 @@ namespace SquidLib {
          * @param values a 1D char array containing the possible char values that can be chosen to fill array2d
          * @param seed the seed for the random values, as a long
          */
-        public static void randomFill(char[][] array2d, char[] values, ulong seed) {
+        public static void RandomFill(char[][] array2d, char[] values, ulong seed) {
             if (array2d == null || values == null || values.Length < 1) {
                 return;
             }
@@ -262,7 +265,7 @@ namespace SquidLib {
          * @param array2d a 2D array that will be modified in-place
          * @param seed the seed for the random values, as a long
          */
-        public static void randomFill(float[][] array2d, ulong seed) {
+        public static void RandomFill(float[][] array2d, ulong seed) {
             if (array2d == null) {
                 return;
             }
@@ -286,7 +289,7 @@ namespace SquidLib {
          * @param bound the upper exclusive limit for the floats this can produce
          * @param seed the seed for the random values, as a long
          */
-        public static void randomFill(float[][] array2d, float bound, ulong seed) {
+        public static void RandomFill(float[][] array2d, float bound, ulong seed) {
             if (array2d == null) {
                 return;
             }
@@ -311,7 +314,7 @@ namespace SquidLib {
          * @param array2d a 2D array that will be modified in-place
          * @param seed the seed for the random values, as a long
          */
-        public static void randomFill(double[][] array2d, ulong seed) {
+        public static void RandomFill(double[][] array2d, ulong seed) {
             if (array2d == null) {
                 return;
             }
@@ -335,7 +338,7 @@ namespace SquidLib {
          * @param bound the upper exclusive limit for the doubles this can produce
          * @param seed the seed for the random values, as a long
          */
-        public static void randomFill(double[][] array2d, double bound, ulong seed) {
+        public static void RandomFill(double[][] array2d, double bound, ulong seed) {
             if (array2d == null) {
                 return;
             }
@@ -365,7 +368,7 @@ namespace SquidLib {
          * @param <T>      any generic type
          * @return a modified copy of {@code list} with its ordering changed to match {@code ordering}.
          */
-        public static List<T> reorder<T>(List<T> list, int[] ordering) {
+        public static List<T> Reorder<T>(List<T> list, int[] ordering) {
             int ol;
             if (list == null || ordering == null || (ol = Math.Min(list.Count, ordering.Length)) == 0)
                 return list;
@@ -383,7 +386,7 @@ namespace SquidLib {
          * @param ordering the ordering to find the inverse for
          * @return the inverse of ordering
          */
-        public static int[] invertOrdering(int[] ordering) {
+        public static int[] InvertOrdering(int[] ordering) {
             int ol = 0;
             if (ordering == null || (ol = ordering.Length) == 0) return ordering;
             int[] next = new int[ol];
@@ -404,7 +407,7 @@ namespace SquidLib {
          * @param dest     the int array to put the inverse reordering into; should have the same length as ordering
          * @return the inverse of ordering; will have the same value as dest
          */
-        public static int[] invertOrdering(int[] ordering, int[] dest) {
+        public static int[] InvertOrdering(int[] ordering, int[] dest) {
             int ol = 0;
             if (ordering == null || dest == null || (ol = Math.Min(ordering.Length, dest.Length)) == 0)
                 return ordering;
@@ -414,125 +417,6 @@ namespace SquidLib {
             }
             return dest;
         }
-
-        /**
-         * Reverses the array given as a parameter, in-place, and returns the modified original.
-         * @param data an array that will be reversed in-place
-         * @return the array passed in, after reversal
-         */
-        public static bool[] reverse(bool[] data) {
-            int sz;
-            if (data == null || (sz = data.Length) <= 0) return data;
-            bool t;
-            for (int i = 0, j = sz - 1; i < j; i++, j--) {
-                t = data[j];
-                data[j] = data[i];
-                data[i] = t;
-            }
-            return data;
-        }
-
-        /**
-         * Reverses the array given as a parameter, in-place, and returns the modified original.
-         * @param data an array that will be reversed in-place
-         * @return the array passed in, after reversal
-         */
-        public static char[] reverse(char[] data) {
-            int sz;
-            if (data == null || (sz = data.Length) <= 0) return data;
-            char t;
-            for (int i = 0, j = sz - 1; i < j; i++, j--) {
-                t = data[j];
-                data[j] = data[i];
-                data[i] = t;
-            }
-            return data;
-        }
-
-        /**
-         * Reverses the array given as a parameter, in-place, and returns the modified original.
-         * @param data an array that will be reversed in-place
-         * @return the array passed in, after reversal
-         */
-        public static float[] reverse(float[] data) {
-            int sz;
-            if (data == null || (sz = data.Length) <= 0) return data;
-            float t;
-            for (int i = 0, j = sz - 1; i < j; i++, j--) {
-                t = data[j];
-                data[j] = data[i];
-                data[i] = t;
-            }
-            return data;
-        }
-
-        /**
-         * Reverses the array given as a parameter, in-place, and returns the modified original.
-         * @param data an array that will be reversed in-place
-         * @return the array passed in, after reversal
-         */
-        public static double[] reverse(double[] data) {
-            int sz;
-            if (data == null || (sz = data.Length) <= 0) return data;
-            double t;
-            for (int i = 0, j = sz - 1; i < j; i++, j--) {
-                t = data[j];
-                data[j] = data[i];
-                data[i] = t;
-            }
-            return data;
-        }
-
-        /**
-         * Reverses the array given as a parameter, in-place, and returns the modified original.
-         * @param data an array that will be reversed in-place
-         * @return the array passed in, after reversal
-         */
-        public static int[] reverse(int[] data) {
-            int sz;
-            if (data == null || (sz = data.Length) <= 0) return data;
-            int t;
-            for (int i = 0, j = sz - 1; i < j; i++, j--) {
-                t = data[j];
-                data[j] = data[i];
-                data[i] = t;
-            }
-            return data;
-        }
-
-        /**
-         * Reverses the array given as a parameter, in-place, and returns the modified original.
-         * @param data an array that will be reversed in-place
-         * @return the array passed in, after reversal
-         */
-        public static byte[] reverse(byte[] data) {
-            int sz;
-            if (data == null || (sz = data.Length) <= 0) return data;
-            byte t;
-            for (int i = 0, j = sz - 1; i < j; i++, j--) {
-                t = data[j];
-                data[j] = data[i];
-                data[i] = t;
-            }
-            return data;
-        }
-        /**
-         * Reverses the array given as a parameter, in-place, and returns the modified original.
-         * @param data an array that will be reversed in-place
-         * @return the array passed in, after reversal
-         */
-        public static T[] reverse<T>(T[] data) {
-            int sz;
-            if (data == null || (sz = data.Length) <= 0) return data;
-            T t;
-            for (int i = 0, j = sz - 1; i < j; i++, j--) {
-                t = data[j];
-                data[j] = data[i];
-                data[i] = t;
-            }
-            return data;
-        }
-
 
         /// <summary>
         /// Returns an initialized rectangular jagged array of the size specified.

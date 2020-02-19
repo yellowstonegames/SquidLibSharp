@@ -25,7 +25,7 @@ namespace Demo {
                         keepRunning = false;
                         break;
                     case int val:
-                        Terminal.Put(rng.NextInt(width), rng.NextInt(height), ArrayTools.letterAt(val));
+                        Terminal.Put(rng.NextInt(width), rng.NextInt(height), ArrayTools.LetterAt(val));
                         Terminal.Refresh();
                         break;
                 }

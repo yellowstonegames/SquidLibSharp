@@ -42,7 +42,7 @@ namespace SquidLib.SquidMath {
             width = (int)(Math.Max(startx, endx) + 1);
             height = (int)(Math.Max(starty, endy) + 1);
             map = ArrayTools.Create<double>(width, height);
-            runLine(startx, starty, endx, endy);
+            RunLine(startx, starty, endx, endy);
             return path;
         }
         /**
@@ -61,13 +61,13 @@ namespace SquidLib.SquidMath {
             width = (int)(Math.Max(startx, endx) + 1);
             height = (int)(Math.Max(starty, endy) + 1);
             map = ArrayTools.Create<double>(width, height);
-            runLine(startx, starty, endx, endy);
+            RunLine(startx, starty, endx, endy);
             return path;
         }
 
-        public List<Coord> Line(Coord start, Coord end) => Line(start.x, start.y, end.x, end.y);
+        public List<Coord> Line(Coord start, Coord end) => Line(start.X, start.Y, end.X, end.Y);
 
-        public List<Coord> Line(Coord start, Coord end, double brightnessThreshold) => Line(start.x, start.y, end.x, end.y, brightnessThreshold);
+        public List<Coord> Line(Coord start, Coord end, double brightnessThreshold) => Line(start.X, start.Y, end.X, end.Y, brightnessThreshold);
 
         public List<Coord> GetLastPath() => path;
 
@@ -78,7 +78,7 @@ namespace SquidLib.SquidMath {
          * @param y
          * @param c
          */
-        private void mark(double x, double y, double c) {
+        private void Mark(double x, double y, double c) {
             //check bounds overflow from antialiasing
             if (x >= 0 && x < width && y >= 0 && y < height && c > threshold) {
                 path.Add(Coord.Get((int)x, (int)y));
@@ -86,11 +86,11 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private double frac(double x) => x - Math.Truncate(x);
+        private static double Frac(double x) => x - Math.Truncate(x);
 
-        private double invfrac(double x) => 1 - frac(x);
+        private static double Invfrac(double x) => 1 - Frac(x);
 
-        private void runLine(double startx, double starty, double endx, double endy) {
+        private void RunLine(double startx, double starty, double endx, double endy) {
             double x1 = startx, y1 = starty, x2 = endx, y2 = endy;
             double grad, xd, yd, xgap, xend, yend, yf, brightness1, brightness2;
             int x, ix1, ix2, iy1, iy2;
@@ -130,20 +130,20 @@ namespace SquidLib.SquidMath {
             xend = Math.Truncate(x1 + .5);
             yend = y1 + grad * (xend - x1);
 
-            xgap = invfrac(x1 + .5);
+            xgap = Invfrac(x1 + .5);
 
             ix1 = (int)xend;
             iy1 = (int)yend;
 
-            brightness1 = invfrac(yend) * xgap;
-            brightness2 = frac(yend) * xgap;
+            brightness1 = Invfrac(yend) * xgap;
+            brightness2 = Frac(yend) * xgap;
 
             if (shallow) {
-                mark(ix1, iy1, brightness1);
-                mark(ix1, iy1 + 1, brightness2);
+                Mark(ix1, iy1, brightness1);
+                Mark(ix1, iy1 + 1, brightness2);
             } else {
-                mark(iy1, ix1, brightness1);
-                mark(iy1 + 1, ix1, brightness2);
+                Mark(iy1, ix1, brightness1);
+                Mark(iy1 + 1, ix1, brightness2);
             }
 
             yf = yend + grad;
@@ -152,36 +152,36 @@ namespace SquidLib.SquidMath {
             xend = Math.Truncate(x2 + .5);
             yend = y2 + grad * (xend - x2);
 
-            xgap = invfrac(x2 - .5);
+            xgap = Invfrac(x2 - .5);
 
             ix2 = (int)xend;
             iy2 = (int)yend;
 
             //add the in-between points
             for (x = ix1 + 1; x < ix2; x++) {
-                brightness1 = invfrac(yf);
-                brightness2 = frac(yf);
+                brightness1 = Invfrac(yf);
+                brightness2 = Frac(yf);
 
                 if (shallow) {
-                    mark(x, (int)yf, brightness1);
-                    mark(x, (int)yf + 1, brightness2);
+                    Mark(x, (int)yf, brightness1);
+                    Mark(x, (int)yf + 1, brightness2);
                 } else {
-                    mark((int)yf, x, brightness1);
-                    mark((int)yf + 1, x, brightness2);
+                    Mark((int)yf, x, brightness1);
+                    Mark((int)yf + 1, x, brightness2);
                 }
 
                 yf += grad;
             }
 
-            brightness1 = invfrac(yend) * xgap;
-            brightness2 = frac(yend) * xgap;
+            brightness1 = Invfrac(yend) * xgap;
+            brightness2 = Frac(yend) * xgap;
 
             if (shallow) {
-                mark(ix2, iy2, brightness1);
-                mark(ix2, iy2 + 1, brightness2);
+                Mark(ix2, iy2, brightness1);
+                Mark(ix2, iy2 + 1, brightness2);
             } else {
-                mark(iy2, ix2, brightness1);
-                mark(iy2 + 1, ix2, brightness2);
+                Mark(iy2, ix2, brightness1);
+                Mark(iy2 + 1, ix2, brightness2);
             }
 
         }
