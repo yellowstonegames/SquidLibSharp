@@ -2,11 +2,19 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SquidLib.SquidMath {
-    public interface INoise2D {
+namespace SquidLib.SquidMath
+{
+    public interface INoise2D
+    {
         double GetNoise(double x, double y);
 
         double GetNoiseSeeded(double x, double y, long seed);
+    }
+    public interface INoise3D
+    {
+        double GetNoise(double x, double y, double z);
+
+        double GetNoiseSeeded(double x, double y, double z, long seed);
     }
 
     /*
@@ -56,7 +64,7 @@ namespace SquidLib.SquidMath {
  *      misrepresented as being the original software.
  *   3. This notice may not be removed or altered from any source distribution.
  */
-    public class SimplexNoise : INoise2D
+    public class SimplexNoise : INoise2D, INoise3D
     {
         protected static readonly double[] phiGrad2 = {
             0.6499429579167653, 0.759982994187637,
@@ -316,10 +324,52 @@ namespace SquidLib.SquidMath {
             0.9744164792492415, 0.22474991650168097,
             0.462509014279733, 0.8866145790082576,
     };
+        protected static readonly double[] grad3d =
+        {
+                    -0.448549002408981,  1.174316525459290,  0.000000000000001,
+                     0.000000000000001,  1.069324374198914,  0.660878777503967,
+                     0.448549002408981,  1.174316525459290,  0.000000000000001,
+                     0.000000000000001,  1.069324374198914, -0.660878777503967,
+                    -0.725767493247986,  0.725767493247986, -0.725767493247986,
+                    -1.069324374198914,  0.660878777503967,  0.000000000000001,
+                    -0.725767493247986,  0.725767493247986,  0.725767493247986,
+                     0.725767493247986,  0.725767493247986,  0.725767493247986,
+                     1.069324374198914,  0.660878777503967,  0.000000000000000,
+                     0.725767493247986,  0.725767493247986, -0.725767493247986,
+                    -0.660878777503967,  0.000000000000003, -1.069324374198914,
+                    -1.174316525459290,  0.000000000000003, -0.448549002408981,
+                     0.000000000000000,  0.448549002408981, -1.174316525459290,
+                    -0.660878777503967,  0.000000000000001,  1.069324374198914,
+                     0.000000000000001,  0.448549002408981,  1.174316525459290,
+                    -1.174316525459290,  0.000000000000001,  0.448549002408981,
+                     0.660878777503967,  0.000000000000001,  1.069324374198914,
+                     1.174316525459290,  0.000000000000001,  0.448549002408981,
+                     0.660878777503967,  0.000000000000001, -1.069324374198914,
+                     1.174316525459290,  0.000000000000001, -0.448549002408981,
+                    -0.725767493247986, -0.725767493247986, -0.725767493247986,
+                    -1.069324374198914, -0.660878777503967, -0.000000000000001,
+                    -0.000000000000001, -0.448549002408981, -1.174316525459290,
+                    -0.000000000000001, -0.448549002408981,  1.174316525459290,
+                    -0.725767493247986, -0.725767493247986,  0.725767493247986,
+                     0.725767493247986, -0.725767493247986,  0.725767493247986,
+                     1.069324374198914, -0.660878777503967,  0.000000000000001,
+                     0.725767493247986, -0.725767493247986, -0.725767493247986,
+                    -0.000000000000004, -1.069324374198914, -0.660878777503967,
+                    -0.448549002408981, -1.174316525459290, -0.000000000000003,
+                    -0.000000000000003, -1.069324374198914,  0.660878777503967,
+                     0.448549002408981, -1.174316525459290,  0.000000000000003,
+            };
 
-        protected static readonly double 
+        protected static readonly double
             F2 = 0.36602540378443864676372317075294,
-            G2 = 0.21132486540518711774542560974902;
+            G2 = 0.21132486540518711774542560974902,
+            F3 = 1.0 / 3.0,
+            G3 = 0.5 / 3.0;
+        private static double gradCoord3D(long seed, int x, int y, int z, double xd, double yd, double zd)
+        {
+            uint hash = CoreMath.Hash32(x, y, z, seed) * 3;
+            return xd * grad3d[hash] + yd * grad3d[hash + 1] + zd * grad3d[hash + 2];
+        }
 
         public long Seed { get; set; }
 
@@ -330,7 +380,8 @@ namespace SquidLib.SquidMath {
 
         public SimplexNoise() : this(0x1337BEEF) { }
 
-        public double GetNoise(double x, double y) {
+        public double GetNoise(double x, double y)
+        {
             return GetNoiseSeeded(x, y, Seed);
         }
 
@@ -370,26 +421,146 @@ namespace SquidLib.SquidMath {
             if (t0 > 0)
             {
                 t0 *= t0;
-                n += t0 * t0 * (phiGrad2[gi0] * x0 + phiGrad2[gi0+1] * y0);
+                n += t0 * t0 * (phiGrad2[gi0] * x0 + phiGrad2[gi0 + 1] * y0);
                 // for 2D gradient
             }
             double t1 = 0.75 - x1 * x1 - y1 * y1;
             if (t1 > 0)
             {
                 t1 *= t1;
-                n += t1 * t1 * (phiGrad2[gi1] * x1 + phiGrad2[gi1+1] * y1);
+                n += t1 * t1 * (phiGrad2[gi1] * x1 + phiGrad2[gi1 + 1] * y1);
             }
             double t2 = 0.75 - x2 * x2 - y2 * y2;
             if (t2 > 0)
             {
                 t2 *= t2;
-                n += t2 * t2 * (phiGrad2[gi2] * x2 + phiGrad2[gi2+1] * y2);
+                n += t2 * t2 * (phiGrad2[gi2] * x2 + phiGrad2[gi2 + 1] * y2);
             }
             // Add contributions from each corner to get the noise value.
             // The result is scaled to return values in the interval [-1,1].
             return 9.125 * (n);
-
         }
 
+
+        public double GetNoise(double x, double y, double z)
+        {
+            return GetNoiseSeeded(x, y, z, Seed);
+        }
+
+        public double GetNoiseSeeded(double x, double y, double z, long seed)
+        {
+            double n = 0.0;
+            double s = (x + y + z) * F3;
+            int i = CoreMath.FastFloor(x + s),
+                    j = CoreMath.FastFloor(y + s),
+                    k = CoreMath.FastFloor(z + s);
+
+            double t = (i + j + k) * G3;
+            double X0 = i - t, Y0 = j - t, Z0 = k - t,
+                    x0 = x - X0, y0 = y - Y0, z0 = z - Z0;
+
+            int i1, j1, k1;
+            int i2, j2, k2;
+
+            if (x0 >= y0)
+            {
+                if (y0 >= z0)
+                {
+                    i1 = 1;
+                    j1 = 0;
+                    k1 = 0;
+                    i2 = 1;
+                    j2 = 1;
+                    k2 = 0;
+                }
+                else if (x0 >= z0)
+                {
+                    i1 = 1;
+                    j1 = 0;
+                    k1 = 0;
+                    i2 = 1;
+                    j2 = 0;
+                    k2 = 1;
+                }
+                else
+                {
+                    i1 = 0;
+                    j1 = 0;
+                    k1 = 1;
+                    i2 = 1;
+                    j2 = 0;
+                    k2 = 1;
+                }
+            }
+            else
+            {
+                if (y0 < z0)
+                {
+                    i1 = 0;
+                    j1 = 0;
+                    k1 = 1;
+                    i2 = 0;
+                    j2 = 1;
+                    k2 = 1;
+                }
+                else if (x0 < z0)
+                {
+                    i1 = 0;
+                    j1 = 1;
+                    k1 = 0;
+                    i2 = 0;
+                    j2 = 1;
+                    k2 = 1;
+                }
+                else
+                {
+                    i1 = 0;
+                    j1 = 1;
+                    k1 = 0;
+                    i2 = 1;
+                    j2 = 1;
+                    k2 = 0;
+                }
+            }
+
+            double x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
+            double y1 = y0 - j1 + G3;
+            double z1 = z0 - k1 + G3;
+            double x2 = x0 - i2 + F3; // Offsets for third corner in (x,y,z) coords
+            double y2 = y0 - j2 + F3;
+            double z2 = z0 - k2 + F3;
+            double x3 = x0 - 0.5; // Offsets for last corner in (x,y,z) coords
+            double y3 = y0 - 0.5;
+            double z3 = z0 - 0.5;
+
+            // Calculate the contribution from the four corners
+            double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+            if (t0 > 0)
+            {
+                t0 *= t0;
+                n += t0 * t0 * gradCoord3D(seed, i, j, k, x0, y0, z0);
+            }
+            double t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+            if (t1 > 0)
+            {
+                t1 *= t1;
+                n += t1 * t1 * gradCoord3D(seed, i + i1, j + j1, k + k1, x1, y1, z1);
+            }
+            double t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+            if (t2 > 0)
+            {
+                t2 *= t2;
+                n += t2 * t2 * gradCoord3D(seed, i + i2, j + j2, k + k2, x2, y2, z2);
+            }
+            double t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+            if (t3 > 0)
+            {
+                t3 *= t3;
+                n += t3 * t3 * gradCoord3D(seed, i + 1, j + 1, k + 1, x3, y3, z3);
+            }
+            // Add contributions from each corner to get the noise value.
+            // The result is scaled to stay just inside [-1,1]
+            return 31.5 * n;
+        }
     }
 }
