@@ -155,7 +155,7 @@ namespace BearLib {
         TK_HEIGHT           = 0xC1, // Terminal height in cells
         TK_CELL_WIDTH       = 0xC2, // Cell width in pixels
         TK_CELL_HEIGHT      = 0xC3, // Cell height in pixels
-        TK_COLOR            = 0xC4, // Current foregroung color
+        TK_COLOR            = 0xC4, // Current foreground color
         TK_BKCOLOR          = 0xC5, // Current background color
         TK_LAYER            = 0xC6, // Current layer
         TK_COMPOSITION      = 0xC7, // Current composition state
@@ -275,29 +275,29 @@ namespace BearLib {
         }
 
         [DllImport("BearLibTerminal.dll", EntryPoint = "terminal_color", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ColorImpl(int argb);
+        public static extern void Color(int argb);
 
         public static void Color(Color color)
         {
-            ColorImpl(color.ToArgb());
+            Color(color.ToArgb());
         }
 
         public static void Color(string name)
         {
-            ColorImpl(ColorFromNameImpl(name));
+            Color(ColorFromNameImpl(name));
         }
 
         [DllImport("BearLibTerminal.dll", EntryPoint = "terminal_bkcolor", CallingConvention=CallingConvention.Cdecl)]
-        private static extern void BkColorImpl(int argb);
+        public static extern void BkColor(int argb);
 
         public static void BkColor(Color color)
         {
-            BkColorImpl(color.ToArgb());
+            BkColor(color.ToArgb());
         }
 
         public static void BkColor(string name)
         {
-        	BkColorImpl(ColorFromNameImpl(name));
+        	BkColor(ColorFromNameImpl(name));
         }
 
         [DllImport("BearLibTerminal.dll", EntryPoint = "terminal_composition", CallingConvention = CallingConvention.Cdecl)]
