@@ -6,7 +6,7 @@ namespace SquidLib.SquidMath {
     /// <summary>
     /// Utility class; has various small math functions that other classes need to work.
     /// </summary>
-    public class CoreMath {
+    public static class CoreMath {
         private const short FN_INLINE = 256;
 
         /**

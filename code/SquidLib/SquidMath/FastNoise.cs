@@ -40,7 +40,7 @@ using System.Runtime.CompilerServices;
 
 namespace SquidLib.SquidMath {
     public class FastNoise {
-        private const Int16 FN_INLINE = 256; //(Int16)MethodImplOptions.AggressiveInlining;
+        private const short FN_INLINE = 256; //(Int16)MethodImplOptions.AggressiveInlining;
         private const int FN_CELLULAR_INDEX_MAX = 3;
 
         public enum NoiseType { Value, ValueFractal, Perlin, PerlinFractal, Simplex, SimplexFractal, Cellular, WhiteNoise, Cubic, CubicFractal };
@@ -49,29 +49,29 @@ namespace SquidLib.SquidMath {
         public enum CellularDistanceFunction { Euclidean, Manhattan, Natural };
         public enum CellularReturnType { CellValue, NoiseLookup, Distance, Distance2, Distance2Add, Distance2Sub, Distance2Mul, Distance2Div };
 
-        private int m_seed = 1337;
-        private FN_DECIMAL m_frequency = (FN_DECIMAL)0.01;
-        private Interp m_interp = Interp.Quintic;
-        private NoiseType m_noiseType = NoiseType.Simplex;
+        private int seed = 1337;
+        private FN_DECIMAL frequency = (FN_DECIMAL)0.01;
+        private Interp interp = Interp.Quintic;
+        private NoiseType noiseType = NoiseType.Simplex;
 
-        private int m_octaves = 3;
-        private FN_DECIMAL m_lacunarity = (FN_DECIMAL)2.0;
-        private FN_DECIMAL m_gain = (FN_DECIMAL)0.5;
-        private FractalType m_fractalType = FractalType.FBM;
+        private int octaves = 3;
+        private FN_DECIMAL lacunarity = (FN_DECIMAL)2.0;
+        private FN_DECIMAL gain = (FN_DECIMAL)0.5;
+        private FractalType fractalType = FractalType.FBM;
 
-        private FN_DECIMAL m_fractalBounding;
+        private FN_DECIMAL fractalBounding;
 
-        private CellularDistanceFunction m_cellularDistanceFunction = CellularDistanceFunction.Euclidean;
-        private CellularReturnType m_cellularReturnType = CellularReturnType.CellValue;
-        private FastNoise m_cellularNoiseLookup = null;
-        private int m_cellularDistanceIndex0 = 0;
-        private int m_cellularDistanceIndex1 = 1;
-        private float m_cellularJitter = 0.45f;
+        private CellularDistanceFunction cellularDistanceFunction = CellularDistanceFunction.Euclidean;
+        private CellularReturnType cellularReturnType = CellularReturnType.CellValue;
+        private FastNoise cellularNoiseLookup = null;
+        private int cellularDistanceIndex0 = 0;
+        private int cellularDistanceIndex1 = 1;
+        private float cellularJitter = 0.45f;
 
-        private FN_DECIMAL m_gradientPerturbAmp = (FN_DECIMAL)1.0;
+        private FN_DECIMAL gradientPerturbAmp = (FN_DECIMAL)1.0;
 
         public FastNoise(int seed = 1337) {
-            m_seed = seed;
+            this.seed = seed;
             CalculateFractalBounding();
         }
 
@@ -79,15 +79,15 @@ namespace SquidLib.SquidMath {
         public static FN_DECIMAL GetDecimalType() { return 0; }
 
         // Returns the seed used by this object
-        public int GetSeed() { return m_seed; }
+        public int GetSeed() { return seed; }
 
         // Sets seed used for all noise types
         // Default: 1337
-        public void SetSeed(int seed) { m_seed = seed; }
+        public void SetSeed(int seed) { this.seed = seed; }
 
         // Sets frequency for all noise types
         // Default: 0.01
-        public void SetFrequency(FN_DECIMAL frequency) { m_frequency = frequency; }
+        public void SetFrequency(FN_DECIMAL frequency) { this.frequency = frequency; }
 
         // Changes the interpolation method used to smooth between noise values
         // Possible interpolation methods (lowest to highest quality) :
@@ -96,64 +96,64 @@ namespace SquidLib.SquidMath {
         // - Quintic
         // Used in Value, Gradient Noise and Position Perturbing
         // Default: Quintic
-        public void SetInterp(Interp interp) { m_interp = interp; }
+        public void SetInterp(Interp interp) { this.interp = interp; }
 
         // Sets noise return type of GetNoise(...)
         // Default: Simplex
-        public void SetNoiseType(NoiseType noiseType) { m_noiseType = noiseType; }
+        public void SetNoiseType(NoiseType noiseType) { this.noiseType = noiseType; }
 
 
         // Sets octave count for all fractal noise types
         // Default: 3
-        public void SetFractalOctaves(int octaves) { m_octaves = octaves; CalculateFractalBounding(); }
+        public void SetFractalOctaves(int octaves) { this.octaves = octaves; CalculateFractalBounding(); }
 
         // Sets octave lacunarity for all fractal noise types
         // Default: 2.0
-        public void SetFractalLacunarity(FN_DECIMAL lacunarity) { m_lacunarity = lacunarity; }
+        public void SetFractalLacunarity(FN_DECIMAL lacunarity) { this.lacunarity = lacunarity; }
 
         // Sets octave gain for all fractal noise types
         // Default: 0.5
-        public void SetFractalGain(FN_DECIMAL gain) { m_gain = gain; CalculateFractalBounding(); }
+        public void SetFractalGain(FN_DECIMAL gain) { this.gain = gain; CalculateFractalBounding(); }
 
         // Sets method for combining octaves in all fractal noise types
         // Default: FBM
-        public void SetFractalType(FractalType fractalType) { m_fractalType = fractalType; }
+        public void SetFractalType(FractalType fractalType) { this.fractalType = fractalType; }
 
 
         // Sets return type from cellular noise calculations
         // Note: NoiseLookup requires another FastNoise object be set with SetCellularNoiseLookup() to function
         // Default: CellValue
-        public void SetCellularDistanceFunction(CellularDistanceFunction cellularDistanceFunction) { m_cellularDistanceFunction = cellularDistanceFunction; }
+        public void SetCellularDistanceFunction(CellularDistanceFunction cellularDistanceFunction) { this.cellularDistanceFunction = cellularDistanceFunction; }
 
         // Sets distance function used in cellular noise calculations
         // Default: Euclidean
-        public void SetCellularReturnType(CellularReturnType cellularReturnType) { m_cellularReturnType = cellularReturnType; }
+        public void SetCellularReturnType(CellularReturnType cellularReturnType) { this.cellularReturnType = cellularReturnType; }
 
         // Sets the 2 distance indicies used for distance2 return types
         // Default: 0, 1
         // Note: index0 should be lower than index1
         // Both indicies must be >= 0, index1 must be < 4
         public void SetCellularDistance2Indicies(int cellularDistanceIndex0, int cellularDistanceIndex1) {
-            m_cellularDistanceIndex0 = Math.Min(cellularDistanceIndex0, cellularDistanceIndex1);
-            m_cellularDistanceIndex1 = Math.Max(cellularDistanceIndex0, cellularDistanceIndex1);
+            this.cellularDistanceIndex0 = Math.Min(cellularDistanceIndex0, cellularDistanceIndex1);
+            this.cellularDistanceIndex1 = Math.Max(cellularDistanceIndex0, cellularDistanceIndex1);
 
-            m_cellularDistanceIndex0 = Math.Min(Math.Max(m_cellularDistanceIndex0, 0), FN_CELLULAR_INDEX_MAX);
-            m_cellularDistanceIndex1 = Math.Min(Math.Max(m_cellularDistanceIndex1, 0), FN_CELLULAR_INDEX_MAX);
+            this.cellularDistanceIndex0 = Math.Min(Math.Max(this.cellularDistanceIndex0, 0), FN_CELLULAR_INDEX_MAX);
+            this.cellularDistanceIndex1 = Math.Min(Math.Max(this.cellularDistanceIndex1, 0), FN_CELLULAR_INDEX_MAX);
         }
 
         // Sets the maximum distance a cellular point can move from it's grid position
         // Setting this high will make artifacts more common
         // Default: 0.45
-        public void SetCellularJitter(float cellularJitter) { m_cellularJitter = cellularJitter; }
+        public void SetCellularJitter(float cellularJitter) { this.cellularJitter = cellularJitter; }
 
         // Noise used to calculate a cell value if cellular return type is NoiseLookup
         // The lookup value is acquired through GetNoise() so ensure you SetNoiseType() on the noise lookup, value, gradient or simplex is recommended
-        public void SetCellularNoiseLookup(FastNoise noise) { m_cellularNoiseLookup = noise; }
+        public void SetCellularNoiseLookup(FastNoise noise) { cellularNoiseLookup = noise; }
 
 
         // Sets the maximum perturb distance from original location when using GradientPerturb{Fractal}(...)
         // Default: 1.0
-        public void SetGradientPerturbAmp(FN_DECIMAL gradientPerturbAmp) { m_gradientPerturbAmp = gradientPerturbAmp; }
+        public void SetGradientPerturbAmp(FN_DECIMAL gradientPerturbAmp) { this.gradientPerturbAmp = gradientPerturbAmp; }
 
         private struct Float2 {
             public readonly FN_DECIMAL x, y;
@@ -317,13 +317,13 @@ namespace SquidLib.SquidMath {
         }
 
         private void CalculateFractalBounding() {
-            FN_DECIMAL amp = m_gain;
+            FN_DECIMAL amp = gain;
             FN_DECIMAL ampFractal = 1;
-            for (int i = 1; i < m_octaves; i++) {
+            for (int i = 1; i < octaves; i++) {
                 ampFractal += amp;
-                amp *= m_gain;
+                amp *= gain;
             }
-            m_fractalBounding = 1 / ampFractal;
+            fractalBounding = 1 / ampFractal;
         }
 
         // Hashing
@@ -452,15 +452,15 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetNoise(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            x *= m_frequency;
-            y *= m_frequency;
-            z *= m_frequency;
+            x *= frequency;
+            y *= frequency;
+            z *= frequency;
 
-            switch (m_noiseType) {
+            switch (noiseType) {
                 case NoiseType.Value:
-                    return SingleValue(m_seed, x, y, z);
+                    return SingleValue(seed, x, y, z);
                 case NoiseType.ValueFractal:
-                    switch (m_fractalType) {
+                    switch (fractalType) {
                         case FractalType.FBM:
                             return SingleValueFractalFBM(x, y, z);
                         case FractalType.Billow:
@@ -471,9 +471,9 @@ namespace SquidLib.SquidMath {
                             return 0;
                     }
                 case NoiseType.Perlin:
-                    return SinglePerlin(m_seed, x, y, z);
+                    return SinglePerlin(seed, x, y, z);
                 case NoiseType.PerlinFractal:
-                    switch (m_fractalType) {
+                    switch (fractalType) {
                         case FractalType.FBM:
                             return SinglePerlinFractalFBM(x, y, z);
                         case FractalType.Billow:
@@ -484,9 +484,9 @@ namespace SquidLib.SquidMath {
                             return 0;
                     }
                 case NoiseType.Simplex:
-                    return SingleSimplex(m_seed, x, y, z);
+                    return SingleSimplex(seed, x, y, z);
                 case NoiseType.SimplexFractal:
-                    switch (m_fractalType) {
+                    switch (fractalType) {
                         case FractalType.FBM:
                             return SingleSimplexFractalFBM(x, y, z);
                         case FractalType.Billow:
@@ -497,7 +497,7 @@ namespace SquidLib.SquidMath {
                             return 0;
                     }
                 case NoiseType.Cellular:
-                    switch (m_cellularReturnType) {
+                    switch (cellularReturnType) {
                         case CellularReturnType.CellValue:
                         case CellularReturnType.NoiseLookup:
                         case CellularReturnType.Distance:
@@ -508,9 +508,9 @@ namespace SquidLib.SquidMath {
                 case NoiseType.WhiteNoise:
                     return GetWhiteNoise(x, y, z);
                 case NoiseType.Cubic:
-                    return SingleCubic(m_seed, x, y, z);
+                    return SingleCubic(seed, x, y, z);
                 case NoiseType.CubicFractal:
-                    switch (m_fractalType) {
+                    switch (fractalType) {
                         case FractalType.FBM:
                             return SingleCubicFractalFBM(x, y, z);
                         case FractalType.Billow:
@@ -526,14 +526,14 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetNoise(FN_DECIMAL x, FN_DECIMAL y) {
-            x *= m_frequency;
-            y *= m_frequency;
+            x *= frequency;
+            y *= frequency;
 
-            switch (m_noiseType) {
+            switch (noiseType) {
                 case NoiseType.Value:
-                    return SingleValue(m_seed, x, y);
+                    return SingleValue(seed, x, y);
                 case NoiseType.ValueFractal:
-                    switch (m_fractalType) {
+                    switch (fractalType) {
                         case FractalType.FBM:
                             return SingleValueFractalFBM(x, y);
                         case FractalType.Billow:
@@ -544,9 +544,9 @@ namespace SquidLib.SquidMath {
                             return 0;
                     }
                 case NoiseType.Perlin:
-                    return SinglePerlin(m_seed, x, y);
+                    return SinglePerlin(seed, x, y);
                 case NoiseType.PerlinFractal:
-                    switch (m_fractalType) {
+                    switch (fractalType) {
                         case FractalType.FBM:
                             return SinglePerlinFractalFBM(x, y);
                         case FractalType.Billow:
@@ -557,9 +557,9 @@ namespace SquidLib.SquidMath {
                             return 0;
                     }
                 case NoiseType.Simplex:
-                    return SingleSimplex(m_seed, x, y);
+                    return SingleSimplex(seed, x, y);
                 case NoiseType.SimplexFractal:
-                    switch (m_fractalType) {
+                    switch (fractalType) {
                         case FractalType.FBM:
                             return SingleSimplexFractalFBM(x, y);
                         case FractalType.Billow:
@@ -570,7 +570,7 @@ namespace SquidLib.SquidMath {
                             return 0;
                     }
                 case NoiseType.Cellular:
-                    switch (m_cellularReturnType) {
+                    switch (cellularReturnType) {
                         case CellularReturnType.CellValue:
                         case CellularReturnType.NoiseLookup:
                         case CellularReturnType.Distance:
@@ -581,9 +581,9 @@ namespace SquidLib.SquidMath {
                 case NoiseType.WhiteNoise:
                     return GetWhiteNoise(x, y);
                 case NoiseType.Cubic:
-                    return SingleCubic(m_seed, x, y);
+                    return SingleCubic(seed, x, y);
                 case NoiseType.CubicFractal:
-                    switch (m_fractalType) {
+                    switch (fractalType) {
                         case FractalType.FBM:
                             return SingleCubicFractalFBM(x, y);
                         case FractalType.Billow:
@@ -612,7 +612,7 @@ namespace SquidLib.SquidMath {
             int zi = FloatCast2Int(z);
             int wi = FloatCast2Int(w);
 
-            return ValCoord4D(m_seed, xi, yi, zi, wi);
+            return ValCoord4D(seed, xi, yi, zi, wi);
         }
 
         public FN_DECIMAL GetWhiteNoise(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
@@ -620,35 +620,35 @@ namespace SquidLib.SquidMath {
             int yi = FloatCast2Int(y);
             int zi = FloatCast2Int(z);
 
-            return ValCoord3D(m_seed, xi, yi, zi);
+            return ValCoord3D(seed, xi, yi, zi);
         }
 
         public FN_DECIMAL GetWhiteNoise(FN_DECIMAL x, FN_DECIMAL y) {
             int xi = FloatCast2Int(x);
             int yi = FloatCast2Int(y);
 
-            return ValCoord2D(m_seed, xi, yi);
+            return ValCoord2D(seed, xi, yi);
         }
 
         public FN_DECIMAL GetWhiteNoiseInt(int x, int y, int z, int w) {
-            return ValCoord4D(m_seed, x, y, z, w);
+            return ValCoord4D(seed, x, y, z, w);
         }
 
         public FN_DECIMAL GetWhiteNoiseInt(int x, int y, int z) {
-            return ValCoord3D(m_seed, x, y, z);
+            return ValCoord3D(seed, x, y, z);
         }
 
         public FN_DECIMAL GetWhiteNoiseInt(int x, int y) {
-            return ValCoord2D(m_seed, x, y);
+            return ValCoord2D(seed, x, y);
         }
 
         // Value Noise
         public FN_DECIMAL GetValueFractal(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            x *= m_frequency;
-            y *= m_frequency;
-            z *= m_frequency;
+            x *= frequency;
+            y *= frequency;
+            z *= frequency;
 
-            switch (m_fractalType) {
+            switch (fractalType) {
                 case FractalType.FBM:
                     return SingleValueFractalFBM(x, y, z);
                 case FractalType.Billow:
@@ -661,50 +661,50 @@ namespace SquidLib.SquidMath {
         }
 
         private FN_DECIMAL SingleValueFractalFBM(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = SingleValue(seed, x, y, z);
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += SingleValue(++seed, x, y, z) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleValueFractalBillow(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = Math.Abs(SingleValue(seed, x, y, z)) * 2 - 1;
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += (Math.Abs(SingleValue(++seed, x, y, z)) * 2 - 1) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleValueFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = 1 - Math.Abs(SingleValue(seed, x, y, z));
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum -= (1 - Math.Abs(SingleValue(++seed, x, y, z))) * amp;
             }
 
@@ -712,7 +712,7 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetValue(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            return SingleValue(m_seed, x * m_frequency, y * m_frequency, z * m_frequency);
+            return SingleValue(seed, x * frequency, y * frequency, z * frequency);
         }
 
         private FN_DECIMAL SingleValue(int seed, FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
@@ -724,7 +724,7 @@ namespace SquidLib.SquidMath {
             int z1 = z0 + 1;
 
             FN_DECIMAL xs, ys, zs;
-            switch (m_interp) {
+            switch (interp) {
                 default:
                 case Interp.Linear:
                     xs = x - x0;
@@ -755,10 +755,10 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetValueFractal(FN_DECIMAL x, FN_DECIMAL y) {
-            x *= m_frequency;
-            y *= m_frequency;
+            x *= frequency;
+            y *= frequency;
 
-            switch (m_fractalType) {
+            switch (fractalType) {
                 case FractalType.FBM:
                     return SingleValueFractalFBM(x, y);
                 case FractalType.Billow:
@@ -771,46 +771,46 @@ namespace SquidLib.SquidMath {
         }
 
         private FN_DECIMAL SingleValueFractalFBM(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = SingleValue(seed, x, y);
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += SingleValue(++seed, x, y) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleValueFractalBillow(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = Math.Abs(SingleValue(seed, x, y)) * 2 - 1;
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                amp *= m_gain;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                amp *= gain;
                 sum += (Math.Abs(SingleValue(++seed, x, y)) * 2 - 1) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleValueFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = 1 - Math.Abs(SingleValue(seed, x, y));
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum -= (1 - Math.Abs(SingleValue(++seed, x, y))) * amp;
             }
 
@@ -818,7 +818,7 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetValue(FN_DECIMAL x, FN_DECIMAL y) {
-            return SingleValue(m_seed, x * m_frequency, y * m_frequency);
+            return SingleValue(seed, x * frequency, y * frequency);
         }
 
         private FN_DECIMAL SingleValue(int seed, FN_DECIMAL x, FN_DECIMAL y) {
@@ -828,7 +828,7 @@ namespace SquidLib.SquidMath {
             int y1 = y0 + 1;
 
             FN_DECIMAL xs, ys;
-            switch (m_interp) {
+            switch (interp) {
                 default:
                 case Interp.Linear:
                     xs = x - x0;
@@ -852,11 +852,11 @@ namespace SquidLib.SquidMath {
 
         // Gradient Noise
         public FN_DECIMAL GetPerlinFractal(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            x *= m_frequency;
-            y *= m_frequency;
-            z *= m_frequency;
+            x *= frequency;
+            y *= frequency;
+            z *= frequency;
 
-            switch (m_fractalType) {
+            switch (fractalType) {
                 case FractalType.FBM:
                     return SinglePerlinFractalFBM(x, y, z);
                 case FractalType.Billow:
@@ -869,50 +869,50 @@ namespace SquidLib.SquidMath {
         }
 
         private FN_DECIMAL SinglePerlinFractalFBM(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = SinglePerlin(seed, x, y, z);
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += SinglePerlin(++seed, x, y, z) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SinglePerlinFractalBillow(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = Math.Abs(SinglePerlin(seed, x, y, z)) * 2 - 1;
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += (Math.Abs(SinglePerlin(++seed, x, y, z)) * 2 - 1) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SinglePerlinFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = 1 - Math.Abs(SinglePerlin(seed, x, y, z));
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum -= (1 - Math.Abs(SinglePerlin(++seed, x, y, z))) * amp;
             }
 
@@ -920,7 +920,7 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetPerlin(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            return SinglePerlin(m_seed, x * m_frequency, y * m_frequency, z * m_frequency);
+            return SinglePerlin(seed, x * frequency, y * frequency, z * frequency);
         }
 
         private FN_DECIMAL SinglePerlin(int seed, FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
@@ -932,7 +932,7 @@ namespace SquidLib.SquidMath {
             int z1 = z0 + 1;
 
             FN_DECIMAL xs, ys, zs;
-            switch (m_interp) {
+            switch (interp) {
                 default:
                 case Interp.Linear:
                     xs = x - x0;
@@ -970,10 +970,10 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetPerlinFractal(FN_DECIMAL x, FN_DECIMAL y) {
-            x *= m_frequency;
-            y *= m_frequency;
+            x *= frequency;
+            y *= frequency;
 
-            switch (m_fractalType) {
+            switch (fractalType) {
                 case FractalType.FBM:
                     return SinglePerlinFractalFBM(x, y);
                 case FractalType.Billow:
@@ -986,47 +986,47 @@ namespace SquidLib.SquidMath {
         }
 
         private FN_DECIMAL SinglePerlinFractalFBM(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = SinglePerlin(seed, x, y);
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += SinglePerlin(++seed, x, y) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SinglePerlinFractalBillow(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = Math.Abs(SinglePerlin(seed, x, y)) * 2 - 1;
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += (Math.Abs(SinglePerlin(++seed, x, y)) * 2 - 1) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SinglePerlinFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = 1 - Math.Abs(SinglePerlin(seed, x, y));
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum -= (1 - Math.Abs(SinglePerlin(++seed, x, y))) * amp;
             }
 
@@ -1034,7 +1034,7 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetPerlin(FN_DECIMAL x, FN_DECIMAL y) {
-            return SinglePerlin(m_seed, x * m_frequency, y * m_frequency);
+            return SinglePerlin(seed, x * frequency, y * frequency);
         }
 
         private FN_DECIMAL SinglePerlin(int seed, FN_DECIMAL x, FN_DECIMAL y) {
@@ -1044,7 +1044,7 @@ namespace SquidLib.SquidMath {
             int y1 = y0 + 1;
 
             FN_DECIMAL xs, ys;
-            switch (m_interp) {
+            switch (interp) {
                 default:
                 case Interp.Linear:
                     xs = x - x0;
@@ -1073,11 +1073,11 @@ namespace SquidLib.SquidMath {
 
         // Simplex Noise
         public FN_DECIMAL GetSimplexFractal(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            x *= m_frequency;
-            y *= m_frequency;
-            z *= m_frequency;
+            x *= frequency;
+            y *= frequency;
+            z *= frequency;
 
-            switch (m_fractalType) {
+            switch (fractalType) {
                 case FractalType.FBM:
                     return SingleSimplexFractalFBM(x, y, z);
                 case FractalType.Billow:
@@ -1090,50 +1090,50 @@ namespace SquidLib.SquidMath {
         }
 
         private FN_DECIMAL SingleSimplexFractalFBM(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = SingleSimplex(seed, x, y, z);
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += SingleSimplex(++seed, x, y, z) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleSimplexFractalBillow(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = Math.Abs(SingleSimplex(seed, x, y, z)) * 2 - 1;
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += (Math.Abs(SingleSimplex(++seed, x, y, z)) * 2 - 1) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleSimplexFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = 1 - Math.Abs(SingleSimplex(seed, x, y, z));
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum -= (1 - Math.Abs(SingleSimplex(++seed, x, y, z))) * amp;
             }
 
@@ -1141,7 +1141,7 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            return SingleSimplex(m_seed, x * m_frequency, y * m_frequency, z * m_frequency);
+            return SingleSimplex(seed, x * frequency, y * frequency, z * frequency);
         }
 
         private const FN_DECIMAL F3 = (FN_DECIMAL)(1.0 / 3.0);
@@ -1227,10 +1227,10 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetSimplexFractal(FN_DECIMAL x, FN_DECIMAL y) {
-            x *= m_frequency;
-            y *= m_frequency;
+            x *= frequency;
+            y *= frequency;
 
-            switch (m_fractalType) {
+            switch (fractalType) {
                 case FractalType.FBM:
                     return SingleSimplexFractalFBM(x, y);
                 case FractalType.Billow:
@@ -1243,47 +1243,47 @@ namespace SquidLib.SquidMath {
         }
 
         private FN_DECIMAL SingleSimplexFractalFBM(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = SingleSimplex(seed, x, y);
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += SingleSimplex(++seed, x, y) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleSimplexFractalBillow(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = Math.Abs(SingleSimplex(seed, x, y)) * 2 - 1;
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += (Math.Abs(SingleSimplex(++seed, x, y)) * 2 - 1) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleSimplexFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = 1 - Math.Abs(SingleSimplex(seed, x, y));
             FN_DECIMAL amp = 1;
 
-            for (int i = 1; i < m_octaves; i++) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            for (int i = 1; i < octaves; i++) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum -= (1 - Math.Abs(SingleSimplex(++seed, x, y))) * amp;
             }
 
@@ -1291,7 +1291,7 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y) {
-            return SingleSimplex(m_seed, x * m_frequency, y * m_frequency);
+            return SingleSimplex(seed, x * frequency, y * frequency);
         }
 
         private const FN_DECIMAL F2 = (FN_DECIMAL)(1.0 / 2.0);
@@ -1348,7 +1348,7 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z, FN_DECIMAL w) {
-            return SingleSimplex(m_seed, x * m_frequency, y * m_frequency, z * m_frequency, w * m_frequency);
+            return SingleSimplex(seed, x * frequency, y * frequency, z * frequency, w * frequency);
         }
 
         private static readonly byte[] SIMPLEX_4D =
@@ -1457,11 +1457,11 @@ namespace SquidLib.SquidMath {
 
         // Cubic Noise
         public FN_DECIMAL GetCubicFractal(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            x *= m_frequency;
-            y *= m_frequency;
-            z *= m_frequency;
+            x *= frequency;
+            y *= frequency;
+            z *= frequency;
 
-            switch (m_fractalType) {
+            switch (fractalType) {
                 case FractalType.FBM:
                     return SingleCubicFractalFBM(x, y, z);
                 case FractalType.Billow:
@@ -1474,53 +1474,53 @@ namespace SquidLib.SquidMath {
         }
 
         private FN_DECIMAL SingleCubicFractalFBM(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = SingleCubic(seed, x, y, z);
             FN_DECIMAL amp = 1;
             int i = 0;
 
-            while (++i < m_octaves) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            while (++i < octaves) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += SingleCubic(++seed, x, y, z) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleCubicFractalBillow(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = Math.Abs(SingleCubic(seed, x, y, z)) * 2 - 1;
             FN_DECIMAL amp = 1;
             int i = 0;
 
-            while (++i < m_octaves) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            while (++i < octaves) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += (Math.Abs(SingleCubic(++seed, x, y, z)) * 2 - 1) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleCubicFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = 1 - Math.Abs(SingleCubic(seed, x, y, z));
             FN_DECIMAL amp = 1;
             int i = 0;
 
-            while (++i < m_octaves) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
-                z *= m_lacunarity;
+            while (++i < octaves) {
+                x *= lacunarity;
+                y *= lacunarity;
+                z *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum -= (1 - Math.Abs(SingleCubic(++seed, x, y, z))) * amp;
             }
 
@@ -1528,7 +1528,7 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetCubic(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            return SingleCubic(m_seed, x * m_frequency, y * m_frequency, z * m_frequency);
+            return SingleCubic(seed, x * frequency, y * frequency, z * frequency);
         }
 
         private const FN_DECIMAL CUBIC_3D_BOUNDING = 1 / (FN_DECIMAL)(1.5 * 1.5 * 1.5);
@@ -1582,10 +1582,10 @@ namespace SquidLib.SquidMath {
 
 
         public FN_DECIMAL GetCubicFractal(FN_DECIMAL x, FN_DECIMAL y) {
-            x *= m_frequency;
-            y *= m_frequency;
+            x *= frequency;
+            y *= frequency;
 
-            switch (m_fractalType) {
+            switch (fractalType) {
                 case FractalType.FBM:
                     return SingleCubicFractalFBM(x, y);
                 case FractalType.Billow:
@@ -1598,50 +1598,50 @@ namespace SquidLib.SquidMath {
         }
 
         private FN_DECIMAL SingleCubicFractalFBM(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = SingleCubic(seed, x, y);
             FN_DECIMAL amp = 1;
             int i = 0;
 
-            while (++i < m_octaves) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            while (++i < octaves) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += SingleCubic(++seed, x, y) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleCubicFractalBillow(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = Math.Abs(SingleCubic(seed, x, y)) * 2 - 1;
             FN_DECIMAL amp = 1;
             int i = 0;
 
-            while (++i < m_octaves) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            while (++i < octaves) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum += (Math.Abs(SingleCubic(++seed, x, y)) * 2 - 1) * amp;
             }
 
-            return sum * m_fractalBounding;
+            return sum * fractalBounding;
         }
 
         private FN_DECIMAL SingleCubicFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y) {
-            int seed = m_seed;
+            int seed = this.seed;
             FN_DECIMAL sum = 1 - Math.Abs(SingleCubic(seed, x, y));
             FN_DECIMAL amp = 1;
             int i = 0;
 
-            while (++i < m_octaves) {
-                x *= m_lacunarity;
-                y *= m_lacunarity;
+            while (++i < octaves) {
+                x *= lacunarity;
+                y *= lacunarity;
 
-                amp *= m_gain;
+                amp *= gain;
                 sum -= (1 - Math.Abs(SingleCubic(++seed, x, y))) * amp;
             }
 
@@ -1649,8 +1649,8 @@ namespace SquidLib.SquidMath {
         }
 
         public FN_DECIMAL GetCubic(FN_DECIMAL x, FN_DECIMAL y) {
-            x *= m_frequency;
-            y *= m_frequency;
+            x *= frequency;
+            y *= frequency;
 
             return SingleCubic(0, x, y);
         }
@@ -1685,11 +1685,11 @@ namespace SquidLib.SquidMath {
 
         // Cellular Noise
         public FN_DECIMAL GetCellular(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            x *= m_frequency;
-            y *= m_frequency;
-            z *= m_frequency;
+            x *= frequency;
+            y *= frequency;
+            z *= frequency;
 
-            switch (m_cellularReturnType) {
+            switch (cellularReturnType) {
                 case CellularReturnType.CellValue:
                 case CellularReturnType.NoiseLookup:
                 case CellularReturnType.Distance:
@@ -1707,16 +1707,16 @@ namespace SquidLib.SquidMath {
             FN_DECIMAL distance = 999999;
             int xc = 0, yc = 0, zc = 0;
 
-            switch (m_cellularDistanceFunction) {
+            switch (cellularDistanceFunction) {
                 case CellularDistanceFunction.Euclidean:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, m_seed)];
+                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * m_cellularJitter;
+                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
 
                                 FN_DECIMAL newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
@@ -1734,11 +1734,11 @@ namespace SquidLib.SquidMath {
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, m_seed)];
+                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * m_cellularJitter;
+                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
 
                                 FN_DECIMAL newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
 
@@ -1756,11 +1756,11 @@ namespace SquidLib.SquidMath {
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, m_seed)];
+                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * m_cellularJitter;
+                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
 
                                 FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
@@ -1776,13 +1776,13 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            switch (m_cellularReturnType) {
+            switch (cellularReturnType) {
                 case CellularReturnType.CellValue:
-                    return ValCoord3D(m_seed, xc, yc, zc);
+                    return ValCoord3D(seed, xc, yc, zc);
 
                 case CellularReturnType.NoiseLookup:
-                    Float3 vec = CELL_3D[CoreMath.Hash256(xc, yc, zc, m_seed)];
-                    return m_cellularNoiseLookup.GetNoise(xc + vec.x * m_cellularJitter, yc + vec.y * m_cellularJitter, zc + vec.z * m_cellularJitter);
+                    Float3 vec = CELL_3D[CoreMath.Hash256(xc, yc, zc, seed)];
+                    return cellularNoiseLookup.GetNoise(xc + vec.x * cellularJitter, yc + vec.y * cellularJitter, zc + vec.z * cellularJitter);
 
                 case CellularReturnType.Distance:
                     return distance;
@@ -1798,20 +1798,20 @@ namespace SquidLib.SquidMath {
 
             FN_DECIMAL[] distance = { 999999, 999999, 999999, 999999 };
 
-            switch (m_cellularDistanceFunction) {
+            switch (cellularDistanceFunction) {
                 case CellularDistanceFunction.Euclidean:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, m_seed)];
+                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * m_cellularJitter;
+                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
 
                                 FN_DECIMAL newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
-                                for (int i = m_cellularDistanceIndex1; i > 0; i--)
+                                for (int i = cellularDistanceIndex1; i > 0; i--)
                                     distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
                                 distance[0] = Math.Min(distance[0], newDistance);
                             }
@@ -1822,15 +1822,15 @@ namespace SquidLib.SquidMath {
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, m_seed)];
+                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * m_cellularJitter;
+                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
 
                                 FN_DECIMAL newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
 
-                                for (int i = m_cellularDistanceIndex1; i > 0; i--)
+                                for (int i = cellularDistanceIndex1; i > 0; i--)
                                     distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
                                 distance[0] = Math.Min(distance[0], newDistance);
                             }
@@ -1841,15 +1841,15 @@ namespace SquidLib.SquidMath {
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, m_seed)];
+                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * m_cellularJitter;
+                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
 
                                 FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
-                                for (int i = m_cellularDistanceIndex1; i > 0; i--)
+                                for (int i = cellularDistanceIndex1; i > 0; i--)
                                     distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
                                 distance[0] = Math.Min(distance[0], newDistance);
                             }
@@ -1860,27 +1860,27 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            switch (m_cellularReturnType) {
+            switch (cellularReturnType) {
                 case CellularReturnType.Distance2:
-                    return distance[m_cellularDistanceIndex1];
+                    return distance[cellularDistanceIndex1];
                 case CellularReturnType.Distance2Add:
-                    return distance[m_cellularDistanceIndex1] + distance[m_cellularDistanceIndex0];
+                    return distance[cellularDistanceIndex1] + distance[cellularDistanceIndex0];
                 case CellularReturnType.Distance2Sub:
-                    return distance[m_cellularDistanceIndex1] - distance[m_cellularDistanceIndex0];
+                    return distance[cellularDistanceIndex1] - distance[cellularDistanceIndex0];
                 case CellularReturnType.Distance2Mul:
-                    return distance[m_cellularDistanceIndex1] * distance[m_cellularDistanceIndex0];
+                    return distance[cellularDistanceIndex1] * distance[cellularDistanceIndex0];
                 case CellularReturnType.Distance2Div:
-                    return distance[m_cellularDistanceIndex0] / distance[m_cellularDistanceIndex1];
+                    return distance[cellularDistanceIndex0] / distance[cellularDistanceIndex1];
                 default:
                     return 0;
             }
         }
 
         public FN_DECIMAL GetCellular(FN_DECIMAL x, FN_DECIMAL y) {
-            x *= m_frequency;
-            y *= m_frequency;
+            x *= frequency;
+            y *= frequency;
 
-            switch (m_cellularReturnType) {
+            switch (cellularReturnType) {
                 case CellularReturnType.CellValue:
                 case CellularReturnType.NoiseLookup:
                 case CellularReturnType.Distance:
@@ -1897,15 +1897,15 @@ namespace SquidLib.SquidMath {
             FN_DECIMAL distance = 999999;
             int xc = 0, yc = 0;
 
-            switch (m_cellularDistanceFunction) {
+            switch (cellularDistanceFunction) {
                 default:
                 case CellularDistanceFunction.Euclidean:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, m_seed)];
+                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
+                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
 
                             FN_DECIMAL newDistance = vecX * vecX + vecY * vecY;
 
@@ -1920,10 +1920,10 @@ namespace SquidLib.SquidMath {
                 case CellularDistanceFunction.Manhattan:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, m_seed)];
+                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
+                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
 
                             FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY));
 
@@ -1938,10 +1938,10 @@ namespace SquidLib.SquidMath {
                 case CellularDistanceFunction.Natural:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, m_seed)];
+                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
+                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
 
                             FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY)) + (vecX * vecX + vecY * vecY);
 
@@ -1955,13 +1955,13 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            switch (m_cellularReturnType) {
+            switch (cellularReturnType) {
                 case CellularReturnType.CellValue:
-                    return ValCoord2D(m_seed, xc, yc);
+                    return ValCoord2D(seed, xc, yc);
 
                 case CellularReturnType.NoiseLookup:
-                    Float2 vec = CELL_2D[CoreMath.Hash256(xc, yc, m_seed)];
-                    return m_cellularNoiseLookup.GetNoise(xc + vec.x * m_cellularJitter, yc + vec.y * m_cellularJitter);
+                    Float2 vec = CELL_2D[CoreMath.Hash256(xc, yc, seed)];
+                    return cellularNoiseLookup.GetNoise(xc + vec.x * cellularJitter, yc + vec.y * cellularJitter);
 
                 case CellularReturnType.Distance:
                     return distance;
@@ -1976,19 +1976,19 @@ namespace SquidLib.SquidMath {
 
             FN_DECIMAL[] distance = { 999999, 999999, 999999, 999999 };
 
-            switch (m_cellularDistanceFunction) {
+            switch (cellularDistanceFunction) {
                 default:
                 case CellularDistanceFunction.Euclidean:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, m_seed)];
+                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
+                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
 
                             FN_DECIMAL newDistance = vecX * vecX + vecY * vecY;
 
-                            for (int i = m_cellularDistanceIndex1; i > 0; i--)
+                            for (int i = cellularDistanceIndex1; i > 0; i--)
                                 distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
                             distance[0] = Math.Min(distance[0], newDistance);
                         }
@@ -1997,14 +1997,14 @@ namespace SquidLib.SquidMath {
                 case CellularDistanceFunction.Manhattan:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, m_seed)];
+                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
+                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
 
                             FN_DECIMAL newDistance = Math.Abs(vecX) + Math.Abs(vecY);
 
-                            for (int i = m_cellularDistanceIndex1; i > 0; i--)
+                            for (int i = cellularDistanceIndex1; i > 0; i--)
                                 distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
                             distance[0] = Math.Min(distance[0], newDistance);
                         }
@@ -2013,14 +2013,14 @@ namespace SquidLib.SquidMath {
                 case CellularDistanceFunction.Natural:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, m_seed)];
+                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * m_cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * m_cellularJitter;
+                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
+                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
 
                             FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY)) + (vecX * vecX + vecY * vecY);
 
-                            for (int i = m_cellularDistanceIndex1; i > 0; i--)
+                            for (int i = cellularDistanceIndex1; i > 0; i--)
                                 distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
                             distance[0] = Math.Min(distance[0], newDistance);
                         }
@@ -2028,36 +2028,36 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            switch (m_cellularReturnType) {
+            switch (cellularReturnType) {
                 case CellularReturnType.Distance2:
-                    return distance[m_cellularDistanceIndex1];
+                    return distance[cellularDistanceIndex1];
                 case CellularReturnType.Distance2Add:
-                    return distance[m_cellularDistanceIndex1] + distance[m_cellularDistanceIndex0];
+                    return distance[cellularDistanceIndex1] + distance[cellularDistanceIndex0];
                 case CellularReturnType.Distance2Sub:
-                    return distance[m_cellularDistanceIndex1] - distance[m_cellularDistanceIndex0];
+                    return distance[cellularDistanceIndex1] - distance[cellularDistanceIndex0];
                 case CellularReturnType.Distance2Mul:
-                    return distance[m_cellularDistanceIndex1] * distance[m_cellularDistanceIndex0];
+                    return distance[cellularDistanceIndex1] * distance[cellularDistanceIndex0];
                 case CellularReturnType.Distance2Div:
-                    return distance[m_cellularDistanceIndex0] / distance[m_cellularDistanceIndex1];
+                    return distance[cellularDistanceIndex0] / distance[cellularDistanceIndex1];
                 default:
                     return 0;
             }
         }
 
         public void GradientPerturb(ref FN_DECIMAL x, ref FN_DECIMAL y, ref FN_DECIMAL z) {
-            SingleGradientPerturb(m_seed, m_gradientPerturbAmp, m_frequency, ref x, ref y, ref z);
+            SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y, ref z);
         }
 
         public void GradientPerturbFractal(ref FN_DECIMAL x, ref FN_DECIMAL y, ref FN_DECIMAL z) {
-            int seed = m_seed;
-            FN_DECIMAL amp = m_gradientPerturbAmp * m_fractalBounding;
-            FN_DECIMAL freq = m_frequency;
+            int seed = this.seed;
+            FN_DECIMAL amp = gradientPerturbAmp * fractalBounding;
+            FN_DECIMAL freq = frequency;
 
-            SingleGradientPerturb(seed, amp, m_frequency, ref x, ref y, ref z);
+            SingleGradientPerturb(seed, amp, frequency, ref x, ref y, ref z);
 
-            for (int i = 1; i < m_octaves; i++) {
-                freq *= m_lacunarity;
-                amp *= m_gain;
+            for (int i = 1; i < octaves; i++) {
+                freq *= lacunarity;
+                amp *= gain;
                 SingleGradientPerturb(++seed, amp, freq, ref x, ref y, ref z);
             }
         }
@@ -2075,7 +2075,7 @@ namespace SquidLib.SquidMath {
             int z1 = z0 + 1;
 
             FN_DECIMAL xs, ys, zs;
-            switch (m_interp) {
+            switch (interp) {
                 default:
                 case Interp.Linear:
                     xs = xf - x0;
@@ -2132,19 +2132,19 @@ namespace SquidLib.SquidMath {
         }
 
         public void GradientPerturb(ref FN_DECIMAL x, ref FN_DECIMAL y) {
-            SingleGradientPerturb(m_seed, m_gradientPerturbAmp, m_frequency, ref x, ref y);
+            SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y);
         }
 
         public void GradientPerturbFractal(ref FN_DECIMAL x, ref FN_DECIMAL y) {
-            int seed = m_seed;
-            FN_DECIMAL amp = m_gradientPerturbAmp * m_fractalBounding;
-            FN_DECIMAL freq = m_frequency;
+            int seed = this.seed;
+            FN_DECIMAL amp = gradientPerturbAmp * fractalBounding;
+            FN_DECIMAL freq = frequency;
 
-            SingleGradientPerturb(seed, amp, m_frequency, ref x, ref y);
+            SingleGradientPerturb(seed, amp, frequency, ref x, ref y);
 
-            for (int i = 1; i < m_octaves; i++) {
-                freq *= m_lacunarity;
-                amp *= m_gain;
+            for (int i = 1; i < octaves; i++) {
+                freq *= lacunarity;
+                amp *= gain;
                 SingleGradientPerturb(++seed, amp, freq, ref x, ref y);
             }
         }
@@ -2159,7 +2159,7 @@ namespace SquidLib.SquidMath {
             int y1 = y0 + 1;
 
             FN_DECIMAL xs, ys;
-            switch (m_interp) {
+            switch (interp) {
                 default:
                 case Interp.Linear:
                     xs = xf - x0;
