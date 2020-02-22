@@ -132,7 +132,7 @@ namespace SquidLib {
             if (array2d == null || array2d[0] == null) {
                 return;
             }
-            Fill<T>(array2d, value, 0, 0, array2d.Length, array2d[0].Length);
+            Fill(array2d, value, 0, 0, array2d.Length, array2d[0].Length);
         }
 
         /**
