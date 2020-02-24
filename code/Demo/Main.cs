@@ -20,13 +20,21 @@ namespace Demo {
             RNG rng = new RNG();
 
             Terminal.Open();
-            Terminal.Set("log: level=trace");
+            //Terminal.Set("log: level=trace");
             int width = 90, height = 30;
-            //Terminal.Set($"window.size={width}x{height};");
             Terminal.Set($"window: title='SquidLibSharp Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
-            SColor.LoadAurora();
+            //SColor.LoadAurora();
             Terminal.Refresh();
             int input = 0;
+            int black = 0xFF << 24, bright;
+            DateTime current = DateTime.Now, start = DateTime.Now;
+            double time = 0.0;
+            FastNoise noise = new FastNoise();
+            noise.SetFractalOctaves(3);
+            noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
+            noise.SetFrequency(0.5);
+            char[] waterChars = new char[] { '~', ',', '~', '~', '~', '=', '~', ','};
+            int frames = 1;
             while (keepRunning) {
                 input = Terminal.Peek();
                 if (input == Terminal.TK_Q || input == Terminal.TK_ESCAPE || input == Terminal.TK_CLOSE)
@@ -34,8 +42,23 @@ namespace Demo {
                 else {
                     if (Terminal.HasInput())
                         input = Terminal.Read();
-                    Terminal.Color(Terminal.ColorFromName(rng.RandomElement(SColor.AuroraNames)));
-                    Terminal.Put(rng.NextInt(width), rng.NextInt(height), ArrayTools.LetterAt(input));
+                    time = DateTime.Now.Subtract(start).TotalSeconds;
+                    for(int y = 0; y < height; y++) {
+                        for(int x = 0; x < width; x++) {
+                            bright = (int)(noise.GetNoise(x * 0.25, y * 0.5, time) * 125 + 128);
+                            Terminal.BkColor(black | bright << 16 | bright << 8 | bright);
+                            Terminal.Put(x, y, waterChars[rng.NextBits(3)]);
+                        }
+                    }
+
+                    frames++;
+                    if (current.Millisecond > DateTime.Now.Millisecond) {
+                        Terminal.Set($"window.title='{frames} FPS'");
+                        frames = 0;
+                    }
+                    current = DateTime.Now;
+                    //Terminal.Color(Terminal.ColorFromName(rng.RandomElement(SColor.AuroraNames)));
+                    //Terminal.Put(rng.NextInt(width), rng.NextInt(height), ArrayTools.LetterAt(input));
                     Terminal.Refresh();
                 }
                 //switch (Terminal.Read()) {
