@@ -39,12 +39,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Demo|AnyCPU'">
-    <OutputPath>bin\Demo\</OutputPath>
-    <PlatformTarget>x64</PlatformTarget>
-    <Optimize>true</Optimize>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Demo.NoiseDemoTK</StartupObject>
   </PropertyGroup>
@@ -68,35 +62,6 @@
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Demo|x64'">
-    <OutputPath>bin\x64\Demo\</OutputPath>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-    <DefineConstants>TRACE</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Demo Release|AnyCPU'">
-    <OutputPath>bin\Demo Release\</OutputPath>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Demo Release|x64'">
-    <OutputPath>bin\x64\Demo Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
