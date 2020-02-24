@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SquidLib.SquidMath {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "Current name indicates correct level of specificity.")]
-    public class IndexedSet<T> : ISet<T> {
+    public class IndexedSet<T> : ISet<T>, IEquatable<IndexedSet<T>> {
         public HashSet<T> Set { get; private set; }
         public List<T> Items { get; private set; }
 
@@ -105,5 +106,16 @@ namespace SquidLib.SquidMath {
         void ICollection<T>.Add(T item) => Add(item);
 
         IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
+
+        public override bool Equals(object obj) => Equals(obj as IndexedSet<T>);
+
+        public bool Equals(IndexedSet<T> other) => other != null &&
+                   EqualityComparer<List<T>>.Default.Equals(Items, other.Items);
+
+        public override int GetHashCode() => -604923257 + EqualityComparer<List<T>>.Default.GetHashCode(Items);
+
+        public static bool operator ==(IndexedSet<T> left, IndexedSet<T> right) => EqualityComparer<IndexedSet<T>>.Default.Equals(left, right);
+
+        public static bool operator !=(IndexedSet<T> left, IndexedSet<T> right) => !(left == right);
     }
 }
