@@ -287,6 +287,42 @@ namespace BearLib {
             Color(ColorFromNameImpl(name));
         }
 
+        /// <summary>
+        /// Sets the foreground color to have the given grayscale value, clamped between 0 and 255. Alpha is always 255 (opaque).
+        /// </summary>
+        /// <param name="gray">All of the RGB channels' values; will be clamped between 0 and 255</param>
+        public static void Gray(int gray) {
+            Color(0xFF << 24
+                | Math.Max(0, Math.Min(255, gray)) * 0x10101);
+        }
+
+        /// <summary>
+        /// Sets the foreground color to have the given red, green, and blue values, clamped between 0 and 255. Alpha is always 255 (opaque).
+        /// </summary>
+        /// <param name="red">Red channel; will be clamped between 0 and 255</param>
+        /// <param name="green">Green channel; will be clamped between 0 and 255</param>
+        /// <param name="blue">Blue channel; will be clamped between 0 and 255</param>
+        public static void Rgb(int red, int green, int blue) {
+            Color(0xFF << 24
+                | Math.Max(0, Math.Min(255, red)) << 16
+                | Math.Max(0, Math.Min(255, green)) << 8
+                | Math.Max(0, Math.Min(255, blue)));
+        }
+
+        /// <summary>
+        /// Sets the foreground color to have the given red, green, blue, and alpha values, clamped between 0 and 255.
+        /// </summary>
+        /// <param name="red">Red channel; will be clamped between 0 and 255</param>
+        /// <param name="green">Green channel; will be clamped between 0 and 255</param>
+        /// <param name="blue">Blue channel; will be clamped between 0 and 255</param>
+        /// <param name="alpha">Alpha channel; will be clamped between 0 and 255</param>
+        public static void Rgba(int red, int green, int blue, int alpha) {
+            Color(Math.Max(0, Math.Min(255, alpha)) << 24
+                | Math.Max(0, Math.Min(255, red)) << 16
+                | Math.Max(0, Math.Min(255, green)) << 8
+                | Math.Max(0, Math.Min(255, blue)));
+        }
+
         [DllImport("BearLibTerminal.dll", EntryPoint = "terminal_bkcolor", CallingConvention=CallingConvention.Cdecl)]
         public static extern void BkColor(int argb);
 
@@ -299,6 +335,29 @@ namespace BearLib {
         {
         	BkColor(ColorFromNameImpl(name));
         }
+
+        /// <summary>
+        /// Sets the background color to have the given grayscale value, clamped between 0 and 255. Alpha is always 255 (opaque).
+        /// </summary>
+        /// <param name="gray">All of the RGB channels' values; will be clamped between 0 and 255</param>
+        public static void BkGray(int gray) {
+            BkColor(0xFF << 24
+                | Math.Max(0, Math.Min(255, gray)) * 0x10101);
+        }
+
+        /// <summary>
+        /// Sets the background color to have the given red, green, and blue values, clamped between 0 and 255. Alpha is always 255 (opaque).
+        /// </summary>
+        /// <param name="red">Red channel; will be clamped between 0 and 255</param>
+        /// <param name="green">Green channel; will be clamped between 0 and 255</param>
+        /// <param name="blue">Blue channel; will be clamped between 0 and 255</param>
+        public static void BkRgb(int red, int green, int blue) {
+            BkColor(0xFF << 24
+                | Math.Max(0, Math.Min(255, red)) << 16
+                | Math.Max(0, Math.Min(255, green)) << 8
+                | Math.Max(0, Math.Min(255, blue)));
+        }
+
 
         [DllImport("BearLibTerminal.dll", EntryPoint = "terminal_composition", CallingConvention = CallingConvention.Cdecl)]
         private static extern void CompositionImpl(int mode);

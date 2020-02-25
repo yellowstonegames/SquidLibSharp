@@ -15,7 +15,7 @@ namespace Demo {
     public class LetterDemo {
         private static bool keepRunning = true;
 
-        // currently, you can press spacebar (or most keys) to display randomly-placed 'a' glyphs, and press Escape to close.
+        // currently, you can view a rippling water area in ASCII, and can press Escape to close.
         static void Main() {
             RNG rng = new RNG();
 
@@ -26,14 +26,14 @@ namespace Demo {
             //SColor.LoadAurora();
             Terminal.Refresh();
             int input = 0;
-            int black = 0xFF << 24, bright;
+            int bright;
             DateTime current = DateTime.Now, start = DateTime.Now;
             double time = 0.0;
             FastNoise noise = new FastNoise();
             noise.SetFractalOctaves(3);
             noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
             noise.SetFrequency(0.5);
-            char[] waterChars = new char[] { '~', ',', '~', '~', '~', '=', '~', ','};
+            char[] waterChars = new char[] { '~', '=', '~', '~', '~', ',', '~', ','};
             int frames = 1;
             while (keepRunning) {
                 input = Terminal.Peek();
@@ -43,11 +43,12 @@ namespace Demo {
                     if (Terminal.HasInput())
                         input = Terminal.Read();
                     time = DateTime.Now.Subtract(start).TotalSeconds;
+                    Terminal.Rgb(0x33, 0xAA, 0xDD);
                     for(int y = 0; y < height; y++) {
                         for(int x = 0; x < width; x++) {
-                            bright = (int)(noise.GetNoise(x * 0.25, y * 0.5, time) * 125 + 128);
-                            Terminal.BkColor(black | bright << 16 | bright << 8 | bright);
-                            Terminal.Put(x, y, waterChars[rng.NextBits(3)]);
+                            bright = (int)(noise.GetNoise(x * 0.25, y * 0.5, time * 0.75) * 80 + 74);
+                            Terminal.BkRgb(bright >> 1, bright + 40 + (bright >> 1), bright + 90 + (bright >> 1));
+                            Terminal.Put(x, y, waterChars[bright >> 3 & 7]);
                         }
                     }
 
