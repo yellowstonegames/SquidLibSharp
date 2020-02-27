@@ -131,12 +131,58 @@ namespace Demo {
         private static void Main() {
             DateTime current = DateTime.Now;
             int frames = 0;
+
+            SimplexNoise noise = new SimplexNoise();
+
+            int time = 0;
+
             using (var window = new NoiseWindow()) {
                 window.VSync = VSyncMode.Off;
-                while(window.WindowUpdate()) {
+                while (window.WindowUpdate()) {
                     if (window.GetKey() == Key.Escape) {
                         window.Close();
                         break;
+                    }
+                    time++;
+                    for (int i = 0, y = 0; y < 512; y++) {
+                        for (int x = 0; x < 512; x++) {
+                            window.colors[i++] = (byte)(noise.GetNoise((x + time) * 0.03125, (y + time) * 0.03125) * 127.5 + 127.5);
+                        }
+                    }
+                    frames++;
+                    if (current.Millisecond > DateTime.Now.Millisecond) {
+                        window.Title = ($"{frames} FPS");
+                        frames = 0;
+                    }
+                    current = DateTime.Now;
+                }
+            }
+        }
+    }
+    public static class FastNoiseDemoTK {
+        private static void Main() {
+            DateTime current = DateTime.Now;
+            int frames = 0;
+
+            FastNoise noise = new FastNoise();
+            noise.SetFrequency(0.03125);
+            noise.SetFractalOctaves(1);
+            noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
+
+            int time = 0;
+
+            using (var window = new NoiseWindow()) {
+                window.VSync = VSyncMode.Off;
+                while (window.WindowUpdate()) {
+                    if (window.GetKey() == Key.Escape) {
+                        window.Close();
+                        break;
+                    }
+                    time++;
+                    for (int i = 0, y = 0; y < 512; y++) {
+                        for (int x = 0; x < 512; x++) {
+                            window.colors[i++] = (byte)(noise.GetNoise(x + time, y + time) * 125 + 128);
+                        }
                     }
                     frames++;
                     if (current.Millisecond > DateTime.Now.Millisecond) {
@@ -157,36 +203,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
-    /*public static class SunshineMain{ // Here's a quick example.
-        public static void Main(){
-            ConsoleWindow console = new ConsoleWindow(20,60,"Sunshine Console: The Roguelike");
-            int row = 10; // These 2 ints are the player's position.
-            int col = 40;
-            while(console.WindowUpdate()){ // WindowUpdate() returns false if the window is closed, so be sure to check for that.
-                for(int i=0;i<20;++i){
-                    console.Write(i,0,"".PadRight(60,'#'),Color4.DimGray); // Let's make our black screen look more like a dungeon.
-                }
-                console.Write(row,col,'@',Color4.White); // And of course, our player character.
-                if(console.KeyPressed){ // KeyPressed returns true if there's a new key to grab.
-                    switch(console.GetKey()){ // If KeyPressed is false, GetKey() will return Key.Unknown.
-                    case Key.Up:
-                    row = Math.Max(0,row-1); // In our basic example, we only check for arrow keys.
-                    break;
-                    case Key.Down:
-                    row = Math.Min(row+1,19); // We make sure that row & col don't go beyond the edges of the map.
-                    break;
-                    case Key.Left:
-                    col = Math.Max(0,col-1);
-                    break;
-                    case Key.Right:
-                    col = Math.Min(col+1,59);
-                    break;
-                    }
-                }
-                System.Threading.Thread.Sleep(10); // A call to Sleep() will prevent our program from using 100% CPU all the time.
-            } // And that's all you really need to get up and running!
-        }
-    }*/
     public class NoiseWindow : GameWindow {
         protected int internal_rows;
         protected int internal_cols;
@@ -201,17 +217,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
         protected static float half_width;
 
         private int id;
-        private byte[] colors = new byte[512 * 512];
-        private FastNoise noise = new FastNoise();
-        private int time = 0;
-
+        internal byte[] colors = new byte[512 * 512];
 
         public NoiseWindow() : base(512, 512, GraphicsMode.Default, "0 FPS") {
-
-            noise.SetFrequency(0.03125);
-            noise.SetFractalOctaves(3);
-           noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
-
 
             VSync = VSyncMode.On;
             GL.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -279,12 +287,6 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
         protected void Render() {
             base.OnRenderFrame(render_args);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            time++;
-            for (int i = 0, y = 0; y < 512; y++) {
-                for (int x = 0; x < 512; x++) {
-                    colors[i++] = (byte)(noise.GetNoise(x + time, y + time) * 125 + 128);
-                }
-            }
             //GL.BindTexture(TextureTarget.Texture2D, id);
             GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, 512, 512, PixelFormat.Luminance, PixelType.UnsignedByte, colors);
             GL.DrawElements(PrimitiveType.Triangles, num_elements, DrawElementsType.UnsignedInt, IntPtr.Zero);

@@ -6,46 +6,31 @@ using System.Text;
 namespace SquidLib.SquidMath {
     public class IndexedDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
 
-        //
-        // Summary:
-        //     Initializes a new instance of the System.Collections.Generic.Dictionary`2 class
-        //     that is empty, has the default initial capacity, and uses the default equality
-        //     comparer for the key type.
+        /// <summary>
+        ///     Initializes a new instance of the System.Collections.Generic.Dictionary`2 class
+        ///     that is empty, has the default initial capacity, and uses the default equality
+        ///     comparer for the key type.
+        /// </summary>
         public IndexedDictionary() {
             Dict = new Dictionary<TKey, TValue>();
             Items = new List<TKey>();
         }
-        //
-        // Summary:
-        //     Initializes a new instance of the System.Collections.Generic.Dictionary`2 class
-        //     that contains elements copied from the specified System.Collections.Generic.IDictionary`2
-        //     and uses the default equality comparer for the key type.
-        //
-        // Parameters:
-        //   dictionary:
-        //     The System.Collections.Generic.IDictionary`2 whose elements are copied to the
-        //     new System.Collections.Generic.Dictionary`2.
-        //
-        // Exceptions:
-        //   T:System.ArgumentNullException:
-        //     dictionary is null.
-        //
-        //   T:System.ArgumentException:
-        //     dictionary contains one or more duplicate keys.
+        /// <summary>
+        ///     Initializes a new instance of the System.Collections.Generic.Dictionary`2 class
+        ///     that contains elements copied from the specified System.Collections.Generic.IDictionary`2
+        ///     and uses the default equality comparer for the key type.
+        /// </summary>
+        /// <param name="dictionary">The System.Collections.Generic.IDictionary`2 whose elements are copied to the new System.Collections.Generic.Dictionary`2.</param>
         public IndexedDictionary(IDictionary<TKey, TValue> dictionary) {
             Dict = new Dictionary<TKey, TValue>(dictionary);
             Items = new List<TKey>(Dict.Keys);
         }
-        //
-        // Summary:
-        //     Initializes a new instance of the System.Collections.Generic.Dictionary`2 class
-        //     that is empty, has the default initial capacity, and uses the specified System.Collections.Generic.IEqualityComparer`1.
-        //
-        // Parameters:
-        //   comparer:
-        //     The System.Collections.Generic.IEqualityComparer`1 implementation to use when
-        //     comparing keys, or null to use the default System.Collections.Generic.EqualityComparer`1
-        //     for the type of the key.
+        ///     
+        /// <summary>
+        ///     Initializes a new instance of the System.Collections.Generic.Dictionary`2 class
+        ///     that is empty, has the default initial capacity, and uses the specified System.Collections.Generic.IEqualityComparer`1.
+        /// </summary>
+        /// <param name="comparer">The System.Collections.Generic.IEqualityComparer`1 implementation to use when comparing keys, or null to use the default System.Collections.Generic.EqualityComparer`1 for the type of the key.</param>
         public IndexedDictionary(IEqualityComparer<TKey> comparer) {
             Dict = new Dictionary<TKey, TValue>(comparer);
             Items = new List<TKey>();
@@ -129,7 +114,7 @@ namespace SquidLib.SquidMath {
 
         public int Count => Items.Count;
 
-        public bool IsReadOnly => ((IDictionary<TKey, TValue>)Dict).IsReadOnly;
+        public bool IsReadOnly => false;
 
         public void Add(TKey key, TValue value) {
             Dict.Add(key, value);

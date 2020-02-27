@@ -66,7 +66,7 @@ namespace SquidLib.SquidMath
  */
     public class SimplexNoise : INoise2D, INoise3D
     {
-        protected static readonly double[] phiGrad2 = {
+        protected static readonly double[] PhiGrad2 = {
             0.6499429579167653, 0.759982994187637,
             -0.1551483029088119, 0.9878911904175052,
             -0.8516180517334043, 0.5241628506120981,
@@ -324,7 +324,7 @@ namespace SquidLib.SquidMath
             0.9744164792492415, 0.22474991650168097,
             0.462509014279733, 0.8866145790082576,
     };
-        protected static readonly double[] grad3d =
+        protected static readonly double[] Grad3d =
         {
                     -0.448549002408981,  1.174316525459290,  0.000000000000001,
                      0.000000000000001,  1.069324374198914,  0.660878777503967,
@@ -368,7 +368,7 @@ namespace SquidLib.SquidMath
         private static double gradCoord3D(long seed, int x, int y, int z, double xd, double yd, double zd)
         {
             uint hash = CoreMath.Hash32(x, y, z, seed) * 3;
-            return xd * grad3d[hash] + yd * grad3d[hash + 1] + zd * grad3d[hash + 2];
+            return xd * Grad3d[hash] + yd * Grad3d[hash + 1] + zd * Grad3d[hash + 2];
         }
 
         public long Seed { get; set; }
@@ -421,20 +421,20 @@ namespace SquidLib.SquidMath
             if (t0 > 0)
             {
                 t0 *= t0;
-                n += t0 * t0 * (phiGrad2[gi0] * x0 + phiGrad2[gi0 + 1] * y0);
+                n += t0 * t0 * (PhiGrad2[gi0] * x0 + PhiGrad2[gi0 + 1] * y0);
                 // for 2D gradient
             }
             double t1 = 0.75 - x1 * x1 - y1 * y1;
             if (t1 > 0)
             {
                 t1 *= t1;
-                n += t1 * t1 * (phiGrad2[gi1] * x1 + phiGrad2[gi1 + 1] * y1);
+                n += t1 * t1 * (PhiGrad2[gi1] * x1 + PhiGrad2[gi1 + 1] * y1);
             }
             double t2 = 0.75 - x2 * x2 - y2 * y2;
             if (t2 > 0)
             {
                 t2 *= t2;
-                n += t2 * t2 * (phiGrad2[gi2] * x2 + phiGrad2[gi2 + 1] * y2);
+                n += t2 * t2 * (PhiGrad2[gi2] * x2 + PhiGrad2[gi2 + 1] * y2);
             }
             // Add contributions from each corner to get the noise value.
             // The result is scaled to return values in the interval [-1,1].
