@@ -41,7 +41,7 @@ namespace SquidLib.SquidMath {
         public enum CellularDistanceFunction { Euclidean, Manhattan, Natural };
         public enum CellularReturnType { CellValue, NoiseLookup, Distance, Distance2, Distance2Add, Distance2Sub, Distance2Mul, Distance2Div };
 
-        private int seed = 1337;
+        private long seed = 1337;
         private double frequency = 0.01;
         private Interp interp = Interp.Quintic;
         private NoiseType noiseType = NoiseType.Simplex;
@@ -62,17 +62,17 @@ namespace SquidLib.SquidMath {
 
         private double gradientPerturbAmp = 1.0;
 
-        public FastNoise(int seed = 1337) {
+        public FastNoise(long seed = 1337) {
             this.seed = seed;
             CalculateFractalBounding();
         }
 
         // Returns the seed used by this object
-        public int GetSeed() => seed;
+        public long GetSeed() => seed;
 
         // Sets seed used for all noise types
         // Default: 1337
-        public void SetSeed(int seed) => this.seed = seed;
+        public void SetSeed(long seed) => this.seed = seed;
 
         // Sets frequency for all noise types
         // Default: 0.01
@@ -645,28 +645,28 @@ namespace SquidLib.SquidMath {
         }
 
         [MethodImpl(FN_INLINE)]
-        private static double ValCoord2D(int seed, int x, int y) => (int)HashAll(x, y, seed) * 4.6566128730773926E-10;
+        private static double ValCoord2D(long seed, int x, int y) => (int)HashAll(x, y, seed) * 4.6566128730773926E-10;
 
         [MethodImpl(FN_INLINE)]
-        private static double ValCoord3D(int seed, int x, int y, int z) => (int)HashAll(x, y, z, seed) * 4.6566128730773926E-10;
+        private static double ValCoord3D(long seed, int x, int y, int z) => (int)HashAll(x, y, z, seed) * 4.6566128730773926E-10;
 
         [MethodImpl(FN_INLINE)]
-        private static double ValCoord4D(int seed, int x, int y, int z, int w) => (int)HashAll(x, y, z, w, seed) * 4.6566128730773926E-10;
+        private static double ValCoord4D(long seed, int x, int y, int z, int w) => (int)HashAll(x, y, z, w, seed) * 4.6566128730773926E-10;
 
         [MethodImpl(FN_INLINE)]
-        private static double GradCoord2D(int seed, int x, int y, double xd, double yd) {
+        private static double GradCoord2D(long seed, int x, int y, double xd, double yd) {
             uint hash = Hash256(x, y, seed) << 1;
             return xd * GRAD_2D[hash] + yd * GRAD_2D[hash+1];
         }
 
         [MethodImpl(FN_INLINE)]
-        private static double GradCoord3D(int seed, int x, int y, int z, double xd, double yd, double zd) {
+        private static double GradCoord3D(long seed, int x, int y, int z, double xd, double yd, double zd) {
             Float3 g = GRAD_3D[Hash32(x, y, z, seed)];
             return xd * g.x + yd * g.y + zd * g.z;
         }
 
         [MethodImpl(FN_INLINE)]
-        private static double GradCoord4D(int seed, int x, int y, int z, int w, double xd, double yd, double zd, double wd) {
+        private static double GradCoord4D(long seed, int x, int y, int z, int w, double xd, double yd, double zd, double wd) {
             uint hash = Hash64(x, y, z, w, seed) << 2;
             return xd * GRAD_2D[hash] + yd * GRAD_2D[hash + 1] + zd * GRAD_2D[hash + 2] + wd * GRAD_4D[hash + 3];
             //uint hash = Hash32(x, y, z, w, seed);
@@ -884,7 +884,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleValueFractalFBM(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = SingleValue(seed, x, y, z);
             double amp = 1;
 
@@ -901,7 +901,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleValueFractalBillow(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = Math.Abs(SingleValue(seed, x, y, z)) * 2 - 1;
             double amp = 1;
 
@@ -918,7 +918,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleValueFractalRidgedMulti(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = 1 - Math.Abs(SingleValue(seed, x, y, z));
             double amp = 1;
 
@@ -936,7 +936,7 @@ namespace SquidLib.SquidMath {
 
         public double GetValue(double x, double y, double z) => SingleValue(seed, x * frequency, y * frequency, z * frequency);
 
-        private double SingleValue(int seed, double x, double y, double z) {
+        private double SingleValue(long seed, double x, double y, double z) {
             int x0 = FastFloor(x);
             int y0 = FastFloor(y);
             int z0 = FastFloor(z);
@@ -992,7 +992,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleValueFractalFBM(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = SingleValue(seed, x, y);
             double amp = 1;
 
@@ -1008,7 +1008,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleValueFractalBillow(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = Math.Abs(SingleValue(seed, x, y)) * 2 - 1;
             double amp = 1;
 
@@ -1023,7 +1023,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleValueFractalRidgedMulti(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = 1 - Math.Abs(SingleValue(seed, x, y));
             double amp = 1;
 
@@ -1040,7 +1040,7 @@ namespace SquidLib.SquidMath {
 
         public double GetValue(double x, double y) => SingleValue(seed, x * frequency, y * frequency);
 
-        private double SingleValue(int seed, double x, double y) {
+        private double SingleValue(long seed, double x, double y) {
             int x0 = FastFloor(x);
             int y0 = FastFloor(y);
             int x1 = x0 + 1;
@@ -1088,7 +1088,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SinglePerlinFractalFBM(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = SinglePerlin(seed, x, y, z);
             double amp = 1;
 
@@ -1105,7 +1105,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SinglePerlinFractalBillow(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = Math.Abs(SinglePerlin(seed, x, y, z)) * 2 - 1;
             double amp = 1;
 
@@ -1122,7 +1122,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SinglePerlinFractalRidgedMulti(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = 1 - Math.Abs(SinglePerlin(seed, x, y, z));
             double amp = 1;
 
@@ -1140,7 +1140,7 @@ namespace SquidLib.SquidMath {
 
         public double GetPerlin(double x, double y, double z) => SinglePerlin(seed, x * frequency, y * frequency, z * frequency);
 
-        private double SinglePerlin(int seed, double x, double y, double z) {
+        private double SinglePerlin(long seed, double x, double y, double z) {
             int x0 = FastFloor(x);
             int y0 = FastFloor(y);
             int z0 = FastFloor(z);
@@ -1203,7 +1203,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SinglePerlinFractalFBM(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = SinglePerlin(seed, x, y);
             double amp = 1;
 
@@ -1219,7 +1219,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SinglePerlinFractalBillow(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = Math.Abs(SinglePerlin(seed, x, y)) * 2 - 1;
             double amp = 1;
 
@@ -1235,7 +1235,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SinglePerlinFractalRidgedMulti(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = 1 - Math.Abs(SinglePerlin(seed, x, y));
             double amp = 1;
 
@@ -1252,7 +1252,7 @@ namespace SquidLib.SquidMath {
 
         public double GetPerlin(double x, double y) => SinglePerlin(seed, x * frequency, y * frequency);
 
-        private double SinglePerlin(int seed, double x, double y) {
+        private double SinglePerlin(long seed, double x, double y) {
             int x0 = FastFloor(x);
             int y0 = FastFloor(y);
             int x1 = x0 + 1;
@@ -1305,7 +1305,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleSimplexFractalFBM(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = SingleSimplex(seed, x, y, z);
             double amp = 1;
 
@@ -1322,7 +1322,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleSimplexFractalBillow(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = Math.Abs(SingleSimplex(seed, x, y, z)) * 2 - 1;
             double amp = 1;
 
@@ -1339,7 +1339,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleSimplexFractalRidgedMulti(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = 1 - Math.Abs(SingleSimplex(seed, x, y, z));
             double amp = 1;
 
@@ -1361,7 +1361,7 @@ namespace SquidLib.SquidMath {
         private const double G3 = 1.0 / 6.0;
         private const double G33 = G3 * 3 - 1;
 
-        private static double SingleSimplex(int seed, double x, double y, double z) {
+        private static double SingleSimplex(long seed, double x, double y, double z) {
             double t = (x + y + z) * F3;
             int i = FastFloor(x + t);
             int j = FastFloor(y + t);
@@ -1456,7 +1456,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleSimplexFractalFBM(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = SingleSimplex(seed, x, y);
             double amp = 1;
 
@@ -1472,7 +1472,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleSimplexFractalBillow(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = Math.Abs(SingleSimplex(seed, x, y)) * 2 - 1;
             double amp = 1;
 
@@ -1488,7 +1488,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleSimplexFractalRidgedMulti(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = 1 - Math.Abs(SingleSimplex(seed, x, y));
             double amp = 1;
 
@@ -1509,7 +1509,7 @@ namespace SquidLib.SquidMath {
         private const double G2 = 0.21132486540518711774542560974902;
         private const double H2 = G2 * 2;
 
-        private static double SingleSimplex(int seed, double x, double y) {
+        private static double SingleSimplex(long seed, double x, double y) {
             double t = (x + y) * F2;
             long i = LongFloor(x + t);
             long j = LongFloor(y + t);
@@ -1575,7 +1575,7 @@ namespace SquidLib.SquidMath {
         private const double F4 = (2.23606797 - 1.0) / 4.0;
         private const double G4 = (5.0 - 2.23606797) / 20.0;
 
-        private static double SingleSimplex(int seed, double x, double y, double z, double w) {
+        private static double SingleSimplex(long seed, double x, double y, double z, double w) {
             double n0, n1, n2, n3, n4;
             double t = (x + y + z + w) * F4;
             int i = FastFloor(x + t);
@@ -1688,7 +1688,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleCubicFractalFBM(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = SingleCubic(seed, x, y, z);
             double amp = 1;
             int i = 0;
@@ -1706,7 +1706,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleCubicFractalBillow(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = Math.Abs(SingleCubic(seed, x, y, z)) * 2 - 1;
             double amp = 1;
             int i = 0;
@@ -1724,7 +1724,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleCubicFractalRidgedMulti(double x, double y, double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = 1 - Math.Abs(SingleCubic(seed, x, y, z));
             double amp = 1;
             int i = 0;
@@ -1745,7 +1745,7 @@ namespace SquidLib.SquidMath {
 
         private const double CUBIC_3D_BOUNDING = 1 / (1.5 * 1.5 * 1.5);
 
-        private static double SingleCubic(int seed, double x, double y, double z) {
+        private static double SingleCubic(long seed, double x, double y, double z) {
             int x1 = FastFloor(x);
             int y1 = FastFloor(y);
             int z1 = FastFloor(z);
@@ -1810,7 +1810,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleCubicFractalFBM(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = SingleCubic(seed, x, y);
             double amp = 1;
             int i = 0;
@@ -1827,7 +1827,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleCubicFractalBillow(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = Math.Abs(SingleCubic(seed, x, y)) * 2 - 1;
             double amp = 1;
             int i = 0;
@@ -1844,7 +1844,7 @@ namespace SquidLib.SquidMath {
         }
 
         private double SingleCubicFractalRidgedMulti(double x, double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double sum = 1 - Math.Abs(SingleCubic(seed, x, y));
             double amp = 1;
             int i = 0;
@@ -1869,7 +1869,7 @@ namespace SquidLib.SquidMath {
 
         private const double CUBIC_2D_BOUNDING = 1 / 2.25;
 
-        private static double SingleCubic(int seed, double x, double y) {
+        private static double SingleCubic(long seed, double x, double y) {
             int x1 = FastFloor(x);
             int y1 = FastFloor(y);
 
@@ -2259,7 +2259,7 @@ namespace SquidLib.SquidMath {
         public void GradientPerturb(ref double x, ref double y, ref double z) => SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y, ref z);
 
         public void GradientPerturbFractal(ref double x, ref double y, ref double z) {
-            int seed = this.seed;
+            long seed = this.seed;
             double amp = gradientPerturbAmp * fractalBounding;
             double freq = frequency;
 
@@ -2272,7 +2272,7 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private void SingleGradientPerturb(int seed, double perturbAmp, double frequency, ref double x, ref double y, ref double z) {
+        private void SingleGradientPerturb(long seed, double perturbAmp, double frequency, ref double x, ref double y, ref double z) {
             double xf = x * frequency;
             double yf = y * frequency;
             double zf = z * frequency;
@@ -2344,7 +2344,7 @@ namespace SquidLib.SquidMath {
         public void GradientPerturb(ref double x, ref double y) => SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y);
 
         public void GradientPerturbFractal(ref double x, ref double y) {
-            int seed = this.seed;
+            long seed = this.seed;
             double amp = gradientPerturbAmp * fractalBounding;
             double freq = frequency;
 
@@ -2357,7 +2357,7 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private void SingleGradientPerturb(int seed, double perturbAmp, double frequency, ref double x, ref double y) {
+        private void SingleGradientPerturb(long seed, double perturbAmp, double frequency, ref double x, ref double y) {
             double xf = x * frequency;
             double yf = y * frequency;
 
