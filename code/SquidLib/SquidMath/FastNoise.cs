@@ -26,10 +26,9 @@
 // off every 'zix'.)
 //
 
-using FN_DECIMAL = System.Double;
-
 using System;
 using System.Runtime.CompilerServices;
+using static SquidLib.SquidMath.CoreMath;
 
 namespace SquidLib.SquidMath {
     public class FastNoise {
@@ -43,16 +42,16 @@ namespace SquidLib.SquidMath {
         public enum CellularReturnType { CellValue, NoiseLookup, Distance, Distance2, Distance2Add, Distance2Sub, Distance2Mul, Distance2Div };
 
         private int seed = 1337;
-        private FN_DECIMAL frequency = 0.01;
+        private double frequency = 0.01;
         private Interp interp = Interp.Quintic;
         private NoiseType noiseType = NoiseType.Simplex;
 
         private int octaves = 3;
-        private FN_DECIMAL lacunarity = 2.0;
-        private FN_DECIMAL gain = 0.5;
+        private double lacunarity = 2.0;
+        private double gain = 0.5;
         private FractalType fractalType = FractalType.FBM;
 
-        private FN_DECIMAL fractalBounding;
+        private double fractalBounding;
 
         private CellularDistanceFunction cellularDistanceFunction = CellularDistanceFunction.Euclidean;
         private CellularReturnType cellularReturnType = CellularReturnType.CellValue;
@@ -61,15 +60,12 @@ namespace SquidLib.SquidMath {
         private int cellularDistanceIndex1 = 1;
         private float cellularJitter = 0.45f;
 
-        private FN_DECIMAL gradientPerturbAmp = 1.0;
+        private double gradientPerturbAmp = 1.0;
 
         public FastNoise(int seed = 1337) {
             this.seed = seed;
             CalculateFractalBounding();
         }
-
-        // Returns a 0 float/double
-        public static FN_DECIMAL GetDecimalType() => 0;
 
         // Returns the seed used by this object
         public int GetSeed() => seed;
@@ -80,7 +76,7 @@ namespace SquidLib.SquidMath {
 
         // Sets frequency for all noise types
         // Default: 0.01
-        public void SetFrequency(FN_DECIMAL frequency) => this.frequency = frequency;
+        public void SetFrequency(double frequency) => this.frequency = frequency;
 
         // Changes the interpolation method used to smooth between noise values
         // Possible interpolation methods (lowest to highest quality) :
@@ -102,11 +98,11 @@ namespace SquidLib.SquidMath {
 
         // Sets octave lacunarity for all fractal noise types
         // Default: 2.0
-        public void SetFractalLacunarity(FN_DECIMAL lacunarity) => this.lacunarity = lacunarity;
+        public void SetFractalLacunarity(double lacunarity) => this.lacunarity = lacunarity;
 
         // Sets octave gain for all fractal noise types
         // Default: 0.5
-        public void SetFractalGain(FN_DECIMAL gain) { this.gain = gain; CalculateFractalBounding(); }
+        public void SetFractalGain(double gain) { this.gain = gain; CalculateFractalBounding(); }
 
         // Sets method for combining octaves in all fractal noise types
         // Default: FBM
@@ -146,18 +142,18 @@ namespace SquidLib.SquidMath {
 
         // Sets the maximum perturb distance from original location when using GradientPerturb{Fractal}(...)
         // Default: 1.0
-        public void SetGradientPerturbAmp(FN_DECIMAL gradientPerturbAmp) => this.gradientPerturbAmp = gradientPerturbAmp;
+        public void SetGradientPerturbAmp(double gradientPerturbAmp) => this.gradientPerturbAmp = gradientPerturbAmp;
 
         private struct Float2 {
-            public readonly FN_DECIMAL x, y;
-            public Float2(FN_DECIMAL x, FN_DECIMAL y) {
+            public readonly double x, y;
+            public Float2(double x, double y) {
                 this.x = x;
                 this.y = y;
             }
         }
 
         private struct Float3 {
-            public readonly FN_DECIMAL x, y, z;
+            public readonly double x, y, z;
             public Float3(float x, float y, float z) {
                 this.x = x;
                 this.y = y;
@@ -170,10 +166,12 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private static readonly Float2[] GRAD_2D = {
-        new Float2(-1,-1), new Float2( 1,-1), new Float2(-1, 1), new Float2( 1, 1),
-        new Float2( 0,-1), new Float2(-1, 0), new Float2( 0, 1), new Float2( 1, 0),
-    };
+        #region CONSTANTS
+
+        //private static readonly Float2[] GRAD2D = {
+        //new Float2(-1,-1), new Float2( 1,-1), new Float2(-1, 1), new Float2( 1, 1),
+        //new Float2( 0,-1), new Float2(-1, 0), new Float2( 0, 1), new Float2( 1, 0),
+        //};
 
         //    private static readonly Float3[] GRAD_3D = {
         //    new Float3( 1, 1, 0), new Float3(-1, 1, 0), new Float3( 1,-1, 0), new Float3(-1,-1, 0),
@@ -181,6 +179,266 @@ namespace SquidLib.SquidMath {
         //    new Float3( 0, 1, 1), new Float3( 0,-1, 1), new Float3( 0, 1,-1), new Float3( 0,-1,-1),
         //    new Float3( 1, 1, 0), new Float3( 0,-1, 1), new Float3(-1, 1, 0), new Float3( 0,-1,-1),
         //};
+
+        private static readonly double[] GRAD_2D = {
+            0.6499429579167653, 0.759982994187637,
+            -0.1551483029088119, 0.9878911904175052,
+            -0.8516180517334043, 0.5241628506120981,
+            -0.9518580082090311, -0.30653928330368374,
+            -0.38568876701087174, -0.9226289476282616,
+            0.4505066120763985, -0.8927730912586049,
+            0.9712959670388622, -0.23787421973396244,
+            0.8120673355833279, 0.5835637432865366,
+            0.08429892519436613, 0.9964405106232257,
+            -0.702488350003267, 0.7116952424385647,
+            -0.9974536374007479, -0.07131788861160528,
+            -0.5940875849508908, -0.804400361391775,
+            0.2252075529515288, -0.9743108118529653,
+            0.8868317111719171, -0.4620925405802277,
+            0.9275724981153959, 0.373643226540993,
+            0.3189067150428103, 0.9477861083074618,
+            -0.5130301507665112, 0.8583705868705491,
+            -0.9857873824221494, 0.1679977281313266,
+            -0.7683809836504446, -0.6399927061806058,
+            -0.013020236219374872, -0.9999152331316848,
+            0.7514561619680513, -0.6597830223946701,
+            0.9898275175279653, 0.14227257481477412,
+            0.5352066871710182, 0.8447211386057674,
+            -0.29411988281443646, 0.9557685360657266,
+            -0.9175289804081126, 0.39766892022290273,
+            -0.8985631161871687, -0.43884430750324743,
+            -0.2505005588110731, -0.968116454790094,
+            0.5729409678802212, -0.8195966369650838,
+            0.9952584535626074, -0.09726567026534665,
+            0.7207814785200723, 0.6931623620930514,
+            -0.05832476124070039, 0.998297662136006,
+            -0.7965970142012075, 0.6045107087270838,
+            -0.977160478114496, -0.21250270589112422,
+            -0.4736001288089817, -0.8807399831914728,
+            0.36153434093875386, -0.9323587937709286,
+            0.9435535266854258, -0.3312200813348966,
+            0.8649775992346886, 0.5018104750024599,
+            0.1808186720712497, 0.9835164502083277,
+            -0.6299339540895539, 0.7766487066139361,
+            -0.9996609468975833, 0.02603826506945166,
+            -0.6695112313914258, -0.7428019325774111,
+            0.12937272671950842, -0.9915960354807594,
+            0.8376810167470904, -0.5461597881403947,
+            0.959517028911149, 0.28165061908243916,
+            0.4095816551369482, 0.9122734610714476,
+            -0.42710760401484793, 0.9042008043530463,
+            -0.9647728141412515, 0.2630844295924223,
+            -0.8269869890664444, -0.562221059650754,
+            -0.11021592552380209, -0.9939076666174438,
+            0.6837188597775012, -0.72974551782423,
+            0.998972441738333, 0.04532174585508431,
+            0.6148313475439905, 0.7886586169422362,
+            -0.1997618324529528, 0.9798444827088829,
+            -0.8744989400706802, 0.48502742583822706,
+            -0.9369870231562731, -0.3493641630687752,
+            -0.3434772946489506, -0.9391609809082988,
+            0.4905057254335028, -0.8714379687143274,
+            0.9810787787756657, -0.1936089611460388,
+            0.7847847614201463, 0.6197684069414349,
+            0.03905187955516296, 0.9992371844077906,
+            -0.7340217731995672, 0.6791259356474049,
+            -0.9931964444524306, -0.1164509455824639,
+            -0.5570202966000876, -0.830498879695542,
+            0.2691336060685578, -0.9631028512493016,
+            0.9068632806061, -0.4214249521425399,
+            0.9096851999779008, 0.4152984913783901,
+            0.27562369868737335, 0.9612656119522284,
+            -0.5514058359842319, 0.8342371389734039,
+            -0.9923883787916933, 0.12314749546456379,
+            -0.7385858406439617, -0.6741594440488484,
+            0.032311046904542805, -0.9994778618098213,
+            0.7805865154410089, -0.6250477517051506,
+            0.9823623706068018, 0.18698709264487903,
+            0.49637249435561115, 0.8681096398768929,
+            -0.3371347561867868, 0.9414564016304079,
+            -0.9346092156607797, 0.35567627697379833,
+            -0.877750600058892, -0.47911781859606817,
+            -0.20636642697019966, -0.9784747813917093,
+            0.6094977881394418, -0.7927877687333024,
+            0.998644017504346, -0.052058873429796634,
+            0.6886255051458764, 0.7251171723677399,
+            -0.10350942208147358, 0.9946284731196666,
+            -0.8231759450656516, 0.567786371327519,
+            -0.9665253951623188, -0.2565709658288005,
+            -0.43319680340129196, -0.9012993562201753,
+            0.4034189716368784, -0.9150153732716426,
+            0.9575954428121146, -0.28811624026678895,
+            0.8413458575409575, 0.5404971304259356,
+            0.13605818775026976, 0.9907008476558967,
+            -0.664485735550556, 0.7473009482463117,
+            -0.999813836664718, -0.01929487014147803,
+            -0.6351581891853917, -0.7723820781910558,
+            0.17418065221630152, -0.984713714941304,
+            0.8615731658120597, -0.5076334109892543,
+            0.945766171482902, 0.32484819358982736,
+            0.3678149601703667, 0.9298990026206456,
+            -0.4676486851245607, 0.883914423064399,
+            -0.9757048995218635, 0.2190889067228882,
+            -0.8006563717736747, -0.5991238388999518,
+            -0.06505704156910719, -0.9978815467490495,
+            0.716089639712196, -0.6980083293893113,
+            0.9958918787052943, 0.09055035024139549,
+            0.5784561871098056, 0.8157134543418942,
+            -0.24396482815448167, 0.9697840804135497,
+            -0.8955826311865743, 0.4448952131872543,
+            -0.9201904205900768, -0.39147105876968413,
+            -0.3005599364234082, -0.9537629289384008,
+            0.5294967923694863, -0.84831193960148,
+            0.9888453593035162, -0.1489458135829932,
+            0.7558893631265085, 0.6546993743025888,
+            -0.006275422246980369, 0.9999803093439501,
+            -0.764046696121276, 0.6451609459244744,
+            -0.9868981170802014, -0.16134468229090512,
+            -0.5188082666339063, -0.8548906260290385,
+            0.31250655826478446, -0.9499156020623616,
+            0.9250311403279032, -0.3798912863223621,
+            0.889928392754896, 0.45610026942404636,
+            0.2317742435145519, 0.9727696027545563,
+            -0.5886483179573486, 0.8083892365475831,
+            -0.996949901406418, 0.0780441803450664,
+            -0.707272817672466, -0.7069407057042696,
+            0.07757592706207364, -0.9969864470194466,
+            0.8081126726681943, -0.5890279350532263,
+            0.9728783545459001, 0.23131733021125322,
+            0.4565181982253288, 0.8897140746830408,
+            -0.3794567783511009, 0.9252094645881026,
+            -0.9497687200714887, 0.31295267753091066,
+            -0.8551342041690687, -0.5184066867432686,
+            -0.16180818807538452, -0.9868222283024238,
+            0.6448020194233159, -0.7643496292585048,
+            0.9999772516247822, -0.006745089543285545,
+            0.6550543261176665, 0.7555817823601425,
+            -0.14848135899860646, 0.9889152066936411,
+            -0.848063153443784, 0.5298951667745091,
+            -0.9539039899003245, -0.300111942535184,
+            -0.3919032080850608, -0.9200064540494471,
+            0.44447452934057863, -0.8957914895596358,
+            0.9696693887216105, -0.24442028675267172,
+            0.8159850520735595, 0.5780730012658526,
+            0.0910180879994953, 0.9958492394217692,
+            -0.6976719213969089, 0.7164173993520435,
+            -0.9979119924958648, -0.06458835214597858,
+            -0.5994998228898376, -0.8003748886334786,
+            0.2186306161766729, -0.9758076929755208,
+            0.8836946816279001, -0.46806378802740584,
+            0.9300716543684309, 0.36737816720699407,
+            0.32529236260160294, 0.9456134933645286,
+            -0.5072286936943775, 0.8618114946396893,
+            -0.9846317976415725, 0.17464313062106204,
+            -0.7726803123417516, -0.6347953488483143,
+            -0.019764457813331488, -0.9998046640256011,
+            0.7469887719961158, -0.6648366525032559,
+            0.9907646418168752, 0.13559286310672486,
+            0.5408922318074902, 0.8410919055432124,
+            -0.2876664477065717, 0.9577306588304888,
+            -0.9148257956391065, 0.40384868903250853,
+            -0.9015027194859215, -0.4327734358292892,
+            -0.2570248925062563, -0.9664047830139022,
+            0.5673996816983953, -0.8234425306046317,
+            0.9945797473944409, -0.10397656501736473,
+            0.7254405241129018, 0.6882848581617921,
+            -0.05158982732517303, 0.9986683582233687,
+            -0.7925014140531963, 0.609870075281354,
+            -0.9785715990807187, -0.20590683687679034,
+            -0.47953002522651733, -0.8775254725113429,
+            0.35523727306945746, -0.9347761656258549,
+            0.9412979532686209, -0.33757689964259285,
+            0.868342678987353, 0.4959647082697184,
+            0.18744846526420056, 0.9822744386728669,
+            -0.6246810590458048, 0.7808800000444446,
+            -0.9994625758058275, 0.03278047534097766,
+            -0.674506266646887, -0.738269121834361,
+            0.12268137965007223, -0.9924461089082646,
+            0.8339780641890598, -0.5517975973592748,
+            0.9613949601033843, 0.2751721837101493,
+            0.41572570400265835, 0.9094900433932711,
+            -0.42099897262033487, 0.907061114287578,
+            -0.9629763390922247, 0.2695859238694348,
+            -0.8307604078465821, -0.5566301687427484,
+            -0.11691741449967302, -0.9931416405461567,
+            0.6787811074228051, -0.7343406622310046,
+            0.999255415972447, 0.03858255628819732,
+            0.6201369341201711, 0.7844935837468874,
+            -0.19314814942146824, 0.9811696042861612,
+            -0.8712074932224428, 0.4909149659086258,
+            -0.9393222007870077, -0.34303615422962713,
+            -0.3498042060103595, -0.9368228314134226,
+            0.4846166400948296, -0.8747266499559725,
+            0.9797505510481769, -0.20022202106859724,
+            0.7889473022428521, 0.6144608647291752,
+            0.045790935472179155, 0.9989510449609544,
+            -0.7294243101497431, 0.684061529222753,
+            -0.9939593229024027, -0.10974909756074072,
+            -0.562609414602539, -0.8267228354174018,
+            0.26263126874523307, -0.9648962724963078,
+            0.9040001019019392, -0.4275322394408211,
+            0.9124657316291773, 0.4091531358824348,
+            0.28210125132356934, 0.9593846381935018,
+            -0.5457662881946498, 0.8379374431723614,
+            -0.9915351626845509, 0.12983844253579577,
+            -0.7431163048326799, -0.6691622803863227,
+            0.02556874420628532, -0.9996730662170076,
+            0.7763527553119807, -0.6302986588273021,
+            0.9836012681423212, 0.1803567168386515,
+            0.5022166799422209, 0.8647418148718223,
+            -0.330776879188771, 0.9437089891455613,
+            -0.9321888864830543, 0.3619722087639923,
+            -0.8809623252471085, -0.47318641305008735,
+            -0.21296163248563432, -0.9770605626515961,
+            0.604136498566135, -0.7968808512571063,
+            0.9982701582127194, -0.05879363249495786,
+            0.6935008202914851, 0.7204558364362367,
+            -0.09679820929680796, 0.9953040272584711,
+            -0.8193274492343137, 0.5733258505694586,
+            -0.9682340024187017, -0.25004582891994304,
+            -0.4392662937408502, -0.8983569018954422,
+            0.39723793388455464, -0.9177156552457467,
+            0.9556302892322005, -0.2945687530984589,
+            0.8449724198323217, 0.5348098818484104,
+            0.14273745857559722, 0.9897605861618151,
+            -0.6594300077680133, 0.7517659641504648,
+            -0.9999212381512442, -0.01255059735959867,
+            -0.6403535266476091, -0.768080308893523,
+            0.16753470770767478, -0.9858661784001437,
+            0.8581295336101056, -0.5134332513054668,
+            0.9479357869928937, 0.31846152630759517,
+            0.37407884501651706, 0.9273969040875156,
+            -0.461675964944643, 0.8870486477034012,
+            -0.9742049295269273, 0.22566513972130173,
+            -0.8046793020829978, -0.5937097108850584,
+            -0.07178636201352963, -0.9974200309943962,
+            0.7113652211526822, -0.7028225395748172,
+            0.9964799940037152, 0.08383091047075403,
+            0.5839450884626246, 0.8117931594072332,
+            -0.23741799789097484, 0.9714075840127259,
+            -0.8925614000865144, 0.45092587758477687,
+            -0.9228099950981292, -0.38525538665538556,
+            -0.30698631553196837, -0.95171392869712,
+            0.5237628071845146, -0.8518641451605984,
+            0.9878182118285335, -0.15561227580071732,
+            0.7602881737752754, 0.6495859395164404,
+            4.6967723669845613E-4, 0.9999998897016406,
+            -0.7596776469502666, 0.6502998329417794,
+            -0.9879639510809196, -0.15468429579171308,
+            -0.5245627784110601, -0.8513717704420726,
+            0.3060921834538644, -0.9520018777441807,
+            0.9224476966294768, -0.3861220622846781,
+            0.8929845854878761, 0.45008724718774934,
+            0.23833038910266038, 0.9711841358002995,
+            -0.5831822693781987, 0.8123413326200348,
+            -0.9964008074312266, 0.0847669213219385,
+            -0.712025106726807, -0.7021540054650968,
+            0.07084939947717452, -0.9974870237721009,
+            0.8041212432524677, -0.5944653279629567,
+            0.9744164792492415, 0.22474991650168097,
+            0.462509014279733, 0.8866145790082576,
+        };
+
         private static readonly Float3[] GRAD_3D = {
                     new Float3(-0.448549002408981,  1.174316525459290,  0.000000000000001),
                     new Float3( 0.000000000000001,  1.069324374198914,  0.660878777503967),
@@ -216,8 +474,75 @@ namespace SquidLib.SquidMath {
                     new Float3( 0.448549002408981, -1.174316525459290,  0.000000000000003),
         };
 
-        private static readonly Float2[] CELL_2D =
-        {
+        private static readonly double[] GRAD_4D =             {
+                    -0.5875167, 1.4183908, 1.4183908, 1.4183908,
+                    -0.5875167, 1.4183908, 1.4183908, -1.4183908,
+                    -0.5875167, 1.4183908, -1.4183908, 1.4183908,
+                    -0.5875167, 1.4183908, -1.4183908, -1.4183908,
+                    -0.5875167, -1.4183908, 1.4183908, 1.4183908,
+                    -0.5875167, -1.4183908, 1.4183908, -1.4183908,
+                    -0.5875167, -1.4183908, -1.4183908, 1.4183908,
+                    -0.5875167, -1.4183908, -1.4183908, -1.4183908,
+                    1.4183908, -0.5875167, 1.4183908, 1.4183908,
+                    1.4183908, -0.5875167, 1.4183908, -1.4183908,
+                    1.4183908, -0.5875167, -1.4183908, 1.4183908,
+                    1.4183908, -0.5875167, -1.4183908, -1.4183908,
+                    -1.4183908, -0.5875167, 1.4183908, 1.4183908,
+                    -1.4183908, -0.5875167, 1.4183908, -1.4183908,
+                    -1.4183908, -0.5875167, -1.4183908, 1.4183908,
+                    -1.4183908, -0.5875167, -1.4183908, -1.4183908,
+                    1.4183908, 1.4183908, -0.5875167, 1.4183908,
+                    1.4183908, 1.4183908, -0.5875167, -1.4183908,
+                    1.4183908, -1.4183908, -0.5875167, 1.4183908,
+                    1.4183908, -1.4183908, -0.5875167, -1.4183908,
+                    -1.4183908, 1.4183908, -0.5875167, 1.4183908,
+                    -1.4183908, 1.4183908, -0.5875167, -1.4183908,
+                    -1.4183908, -1.4183908, -0.5875167, 1.4183908,
+                    -1.4183908, -1.4183908, -0.5875167, -1.4183908,
+                    1.4183908, 1.4183908, 1.4183908, -0.5875167,
+                    1.4183908, 1.4183908, -1.4183908, -0.5875167,
+                    1.4183908, -1.4183908, 1.4183908, -0.5875167,
+                    1.4183908, -1.4183908, -1.4183908, -0.5875167,
+                    -1.4183908, 1.4183908, 1.4183908, -0.5875167,
+                    -1.4183908, 1.4183908, -1.4183908, -0.5875167,
+                    -1.4183908, -1.4183908, 1.4183908, -0.5875167,
+                    -1.4183908, -1.4183908, -1.4183908, -0.5875167,
+                    0.5875167, 1.4183908, 1.4183908, 1.4183908,
+                    0.5875167, 1.4183908, 1.4183908, -1.4183908,
+                    0.5875167, 1.4183908, -1.4183908, 1.4183908,
+                    0.5875167, 1.4183908, -1.4183908, -1.4183908,
+                    0.5875167, -1.4183908, 1.4183908, 1.4183908,
+                    0.5875167, -1.4183908, 1.4183908, -1.4183908,
+                    0.5875167, -1.4183908, -1.4183908, 1.4183908,
+                    0.5875167, -1.4183908, -1.4183908, -1.4183908,
+                    1.4183908, 0.5875167, 1.4183908, 1.4183908,
+                    1.4183908, 0.5875167, 1.4183908, -1.4183908,
+                    1.4183908, 0.5875167, -1.4183908, 1.4183908,
+                    1.4183908, 0.5875167, -1.4183908, -1.4183908,
+                    -1.4183908, 0.5875167, 1.4183908, 1.4183908,
+                    -1.4183908, 0.5875167, 1.4183908, -1.4183908,
+                    -1.4183908, 0.5875167, -1.4183908, 1.4183908,
+                    -1.4183908, 0.5875167, -1.4183908, -1.4183908,
+                    1.4183908, 1.4183908, 0.5875167, 1.4183908,
+                    1.4183908, 1.4183908, 0.5875167, -1.4183908,
+                    1.4183908, -1.4183908, 0.5875167, 1.4183908,
+                    1.4183908, -1.4183908, 0.5875167, -1.4183908,
+                    -1.4183908, 1.4183908, 0.5875167, 1.4183908,
+                    -1.4183908, 1.4183908, 0.5875167, -1.4183908,
+                    -1.4183908, -1.4183908, 0.5875167, 1.4183908,
+                    -1.4183908, -1.4183908, 0.5875167, -1.4183908,
+                    1.4183908, 1.4183908, 1.4183908, 0.5875167,
+                    1.4183908, 1.4183908, -1.4183908, 0.5875167,
+                    1.4183908, -1.4183908, 1.4183908, 0.5875167,
+                    1.4183908, -1.4183908, -1.4183908, 0.5875167,
+                    -1.4183908, 1.4183908, 1.4183908, 0.5875167,
+                    -1.4183908, 1.4183908, -1.4183908, 0.5875167,
+                    -1.4183908, -1.4183908, 1.4183908, 0.5875167,
+                    -1.4183908, -1.4183908, -1.4183908, 0.5875167,
+            };
+
+
+        private static readonly Float2[] CELL_2D = {
         new Float2(-0.2700222198f, -0.9628540911f), new Float2(0.3863092627f, -0.9223693152f), new Float2(0.04444859006f, -0.999011673f), new Float2(-0.5992523158f, -0.8005602176f), new Float2(-0.7819280288f, 0.6233687174f), new Float2(0.9464672271f, 0.3227999196f), new Float2(-0.6514146797f, -0.7587218957f), new Float2(0.9378472289f, 0.347048376f),
         new Float2(-0.8497875957f, -0.5271252623f), new Float2(-0.879042592f, 0.4767432447f), new Float2(-0.892300288f, -0.4514423508f), new Float2(-0.379844434f, -0.9250503802f), new Float2(-0.9951650832f, 0.0982163789f), new Float2(0.7724397808f, -0.6350880136f), new Float2(0.7573283322f, -0.6530343002f), new Float2(-0.9928004525f, -0.119780055f),
         new Float2(-0.0532665713f, 0.9985803285f), new Float2(0.9754253726f, -0.2203300762f), new Float2(-0.7665018163f, 0.6422421394f), new Float2(0.991636706f, 0.1290606184f), new Float2(-0.994696838f, 0.1028503788f), new Float2(-0.5379205513f, -0.84299554f), new Float2(0.5022815471f, -0.8647041387f), new Float2(0.4559821461f, -0.8899889226f),
@@ -250,10 +575,9 @@ namespace SquidLib.SquidMath {
         new Float2(-0.9988770922f, -0.047376731f), new Float2(-0.1250179027f, 0.992154486f), new Float2(-0.8280133617f, 0.560708367f), new Float2(0.9324863769f, -0.3612051451f), new Float2(0.6394653183f, 0.7688199442f), new Float2(-0.01623847064f, -0.9998681473f), new Float2(-0.9955014666f, -0.09474613458f), new Float2(-0.81453315f, 0.580117012f),
         new Float2(0.4037327978f, -0.9148769469f), new Float2(0.9944263371f, 0.1054336766f), new Float2(-0.1624711654f, 0.9867132919f), new Float2(-0.9949487814f, -0.100383875f), new Float2(-0.6995302564f, 0.7146029809f), new Float2(0.5263414922f, -0.85027327f), new Float2(-0.5395221479f, 0.841971408f), new Float2(0.6579370318f, 0.7530729462f),
         new Float2(0.01426758847f, -0.9998982128f), new Float2(-0.6734383991f, 0.7392433447f), new Float2(0.639412098f, -0.7688642071f), new Float2(0.9211571421f, 0.3891908523f), new Float2(-0.146637214f, -0.9891903394f), new Float2(-0.782318098f, 0.6228791163f), new Float2(-0.5039610839f, -0.8637263605f), new Float2(-0.7743120191f, -0.6328039957f),
-    };
+        };
 
-        private static readonly Float3[] CELL_3D =
-        {
+        private static readonly Float3[] CELL_3D = {
         new Float3(-0.7292736885f, -0.6618439697f, 0.1735581948f), new Float3(0.790292081f, -0.5480887466f, -0.2739291014f), new Float3(0.7217578935f, 0.6226212466f, -0.3023380997f), new Float3(0.565683137f, -0.8208298145f, -0.0790000257f), new Float3(0.760049034f, -0.5555979497f, -0.3370999617f), new Float3(0.3713945616f, 0.5011264475f, 0.7816254623f), new Float3(-0.1277062463f, -0.4254438999f, -0.8959289049f), new Float3(-0.2881560924f, -0.5815838982f, 0.7607405838f),
         new Float3(0.5849561111f, -0.662820239f, -0.4674352136f), new Float3(0.3307171178f, 0.0391653737f, 0.94291689f), new Float3(0.8712121778f, -0.4113374369f, -0.2679381538f), new Float3(0.580981015f, 0.7021915846f, 0.4115677815f), new Float3(0.503756873f, 0.6330056931f, -0.5878203852f), new Float3(0.4493712205f, 0.601390195f, 0.6606022552f), new Float3(-0.6878403724f, 0.09018890807f, -0.7202371714f), new Float3(-0.5958956522f, -0.6469350577f, 0.475797649f),
         new Float3(-0.5127052122f, 0.1946921978f, -0.8361987284f), new Float3(-0.9911507142f, -0.05410276466f, -0.1212153153f), new Float3(-0.2149721042f, 0.9720882117f, -0.09397607749f), new Float3(-0.7518650936f, -0.5428057603f, 0.3742469607f), new Float3(0.5237068895f, 0.8516377189f, -0.02107817834f), new Float3(0.6333504779f, 0.1926167129f, -0.7495104896f), new Float3(-0.06788241606f, 0.3998305789f, 0.9140719259f), new Float3(-0.5538628599f, -0.4729896695f, -0.6852128902f),
@@ -286,32 +610,33 @@ namespace SquidLib.SquidMath {
         new Float3(0.9985120116f, 0.04659011161f, -0.02833944577f), new Float3(-0.3727687496f, -0.9082481361f, 0.1900757285f), new Float3(0.91737377f, -0.3483642108f, 0.1925298489f), new Float3(0.2714911074f, 0.4147529736f, -0.8684886582f), new Float3(0.5131763485f, -0.7116334161f, 0.4798207128f), new Float3(-0.8737353606f, 0.18886992f, -0.4482350644f), new Float3(0.8460043821f, -0.3725217914f, 0.3814499973f), new Float3(0.8978727456f, -0.1780209141f, -0.4026575304f),
         new Float3(0.2178065647f, -0.9698322841f, -0.1094789531f), new Float3(-0.1518031304f, -0.7788918132f, -0.6085091231f), new Float3(-0.2600384876f, -0.4755398075f, -0.8403819825f), new Float3(0.572313509f, -0.7474340931f, -0.3373418503f), new Float3(-0.7174141009f, 0.1699017182f, -0.6756111411f), new Float3(-0.684180784f, 0.02145707593f, -0.7289967412f), new Float3(-0.2007447902f, 0.06555605789f, -0.9774476623f), new Float3(-0.1148803697f, -0.8044887315f, 0.5827524187f),
         new Float3(-0.7870349638f, 0.03447489231f, 0.6159443543f), new Float3(-0.2015596421f, 0.6859872284f, 0.6991389226f), new Float3(-0.08581082512f, -0.10920836f, -0.9903080513f), new Float3(0.5532693395f, 0.7325250401f, -0.396610771f), new Float3(-0.1842489331f, -0.9777375055f, -0.1004076743f), new Float3(0.0775473789f, -0.9111505856f, 0.4047110257f), new Float3(0.1399838409f, 0.7601631212f, -0.6344734459f), new Float3(0.4484419361f, -0.845289248f, 0.2904925424f),
-    };
+        };
+        #endregion
+
+        //[MethodImpl(FN_INLINE)]
+        //private static int FastFloor(double f) => (f >= 0 ? (int)f : (int)f - 1);
 
         [MethodImpl(FN_INLINE)]
-        private static int FastFloor(FN_DECIMAL f) => (f >= 0 ? (int)f : (int)f - 1);
+        private static int FastRound(double f) => (f >= 0) ? (int)(f + 0.5) : (int)(f - 0.5);
 
         [MethodImpl(FN_INLINE)]
-        private static int FastRound(FN_DECIMAL f) => (f >= 0) ? (int)(f + 0.5) : (int)(f - 0.5);
+        private static double Lerp(double a, double b, double t) => a + t * (b - a);
 
         [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL Lerp(FN_DECIMAL a, FN_DECIMAL b, FN_DECIMAL t) => a + t * (b - a);
+        private static double InterpHermiteFunc(double t) => t * t * (3 - 2 * t);
 
         [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL InterpHermiteFunc(FN_DECIMAL t) => t * t * (3 - 2 * t);
+        private static double InterpQuinticFunc(double t) => t * t * t * (t * (t * 6 - 15) + 10);
 
         [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL InterpQuinticFunc(FN_DECIMAL t) => t * t * t * (t * (t * 6 - 15) + 10);
-
-        [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL CubicLerp(FN_DECIMAL a, FN_DECIMAL b, FN_DECIMAL c, FN_DECIMAL d, FN_DECIMAL t) {
-            FN_DECIMAL p = (d - c) - (a - b);
+        private static double CubicLerp(double a, double b, double c, double d, double t) {
+            double p = (d - c) - (a - b);
             return t * t * t * p + t * t * ((a - b) - p) + t * (c - a) + b;
         }
 
         private void CalculateFractalBounding() {
-            FN_DECIMAL amp = gain;
-            FN_DECIMAL ampFractal = 1;
+            double amp = gain;
+            double ampFractal = 1;
             for (int i = 1; i < octaves; i++) {
                 ampFractal += amp;
                 amp *= gain;
@@ -319,130 +644,43 @@ namespace SquidLib.SquidMath {
             fractalBounding = 1 / ampFractal;
         }
 
-        // Hashing
-        private const int X_PRIME = 1619;
-        private const int Y_PRIME = 31337;
-        private const int Z_PRIME = 6971;
-        private const int W_PRIME = 1013;
-
-        //[MethodImpl(FN_INLINE)]
-        //private static int Hash2D(int seed, int x, int y) {
-        //    int hash = seed;
-        //    hash ^= X_PRIME * x;
-        //    hash ^= Y_PRIME * y;
-
-        //    hash = hash * hash * hash * 60493;
-        //    hash = (hash >> 13) ^ hash;
-
-        //    return hash;
-        //}
-
-        //[MethodImpl(FN_INLINE)]
-        //private static int Hash3D(int seed, int x, int y, int z) {
-        //    int hash = seed;
-        //    hash ^= X_PRIME * x;
-        //    hash ^= Y_PRIME * y;
-        //    hash ^= Z_PRIME * z;
-
-        //    hash = hash * hash * hash * 60493;
-        //    hash = (hash >> 13) ^ hash;
-
-        //    return hash;
-        //}
-
-        //[MethodImpl(FN_INLINE)]
-        //private static int Hash4D(int seed, int x, int y, int z, int w) {
-        //    int hash = seed;
-        //    hash ^= X_PRIME * x;
-        //    hash ^= Y_PRIME * y;
-        //    hash ^= Z_PRIME * z;
-        //    hash ^= W_PRIME * w;
-
-        //    hash = hash * hash * hash * 60493;
-        //    hash = (hash >> 13) ^ hash;
-
-        //    return hash;
-        //}
+        [MethodImpl(FN_INLINE)]
+        private static double ValCoord2D(int seed, int x, int y) => (int)HashAll(x, y, seed) * 4.6566128730773926E-10;
 
         [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL ValCoord2D(int seed, int x, int y) {
-            int n = seed;
-            n ^= X_PRIME * x;
-            n ^= Y_PRIME * y;
+        private static double ValCoord3D(int seed, int x, int y, int z) => (int)HashAll(x, y, z, seed) * 4.6566128730773926E-10;
 
-            return (n * n * n * 60493) * 4.6566128730773926E-10;
+        [MethodImpl(FN_INLINE)]
+        private static double ValCoord4D(int seed, int x, int y, int z, int w) => (int)HashAll(x, y, z, w, seed) * 4.6566128730773926E-10;
+
+        [MethodImpl(FN_INLINE)]
+        private static double GradCoord2D(int seed, int x, int y, double xd, double yd) {
+            uint hash = Hash256(x, y, seed) << 1;
+            return xd * GRAD_2D[hash] + yd * GRAD_2D[hash+1];
         }
 
         [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL ValCoord3D(int seed, int x, int y, int z) {
-            int n = seed;
-            n ^= X_PRIME * x;
-            n ^= Y_PRIME * y;
-            n ^= Z_PRIME * z;
-
-            return (n * n * n * 60493) * 4.6566128730773926E-10;
-        }
-
-        [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL ValCoord4D(int seed, int x, int y, int z, int w) {
-            int n = seed;
-            n ^= X_PRIME * x;
-            n ^= Y_PRIME * y;
-            n ^= Z_PRIME * z;
-            n ^= W_PRIME * w;
-
-            return (n * n * n * 60493) * 4.6566128730773926E-10;
-        }
-
-        [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL GradCoord2D(int seed, int x, int y, FN_DECIMAL xd, FN_DECIMAL yd) {
-            //int hash = seed;
-            //hash ^= X_PRIME * x;
-            //hash ^= Y_PRIME * y;
-
-            //hash = hash * hash * hash * 60493;
-            //hash = (hash >> 13 ^ hash) & 510;
-            uint hash = CoreMath.Hash256(x, y, seed) << 1;
-            return xd * SimplexNoise.PhiGrad2[hash] + yd * SimplexNoise.PhiGrad2[hash+1];
-        }
-
-        [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL GradCoord3D(int seed, int x, int y, int z, FN_DECIMAL xd, FN_DECIMAL yd, FN_DECIMAL zd) {
-            //int hash = seed;
-            //hash ^= X_PRIME * x;
-            //hash ^= Y_PRIME * y;
-            //hash ^= Z_PRIME * z;
-
-            //hash = hash * hash * hash * 60493;
-            //hash = (hash >> 13) ^ hash;
-
-            Float3 g = GRAD_3D[CoreMath.Hash32(x, y, z, seed)];
-
+        private static double GradCoord3D(int seed, int x, int y, int z, double xd, double yd, double zd) {
+            Float3 g = GRAD_3D[Hash32(x, y, z, seed)];
             return xd * g.x + yd * g.y + zd * g.z;
         }
 
         [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL GradCoord4D(int seed, int x, int y, int z, int w, FN_DECIMAL xd, FN_DECIMAL yd, FN_DECIMAL zd, FN_DECIMAL wd) {
-            int hash = seed;
-            hash ^= X_PRIME * x;
-            hash ^= Y_PRIME * y;
-            hash ^= Z_PRIME * z;
-            hash ^= W_PRIME * w;
-
-            hash = hash * hash * hash * 60493;
-            hash = (hash >> 13) ^ hash;
-
-            hash &= 31;
-            FN_DECIMAL a = yd, b = zd, c = wd;            // X,Y,Z
-            switch (hash >> 3) {          // OR, DEPENDING ON HIGH ORDER 2 BITS:
-                case 1: a = wd; b = xd; c = yd; break;     // W,X,Y
-                case 2: a = zd; b = wd; c = xd; break;     // Z,W,X
-                case 3: a = yd; b = zd; c = wd; break;     // Y,Z,W
-            }
-            return ((hash & 4) == 0 ? -a : a) + ((hash & 2) == 0 ? -b : b) + ((hash & 1) == 0 ? -c : c);
+        private static double GradCoord4D(int seed, int x, int y, int z, int w, double xd, double yd, double zd, double wd) {
+            uint hash = Hash64(x, y, z, w, seed) << 2;
+            return xd * GRAD_2D[hash] + yd * GRAD_2D[hash + 1] + zd * GRAD_2D[hash + 2] + wd * GRAD_4D[hash + 3];
+            //uint hash = Hash32(x, y, z, w, seed);
+            //double a, b, c;            
+            //switch (hash >> 3) {          // DEPENDING ON HIGH ORDER 2 BITS:
+            //    case 1: a = wd; b = xd; c = yd; break;     // W,X,Y
+            //    case 2: a = zd; b = wd; c = xd; break;     // Z,W,X
+            //    case 3: a = yd; b = zd; c = wd; break;     // Y,Z,W
+            //    default: a = xd; b = yd; c = zd; break;    // X,Y,Z
+            //}
+            //return ((hash & 4) == 0 ? -a : a) + ((hash & 2) == 0 ? -b : b) + ((hash & 1) == 0 ? -c : c);
         }
 
-        public FN_DECIMAL GetNoise(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        public double GetNoise(double x, double y, double z) {
             x *= frequency;
             y *= frequency;
             z *= frequency;
@@ -516,7 +754,7 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        public FN_DECIMAL GetNoise(FN_DECIMAL x, FN_DECIMAL y) {
+        public double GetNoise(double x, double y) {
             x *= frequency;
             y *= frequency;
 
@@ -591,13 +829,13 @@ namespace SquidLib.SquidMath {
 
         // White Noise
         [MethodImpl(FN_INLINE)]
-        private static int FloatCast2Int(FN_DECIMAL f) {
+        private static int FloatCast2Int(double f) {
             long i = BitConverter.DoubleToInt64Bits(f);
 
             return (int)(i ^ (i >> 32));
         }
 
-        public FN_DECIMAL GetWhiteNoise(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z, FN_DECIMAL w) {
+        public double GetWhiteNoise(double x, double y, double z, double w) {
             int xi = FloatCast2Int(x);
             int yi = FloatCast2Int(y);
             int zi = FloatCast2Int(z);
@@ -606,7 +844,7 @@ namespace SquidLib.SquidMath {
             return ValCoord4D(seed, xi, yi, zi, wi);
         }
 
-        public FN_DECIMAL GetWhiteNoise(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        public double GetWhiteNoise(double x, double y, double z) {
             int xi = FloatCast2Int(x);
             int yi = FloatCast2Int(y);
             int zi = FloatCast2Int(z);
@@ -614,21 +852,21 @@ namespace SquidLib.SquidMath {
             return ValCoord3D(seed, xi, yi, zi);
         }
 
-        public FN_DECIMAL GetWhiteNoise(FN_DECIMAL x, FN_DECIMAL y) {
+        public double GetWhiteNoise(double x, double y) {
             int xi = FloatCast2Int(x);
             int yi = FloatCast2Int(y);
 
             return ValCoord2D(seed, xi, yi);
         }
 
-        public FN_DECIMAL GetWhiteNoiseInt(int x, int y, int z, int w) => ValCoord4D(seed, x, y, z, w);
+        public double GetWhiteNoiseInt(int x, int y, int z, int w) => ValCoord4D(seed, x, y, z, w);
 
-        public FN_DECIMAL GetWhiteNoiseInt(int x, int y, int z) => ValCoord3D(seed, x, y, z);
+        public double GetWhiteNoiseInt(int x, int y, int z) => ValCoord3D(seed, x, y, z);
 
-        public FN_DECIMAL GetWhiteNoiseInt(int x, int y) => ValCoord2D(seed, x, y);
+        public double GetWhiteNoiseInt(int x, int y) => ValCoord2D(seed, x, y);
 
         // Value Noise
-        public FN_DECIMAL GetValueFractal(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        public double GetValueFractal(double x, double y, double z) {
             x *= frequency;
             y *= frequency;
             z *= frequency;
@@ -645,10 +883,10 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleValueFractalFBM(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleValueFractalFBM(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = SingleValue(seed, x, y, z);
-            FN_DECIMAL amp = 1;
+            double sum = SingleValue(seed, x, y, z);
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -662,10 +900,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleValueFractalBillow(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleValueFractalBillow(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = Math.Abs(SingleValue(seed, x, y, z)) * 2 - 1;
-            FN_DECIMAL amp = 1;
+            double sum = Math.Abs(SingleValue(seed, x, y, z)) * 2 - 1;
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -679,10 +917,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleValueFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleValueFractalRidgedMulti(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = 1 - Math.Abs(SingleValue(seed, x, y, z));
-            FN_DECIMAL amp = 1;
+            double sum = 1 - Math.Abs(SingleValue(seed, x, y, z));
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -696,9 +934,9 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetValue(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) => SingleValue(seed, x * frequency, y * frequency, z * frequency);
+        public double GetValue(double x, double y, double z) => SingleValue(seed, x * frequency, y * frequency, z * frequency);
 
-        private FN_DECIMAL SingleValue(int seed, FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleValue(int seed, double x, double y, double z) {
             int x0 = FastFloor(x);
             int y0 = FastFloor(y);
             int z0 = FastFloor(z);
@@ -706,7 +944,7 @@ namespace SquidLib.SquidMath {
             int y1 = y0 + 1;
             int z1 = z0 + 1;
 
-            FN_DECIMAL xs, ys, zs;
+            double xs, ys, zs;
             switch (interp) {
                 default:
                 case Interp.Linear:
@@ -726,18 +964,18 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            FN_DECIMAL xf00 = Lerp(ValCoord3D(seed, x0, y0, z0), ValCoord3D(seed, x1, y0, z0), xs);
-            FN_DECIMAL xf10 = Lerp(ValCoord3D(seed, x0, y1, z0), ValCoord3D(seed, x1, y1, z0), xs);
-            FN_DECIMAL xf01 = Lerp(ValCoord3D(seed, x0, y0, z1), ValCoord3D(seed, x1, y0, z1), xs);
-            FN_DECIMAL xf11 = Lerp(ValCoord3D(seed, x0, y1, z1), ValCoord3D(seed, x1, y1, z1), xs);
+            double xf00 = Lerp(ValCoord3D(seed, x0, y0, z0), ValCoord3D(seed, x1, y0, z0), xs);
+            double xf10 = Lerp(ValCoord3D(seed, x0, y1, z0), ValCoord3D(seed, x1, y1, z0), xs);
+            double xf01 = Lerp(ValCoord3D(seed, x0, y0, z1), ValCoord3D(seed, x1, y0, z1), xs);
+            double xf11 = Lerp(ValCoord3D(seed, x0, y1, z1), ValCoord3D(seed, x1, y1, z1), xs);
 
-            FN_DECIMAL yf0 = Lerp(xf00, xf10, ys);
-            FN_DECIMAL yf1 = Lerp(xf01, xf11, ys);
+            double yf0 = Lerp(xf00, xf10, ys);
+            double yf1 = Lerp(xf01, xf11, ys);
 
             return Lerp(yf0, yf1, zs);
         }
 
-        public FN_DECIMAL GetValueFractal(FN_DECIMAL x, FN_DECIMAL y) {
+        public double GetValueFractal(double x, double y) {
             x *= frequency;
             y *= frequency;
 
@@ -753,10 +991,10 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleValueFractalFBM(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleValueFractalFBM(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = SingleValue(seed, x, y);
-            FN_DECIMAL amp = 1;
+            double sum = SingleValue(seed, x, y);
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -769,10 +1007,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleValueFractalBillow(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleValueFractalBillow(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = Math.Abs(SingleValue(seed, x, y)) * 2 - 1;
-            FN_DECIMAL amp = 1;
+            double sum = Math.Abs(SingleValue(seed, x, y)) * 2 - 1;
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -784,10 +1022,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleValueFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleValueFractalRidgedMulti(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = 1 - Math.Abs(SingleValue(seed, x, y));
-            FN_DECIMAL amp = 1;
+            double sum = 1 - Math.Abs(SingleValue(seed, x, y));
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -800,15 +1038,15 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetValue(FN_DECIMAL x, FN_DECIMAL y) => SingleValue(seed, x * frequency, y * frequency);
+        public double GetValue(double x, double y) => SingleValue(seed, x * frequency, y * frequency);
 
-        private FN_DECIMAL SingleValue(int seed, FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleValue(int seed, double x, double y) {
             int x0 = FastFloor(x);
             int y0 = FastFloor(y);
             int x1 = x0 + 1;
             int y1 = y0 + 1;
 
-            FN_DECIMAL xs, ys;
+            double xs, ys;
             switch (interp) {
                 default:
                 case Interp.Linear:
@@ -825,14 +1063,14 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            FN_DECIMAL xf0 = Lerp(ValCoord2D(seed, x0, y0), ValCoord2D(seed, x1, y0), xs);
-            FN_DECIMAL xf1 = Lerp(ValCoord2D(seed, x0, y1), ValCoord2D(seed, x1, y1), xs);
+            double xf0 = Lerp(ValCoord2D(seed, x0, y0), ValCoord2D(seed, x1, y0), xs);
+            double xf1 = Lerp(ValCoord2D(seed, x0, y1), ValCoord2D(seed, x1, y1), xs);
 
             return Lerp(xf0, xf1, ys);
         }
 
         // Gradient Noise
-        public FN_DECIMAL GetPerlinFractal(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        public double GetPerlinFractal(double x, double y, double z) {
             x *= frequency;
             y *= frequency;
             z *= frequency;
@@ -849,10 +1087,10 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SinglePerlinFractalFBM(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SinglePerlinFractalFBM(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = SinglePerlin(seed, x, y, z);
-            FN_DECIMAL amp = 1;
+            double sum = SinglePerlin(seed, x, y, z);
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -866,10 +1104,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SinglePerlinFractalBillow(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SinglePerlinFractalBillow(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = Math.Abs(SinglePerlin(seed, x, y, z)) * 2 - 1;
-            FN_DECIMAL amp = 1;
+            double sum = Math.Abs(SinglePerlin(seed, x, y, z)) * 2 - 1;
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -883,10 +1121,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SinglePerlinFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SinglePerlinFractalRidgedMulti(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = 1 - Math.Abs(SinglePerlin(seed, x, y, z));
-            FN_DECIMAL amp = 1;
+            double sum = 1 - Math.Abs(SinglePerlin(seed, x, y, z));
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -900,9 +1138,9 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetPerlin(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) => SinglePerlin(seed, x * frequency, y * frequency, z * frequency);
+        public double GetPerlin(double x, double y, double z) => SinglePerlin(seed, x * frequency, y * frequency, z * frequency);
 
-        private FN_DECIMAL SinglePerlin(int seed, FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SinglePerlin(int seed, double x, double y, double z) {
             int x0 = FastFloor(x);
             int y0 = FastFloor(y);
             int z0 = FastFloor(z);
@@ -910,7 +1148,7 @@ namespace SquidLib.SquidMath {
             int y1 = y0 + 1;
             int z1 = z0 + 1;
 
-            FN_DECIMAL xs, ys, zs;
+            double xs, ys, zs;
             switch (interp) {
                 default:
                 case Interp.Linear:
@@ -930,25 +1168,25 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            FN_DECIMAL xd0 = x - x0;
-            FN_DECIMAL yd0 = y - y0;
-            FN_DECIMAL zd0 = z - z0;
-            FN_DECIMAL xd1 = xd0 - 1;
-            FN_DECIMAL yd1 = yd0 - 1;
-            FN_DECIMAL zd1 = zd0 - 1;
+            double xd0 = x - x0;
+            double yd0 = y - y0;
+            double zd0 = z - z0;
+            double xd1 = xd0 - 1;
+            double yd1 = yd0 - 1;
+            double zd1 = zd0 - 1;
 
-            FN_DECIMAL xf00 = Lerp(GradCoord3D(seed, x0, y0, z0, xd0, yd0, zd0), GradCoord3D(seed, x1, y0, z0, xd1, yd0, zd0), xs);
-            FN_DECIMAL xf10 = Lerp(GradCoord3D(seed, x0, y1, z0, xd0, yd1, zd0), GradCoord3D(seed, x1, y1, z0, xd1, yd1, zd0), xs);
-            FN_DECIMAL xf01 = Lerp(GradCoord3D(seed, x0, y0, z1, xd0, yd0, zd1), GradCoord3D(seed, x1, y0, z1, xd1, yd0, zd1), xs);
-            FN_DECIMAL xf11 = Lerp(GradCoord3D(seed, x0, y1, z1, xd0, yd1, zd1), GradCoord3D(seed, x1, y1, z1, xd1, yd1, zd1), xs);
+            double xf00 = Lerp(GradCoord3D(seed, x0, y0, z0, xd0, yd0, zd0), GradCoord3D(seed, x1, y0, z0, xd1, yd0, zd0), xs);
+            double xf10 = Lerp(GradCoord3D(seed, x0, y1, z0, xd0, yd1, zd0), GradCoord3D(seed, x1, y1, z0, xd1, yd1, zd0), xs);
+            double xf01 = Lerp(GradCoord3D(seed, x0, y0, z1, xd0, yd0, zd1), GradCoord3D(seed, x1, y0, z1, xd1, yd0, zd1), xs);
+            double xf11 = Lerp(GradCoord3D(seed, x0, y1, z1, xd0, yd1, zd1), GradCoord3D(seed, x1, y1, z1, xd1, yd1, zd1), xs);
 
-            FN_DECIMAL yf0 = Lerp(xf00, xf10, ys);
-            FN_DECIMAL yf1 = Lerp(xf01, xf11, ys);
+            double yf0 = Lerp(xf00, xf10, ys);
+            double yf1 = Lerp(xf01, xf11, ys);
 
             return Lerp(yf0, yf1, zs);
         }
 
-        public FN_DECIMAL GetPerlinFractal(FN_DECIMAL x, FN_DECIMAL y) {
+        public double GetPerlinFractal(double x, double y) {
             x *= frequency;
             y *= frequency;
 
@@ -964,10 +1202,10 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SinglePerlinFractalFBM(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SinglePerlinFractalFBM(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = SinglePerlin(seed, x, y);
-            FN_DECIMAL amp = 1;
+            double sum = SinglePerlin(seed, x, y);
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -980,10 +1218,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SinglePerlinFractalBillow(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SinglePerlinFractalBillow(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = Math.Abs(SinglePerlin(seed, x, y)) * 2 - 1;
-            FN_DECIMAL amp = 1;
+            double sum = Math.Abs(SinglePerlin(seed, x, y)) * 2 - 1;
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -996,10 +1234,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SinglePerlinFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SinglePerlinFractalRidgedMulti(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = 1 - Math.Abs(SinglePerlin(seed, x, y));
-            FN_DECIMAL amp = 1;
+            double sum = 1 - Math.Abs(SinglePerlin(seed, x, y));
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -1012,15 +1250,15 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetPerlin(FN_DECIMAL x, FN_DECIMAL y) => SinglePerlin(seed, x * frequency, y * frequency);
+        public double GetPerlin(double x, double y) => SinglePerlin(seed, x * frequency, y * frequency);
 
-        private FN_DECIMAL SinglePerlin(int seed, FN_DECIMAL x, FN_DECIMAL y) {
+        private double SinglePerlin(int seed, double x, double y) {
             int x0 = FastFloor(x);
             int y0 = FastFloor(y);
             int x1 = x0 + 1;
             int y1 = y0 + 1;
 
-            FN_DECIMAL xs, ys;
+            double xs, ys;
             switch (interp) {
                 default:
                 case Interp.Linear:
@@ -1037,19 +1275,19 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            FN_DECIMAL xd0 = x - x0;
-            FN_DECIMAL yd0 = y - y0;
-            FN_DECIMAL xd1 = xd0 - 1;
-            FN_DECIMAL yd1 = yd0 - 1;
+            double xd0 = x - x0;
+            double yd0 = y - y0;
+            double xd1 = xd0 - 1;
+            double yd1 = yd0 - 1;
 
-            FN_DECIMAL xf0 = Lerp(GradCoord2D(seed, x0, y0, xd0, yd0), GradCoord2D(seed, x1, y0, xd1, yd0), xs);
-            FN_DECIMAL xf1 = Lerp(GradCoord2D(seed, x0, y1, xd0, yd1), GradCoord2D(seed, x1, y1, xd1, yd1), xs);
+            double xf0 = Lerp(GradCoord2D(seed, x0, y0, xd0, yd0), GradCoord2D(seed, x1, y0, xd1, yd0), xs);
+            double xf1 = Lerp(GradCoord2D(seed, x0, y1, xd0, yd1), GradCoord2D(seed, x1, y1, xd1, yd1), xs);
 
             return Lerp(xf0, xf1, ys);
         }
 
         // Simplex Noise
-        public FN_DECIMAL GetSimplexFractal(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        public double GetSimplexFractal(double x, double y, double z) {
             x *= frequency;
             y *= frequency;
             z *= frequency;
@@ -1066,10 +1304,10 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleSimplexFractalFBM(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleSimplexFractalFBM(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = SingleSimplex(seed, x, y, z);
-            FN_DECIMAL amp = 1;
+            double sum = SingleSimplex(seed, x, y, z);
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -1083,10 +1321,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleSimplexFractalBillow(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleSimplexFractalBillow(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = Math.Abs(SingleSimplex(seed, x, y, z)) * 2 - 1;
-            FN_DECIMAL amp = 1;
+            double sum = Math.Abs(SingleSimplex(seed, x, y, z)) * 2 - 1;
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -1100,10 +1338,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleSimplexFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleSimplexFractalRidgedMulti(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = 1 - Math.Abs(SingleSimplex(seed, x, y, z));
-            FN_DECIMAL amp = 1;
+            double sum = 1 - Math.Abs(SingleSimplex(seed, x, y, z));
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -1117,22 +1355,22 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) => SingleSimplex(seed, x * frequency, y * frequency, z * frequency);
+        public double GetSimplex(double x, double y, double z) => SingleSimplex(seed, x * frequency, y * frequency, z * frequency);
 
-        private const FN_DECIMAL F3 = 1.0 / 3.0;
-        private const FN_DECIMAL G3 = 1.0 / 6.0;
-        private const FN_DECIMAL G33 = G3 * 3 - 1;
+        private const double F3 = 1.0 / 3.0;
+        private const double G3 = 1.0 / 6.0;
+        private const double G33 = G3 * 3 - 1;
 
-        private static FN_DECIMAL SingleSimplex(int seed, FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            FN_DECIMAL t = (x + y + z) * F3;
+        private static double SingleSimplex(int seed, double x, double y, double z) {
+            double t = (x + y + z) * F3;
             int i = FastFloor(x + t);
             int j = FastFloor(y + t);
             int k = FastFloor(z + t);
 
             t = (i + j + k) * G3;
-            FN_DECIMAL x0 = x - (i - t);
-            FN_DECIMAL y0 = y - (j - t);
-            FN_DECIMAL z0 = z - (k - t);
+            double x0 = x - (i - t);
+            double y0 = y - (j - t);
+            double z0 = z - (k - t);
 
             int i1, j1, k1;
             int i2, j2, k2;
@@ -1158,41 +1396,41 @@ namespace SquidLib.SquidMath {
                 }
             }
 
-            FN_DECIMAL x1 = x0 - i1 + G3;
-            FN_DECIMAL y1 = y0 - j1 + G3;
-            FN_DECIMAL z1 = z0 - k1 + G3;
-            FN_DECIMAL x2 = x0 - i2 + F3;
-            FN_DECIMAL y2 = y0 - j2 + F3;
-            FN_DECIMAL z2 = z0 - k2 + F3;
-            FN_DECIMAL x3 = x0 + G33;
-            FN_DECIMAL y3 = y0 + G33;
-            FN_DECIMAL z3 = z0 + G33;
+            double x1 = x0 - i1 + G3;
+            double y1 = y0 - j1 + G3;
+            double z1 = z0 - k1 + G3;
+            double x2 = x0 - i2 + F3;
+            double y2 = y0 - j2 + F3;
+            double z2 = z0 - k2 + F3;
+            double x3 = x0 + G33;
+            double y3 = y0 + G33;
+            double z3 = z0 + G33;
 
-            FN_DECIMAL n0, n1, n2, n3;
+            double n0, n1, n2, n3;
 
             t = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
-            if (t < 0) n0 = 0;
+            if (t <= 0) n0 = 0;
             else {
                 t *= t;
                 n0 = t * t * GradCoord3D(seed, i, j, k, x0, y0, z0);
             }
 
             t = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
-            if (t < 0) n1 = 0;
+            if (t <= 0) n1 = 0;
             else {
                 t *= t;
                 n1 = t * t * GradCoord3D(seed, i + i1, j + j1, k + k1, x1, y1, z1);
             }
 
             t = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
-            if (t < 0) n2 = 0;
+            if (t <= 0) n2 = 0;
             else {
                 t *= t;
                 n2 = t * t * GradCoord3D(seed, i + i2, j + j2, k + k2, x2, y2, z2);
             }
 
             t = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
-            if (t < 0) n3 = 0;
+            if (t <= 0) n3 = 0;
             else {
                 t *= t;
                 n3 = t * t * GradCoord3D(seed, i + 1, j + 1, k + 1, x3, y3, z3);
@@ -1201,7 +1439,7 @@ namespace SquidLib.SquidMath {
             return 32 * (n0 + n1 + n2 + n3);
         }
 
-        public FN_DECIMAL GetSimplexFractal(FN_DECIMAL x, FN_DECIMAL y) {
+        public double GetSimplexFractal(double x, double y) {
             x *= frequency;
             y *= frequency;
 
@@ -1217,10 +1455,10 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleSimplexFractalFBM(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleSimplexFractalFBM(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = SingleSimplex(seed, x, y);
-            FN_DECIMAL amp = 1;
+            double sum = SingleSimplex(seed, x, y);
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -1233,10 +1471,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleSimplexFractalBillow(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleSimplexFractalBillow(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = Math.Abs(SingleSimplex(seed, x, y)) * 2 - 1;
-            FN_DECIMAL amp = 1;
+            double sum = Math.Abs(SingleSimplex(seed, x, y)) * 2 - 1;
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -1249,10 +1487,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleSimplexFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleSimplexFractalRidgedMulti(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = 1 - Math.Abs(SingleSimplex(seed, x, y));
-            FN_DECIMAL amp = 1;
+            double sum = 1 - Math.Abs(SingleSimplex(seed, x, y));
+            double amp = 1;
 
             for (int i = 1; i < octaves; i++) {
                 x *= lacunarity;
@@ -1265,23 +1503,23 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y) => SingleSimplex(seed, x * frequency, y * frequency);
+        public double GetSimplex(double x, double y) => SingleSimplex(seed, x * frequency, y * frequency);
 
-        private const FN_DECIMAL F2 = 0.36602540378443864676372317075294;
-        private const FN_DECIMAL G2 = 0.21132486540518711774542560974902;
-        private const FN_DECIMAL H2 = G2 * 2;
+        private const double F2 = 0.36602540378443864676372317075294;
+        private const double G2 = 0.21132486540518711774542560974902;
+        private const double H2 = G2 * 2;
 
-        private static FN_DECIMAL SingleSimplex(int seed, FN_DECIMAL x, FN_DECIMAL y) {
-            FN_DECIMAL t = (x + y) * F2;
-            long i = CoreMath.LongFloor(x + t);
-            long j = CoreMath.LongFloor(y + t);
+        private static double SingleSimplex(int seed, double x, double y) {
+            double t = (x + y) * F2;
+            long i = LongFloor(x + t);
+            long j = LongFloor(y + t);
 
             t = (i + j) * G2;
-            FN_DECIMAL X0 = i - t;
-            FN_DECIMAL Y0 = j - t;
+            double X0 = i - t;
+            double Y0 = j - t;
 
-            FN_DECIMAL x0 = x - X0;
-            FN_DECIMAL y0 = y - Y0;
+            double x0 = x - X0;
+            double y0 = y - Y0;
 
             long i1, j1;
             if (x0 > y0) {
@@ -1290,37 +1528,37 @@ namespace SquidLib.SquidMath {
                 i1 = 0; j1 = 1;
             }
 
-            FN_DECIMAL x1 = x0 - i1 + G2;
-            FN_DECIMAL y1 = y0 - j1 + G2;
-            FN_DECIMAL x2 = x0 - 1 + H2;
-            FN_DECIMAL y2 = y0 - 1 + H2;
+            double x1 = x0 - i1 + G2;
+            double y1 = y0 - j1 + G2;
+            double x2 = x0 - 1 + H2;
+            double y2 = y0 - 1 + H2;
 
-            FN_DECIMAL n0, n1, n2;
-            FN_DECIMAL t0 = 0.75 - x0 * x0 - y0 * y0;
+            double n0, n1, n2;
+            double t0 = 0.75 - x0 * x0 - y0 * y0;
             if (t0 > 0) {
-                uint gi = CoreMath.Hash256(i, j, seed) << 1;
+                uint gi = Hash256(i, j, seed) << 1;
                 t0 *= t0;
-                n0 = t0 * t0 * (SimplexNoise.PhiGrad2[gi] * x0 + SimplexNoise.PhiGrad2[gi + 1] * y0);
+                n0 = t0 * t0 * (GRAD_2D[gi] * x0 + GRAD_2D[gi + 1] * y0);
             } else n0 = 0.0;
 
-            FN_DECIMAL t1 = 0.75 - x1 * x1 - y1 * y1;
+            double t1 = 0.75 - x1 * x1 - y1 * y1;
             if (t1 > 0) {
-                uint gi = CoreMath.Hash256(i + i1, j + j1, seed) << 1;
+                uint gi = Hash256(i + i1, j + j1, seed) << 1;
                 t1 *= t1;
-                n1 = t1 * t1 * (SimplexNoise.PhiGrad2[gi] * x1 + SimplexNoise.PhiGrad2[gi + 1] * y1);
+                n1 = t1 * t1 * (GRAD_2D[gi] * x1 + GRAD_2D[gi + 1] * y1);
             } else n1 = 0.0;
 
-            FN_DECIMAL t2 = 0.75 - x2 * x2 - y2 * y2;
+            double t2 = 0.75 - x2 * x2 - y2 * y2;
             if (t2 > 0) {
-                uint gi = CoreMath.Hash256(i + 1, j + 1, seed) << 1;
+                uint gi = Hash256(i + 1, j + 1, seed) << 1;
                 t2 *= t2;
-                n2 = t2 * t2 * (SimplexNoise.PhiGrad2[gi] * x2 + SimplexNoise.PhiGrad2[gi + 1] * y2);
+                n2 = t2 * t2 * (GRAD_2D[gi] * x2 + GRAD_2D[gi + 1] * y2);
             } else n2 = 0.0;
 
             return 9.11 * (n0 + n1 + n2);
         }
 
-        public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z, FN_DECIMAL w) => SingleSimplex(seed, x * frequency, y * frequency, z * frequency, w * frequency);
+        public double GetSimplex(double x, double y, double z, double w) => SingleSimplex(seed, x * frequency, y * frequency, z * frequency, w * frequency);
 
         private static readonly byte[] SIMPLEX_4D =
         {
@@ -1334,25 +1572,25 @@ namespace SquidLib.SquidMath {
         2,1,0,3,0,0,0,0,0,0,0,0,0,0,0,0,3,1,0,2,0,0,0,0,3,2,0,1,3,2,1,0
     };
 
-        private const FN_DECIMAL F4 = (2.23606797 - 1.0) / 4.0;
-        private const FN_DECIMAL G4 = (5.0 - 2.23606797) / 20.0;
+        private const double F4 = (2.23606797 - 1.0) / 4.0;
+        private const double G4 = (5.0 - 2.23606797) / 20.0;
 
-        private static FN_DECIMAL SingleSimplex(int seed, FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z, FN_DECIMAL w) {
-            FN_DECIMAL n0, n1, n2, n3, n4;
-            FN_DECIMAL t = (x + y + z + w) * F4;
+        private static double SingleSimplex(int seed, double x, double y, double z, double w) {
+            double n0, n1, n2, n3, n4;
+            double t = (x + y + z + w) * F4;
             int i = FastFloor(x + t);
             int j = FastFloor(y + t);
             int k = FastFloor(z + t);
             int l = FastFloor(w + t);
             t = (i + j + k + l) * G4;
-            FN_DECIMAL X0 = i - t;
-            FN_DECIMAL Y0 = j - t;
-            FN_DECIMAL Z0 = k - t;
-            FN_DECIMAL W0 = l - t;
-            FN_DECIMAL x0 = x - X0;
-            FN_DECIMAL y0 = y - Y0;
-            FN_DECIMAL z0 = z - Z0;
-            FN_DECIMAL w0 = w - W0;
+            double X0 = i - t;
+            double Y0 = j - t;
+            double Z0 = k - t;
+            double W0 = l - t;
+            double x0 = x - X0;
+            double y0 = y - Y0;
+            double z0 = z - Z0;
+            double w0 = w - W0;
 
             int c = (x0 > y0) ? 32 : 0;
             c += (x0 > z0) ? 16 : 0;
@@ -1362,72 +1600,77 @@ namespace SquidLib.SquidMath {
             c += (z0 > w0) ? 1 : 0;
             c <<= 2;
 
-            int i1 = SIMPLEX_4D[c] >= 3 ? 1 : 0;
-            int i2 = SIMPLEX_4D[c] >= 2 ? 1 : 0;
-            int i3 = SIMPLEX_4D[c++] >= 1 ? 1 : 0;
-            int j1 = SIMPLEX_4D[c] >= 3 ? 1 : 0;
-            int j2 = SIMPLEX_4D[c] >= 2 ? 1 : 0;
-            int j3 = SIMPLEX_4D[c++] >= 1 ? 1 : 0;
-            int k1 = SIMPLEX_4D[c] >= 3 ? 1 : 0;
-            int k2 = SIMPLEX_4D[c] >= 2 ? 1 : 0;
-            int k3 = SIMPLEX_4D[c++] >= 1 ? 1 : 0;
-            int l1 = SIMPLEX_4D[c] >= 3 ? 1 : 0;
-            int l2 = SIMPLEX_4D[c] >= 2 ? 1 : 0;
-            int l3 = SIMPLEX_4D[c] >= 1 ? 1 : 0;
+            int ip = SIMPLEX_4D[c];
+            int jp = SIMPLEX_4D[c + 1];
+            int kp = SIMPLEX_4D[c + 2];
+            int lp = SIMPLEX_4D[c + 3];
 
-            FN_DECIMAL x1 = x0 - i1 + G4;
-            FN_DECIMAL y1 = y0 - j1 + G4;
-            FN_DECIMAL z1 = z0 - k1 + G4;
-            FN_DECIMAL w1 = w0 - l1 + G4;
-            FN_DECIMAL x2 = x0 - i2 + 2 * G4;
-            FN_DECIMAL y2 = y0 - j2 + 2 * G4;
-            FN_DECIMAL z2 = z0 - k2 + 2 * G4;
-            FN_DECIMAL w2 = w0 - l2 + 2 * G4;
-            FN_DECIMAL x3 = x0 - i3 + 3 * G4;
-            FN_DECIMAL y3 = y0 - j3 + 3 * G4;
-            FN_DECIMAL z3 = z0 - k3 + 3 * G4;
-            FN_DECIMAL w3 = w0 - l3 + 3 * G4;
-            FN_DECIMAL x4 = x0 - 1 + 4 * G4;
-            FN_DECIMAL y4 = y0 - 1 + 4 * G4;
-            FN_DECIMAL z4 = z0 - 1 + 4 * G4;
-            FN_DECIMAL w4 = w0 - 1 + 4 * G4;
+            int i1 = ip == 3 ? 1 : 0;
+            int i2 = ip >= 2 ? 1 : 0;
+            int i3 = ip >= 1 ? 1 : 0;
+            int j1 = jp == 3 ? 1 : 0;
+            int j2 = jp >= 2 ? 1 : 0;
+            int j3 = jp >= 1 ? 1 : 0;
+            int k1 = kp == 3 ? 1 : 0;
+            int k2 = kp >= 2 ? 1 : 0;
+            int k3 = kp >= 1 ? 1 : 0;
+            int l1 = lp == 3 ? 1 : 0;
+            int l2 = lp >= 2 ? 1 : 0;
+            int l3 = lp >= 1 ? 1 : 0;
 
-            t = 0.6 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
+            double x1 = x0 - i1 + G4;
+            double y1 = y0 - j1 + G4;
+            double z1 = z0 - k1 + G4;
+            double w1 = w0 - l1 + G4;
+            double x2 = x0 - i2 + 2 * G4;
+            double y2 = y0 - j2 + 2 * G4;
+            double z2 = z0 - k2 + 2 * G4;
+            double w2 = w0 - l2 + 2 * G4;
+            double x3 = x0 - i3 + 3 * G4;
+            double y3 = y0 - j3 + 3 * G4;
+            double z3 = z0 - k3 + 3 * G4;
+            double w3 = w0 - l3 + 3 * G4;
+            double x4 = x0 - 1 + 4 * G4;
+            double y4 = y0 - 1 + 4 * G4;
+            double z4 = z0 - 1 + 4 * G4;
+            double w4 = w0 - 1 + 4 * G4;
+
+            t = 0.62 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
             if (t < 0) n0 = 0;
             else {
                 t *= t;
                 n0 = t * t * GradCoord4D(seed, i, j, k, l, x0, y0, z0, w0);
             }
-            t = 0.6 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
+            t = 0.62 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
             if (t < 0) n1 = 0;
             else {
                 t *= t;
                 n1 = t * t * GradCoord4D(seed, i + i1, j + j1, k + k1, l + l1, x1, y1, z1, w1);
             }
-            t = 0.6 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
+            t = 0.62 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
             if (t < 0) n2 = 0;
             else {
                 t *= t;
                 n2 = t * t * GradCoord4D(seed, i + i2, j + j2, k + k2, l + l2, x2, y2, z2, w2);
             }
-            t = 0.6 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
+            t = 0.62 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
             if (t < 0) n3 = 0;
             else {
                 t *= t;
                 n3 = t * t * GradCoord4D(seed, i + i3, j + j3, k + k3, l + l3, x3, y3, z3, w3);
             }
-            t = 0.6 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
+            t = 0.62 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
             if (t < 0) n4 = 0;
             else {
                 t *= t;
                 n4 = t * t * GradCoord4D(seed, i + 1, j + 1, k + 1, l + 1, x4, y4, z4, w4);
             }
 
-            return 27 * (n0 + n1 + n2 + n3 + n4);
+            return 14.75 * (n0 + n1 + n2 + n3 + n4);
         }
 
         // Cubic Noise
-        public FN_DECIMAL GetCubicFractal(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        public double GetCubicFractal(double x, double y, double z) {
             x *= frequency;
             y *= frequency;
             z *= frequency;
@@ -1444,10 +1687,10 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleCubicFractalFBM(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleCubicFractalFBM(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = SingleCubic(seed, x, y, z);
-            FN_DECIMAL amp = 1;
+            double sum = SingleCubic(seed, x, y, z);
+            double amp = 1;
             int i = 0;
 
             while (++i < octaves) {
@@ -1462,10 +1705,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleCubicFractalBillow(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleCubicFractalBillow(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = Math.Abs(SingleCubic(seed, x, y, z)) * 2 - 1;
-            FN_DECIMAL amp = 1;
+            double sum = Math.Abs(SingleCubic(seed, x, y, z)) * 2 - 1;
+            double amp = 1;
             int i = 0;
 
             while (++i < octaves) {
@@ -1480,10 +1723,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleCubicFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleCubicFractalRidgedMulti(double x, double y, double z) {
             int seed = this.seed;
-            FN_DECIMAL sum = 1 - Math.Abs(SingleCubic(seed, x, y, z));
-            FN_DECIMAL amp = 1;
+            double sum = 1 - Math.Abs(SingleCubic(seed, x, y, z));
+            double amp = 1;
             int i = 0;
 
             while (++i < octaves) {
@@ -1498,11 +1741,11 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetCubic(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) => SingleCubic(seed, x * frequency, y * frequency, z * frequency);
+        public double GetCubic(double x, double y, double z) => SingleCubic(seed, x * frequency, y * frequency, z * frequency);
 
-        private const FN_DECIMAL CUBIC_3D_BOUNDING = 1 / (1.5 * 1.5 * 1.5);
+        private const double CUBIC_3D_BOUNDING = 1 / (1.5 * 1.5 * 1.5);
 
-        private static FN_DECIMAL SingleCubic(int seed, FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private static double SingleCubic(int seed, double x, double y, double z) {
             int x1 = FastFloor(x);
             int y1 = FastFloor(y);
             int z1 = FastFloor(z);
@@ -1517,9 +1760,9 @@ namespace SquidLib.SquidMath {
             int y3 = y1 + 2;
             int z3 = z1 + 2;
 
-            FN_DECIMAL xs = x - x1;
-            FN_DECIMAL ys = y - y1;
-            FN_DECIMAL zs = z - z1;
+            double xs = x - x1;
+            double ys = y - y1;
+            double zs = z - z1;
 
             return CubicLerp(
                 CubicLerp(
@@ -1550,7 +1793,7 @@ namespace SquidLib.SquidMath {
         }
 
 
-        public FN_DECIMAL GetCubicFractal(FN_DECIMAL x, FN_DECIMAL y) {
+        public double GetCubicFractal(double x, double y) {
             x *= frequency;
             y *= frequency;
 
@@ -1566,10 +1809,10 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleCubicFractalFBM(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleCubicFractalFBM(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = SingleCubic(seed, x, y);
-            FN_DECIMAL amp = 1;
+            double sum = SingleCubic(seed, x, y);
+            double amp = 1;
             int i = 0;
 
             while (++i < octaves) {
@@ -1583,10 +1826,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleCubicFractalBillow(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleCubicFractalBillow(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = Math.Abs(SingleCubic(seed, x, y)) * 2 - 1;
-            FN_DECIMAL amp = 1;
+            double sum = Math.Abs(SingleCubic(seed, x, y)) * 2 - 1;
+            double amp = 1;
             int i = 0;
 
             while (++i < octaves) {
@@ -1600,10 +1843,10 @@ namespace SquidLib.SquidMath {
             return sum * fractalBounding;
         }
 
-        private FN_DECIMAL SingleCubicFractalRidgedMulti(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleCubicFractalRidgedMulti(double x, double y) {
             int seed = this.seed;
-            FN_DECIMAL sum = 1 - Math.Abs(SingleCubic(seed, x, y));
-            FN_DECIMAL amp = 1;
+            double sum = 1 - Math.Abs(SingleCubic(seed, x, y));
+            double amp = 1;
             int i = 0;
 
             while (++i < octaves) {
@@ -1617,16 +1860,16 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetCubic(FN_DECIMAL x, FN_DECIMAL y) {
+        public double GetCubic(double x, double y) {
             x *= frequency;
             y *= frequency;
 
             return SingleCubic(0, x, y);
         }
 
-        private const FN_DECIMAL CUBIC_2D_BOUNDING = 1 / 2.25;
+        private const double CUBIC_2D_BOUNDING = 1 / 2.25;
 
-        private static FN_DECIMAL SingleCubic(int seed, FN_DECIMAL x, FN_DECIMAL y) {
+        private static double SingleCubic(int seed, double x, double y) {
             int x1 = FastFloor(x);
             int y1 = FastFloor(y);
 
@@ -1637,8 +1880,8 @@ namespace SquidLib.SquidMath {
             int x3 = x1 + 2;
             int y3 = y1 + 2;
 
-            FN_DECIMAL xs = x - x1;
-            FN_DECIMAL ys = y - y1;
+            double xs = x - x1;
+            double ys = y - y1;
 
             return CubicLerp(
                        CubicLerp(ValCoord2D(seed, x0, y0), ValCoord2D(seed, x1, y0), ValCoord2D(seed, x2, y0), ValCoord2D(seed, x3, y0),
@@ -1653,7 +1896,7 @@ namespace SquidLib.SquidMath {
         }
 
         // Cellular Noise
-        public FN_DECIMAL GetCellular(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        public double GetCellular(double x, double y, double z) {
             x *= frequency;
             y *= frequency;
             z *= frequency;
@@ -1668,12 +1911,12 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleCellular(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleCellular(double x, double y, double z) {
             int xr = FastRound(x);
             int yr = FastRound(y);
             int zr = FastRound(z);
 
-            FN_DECIMAL distance = 999999;
+            double distance = 999999;
             int xc = 0, yc = 0, zc = 0;
 
             switch (cellularDistanceFunction) {
@@ -1681,13 +1924,13 @@ namespace SquidLib.SquidMath {
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
+                                Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.x * cellularJitter;
+                                double vecY = yi - y + vec.y * cellularJitter;
+                                double vecZ = zi - z + vec.z * cellularJitter;
 
-                                FN_DECIMAL newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
+                                double newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
                                 if (newDistance < distance) {
                                     distance = newDistance;
@@ -1703,13 +1946,13 @@ namespace SquidLib.SquidMath {
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
+                                Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.x * cellularJitter;
+                                double vecY = yi - y + vec.y * cellularJitter;
+                                double vecZ = zi - z + vec.z * cellularJitter;
 
-                                FN_DECIMAL newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
+                                double newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
 
                                 if (newDistance < distance) {
                                     distance = newDistance;
@@ -1725,13 +1968,13 @@ namespace SquidLib.SquidMath {
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
+                                Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.x * cellularJitter;
+                                double vecY = yi - y + vec.y * cellularJitter;
+                                double vecZ = zi - z + vec.z * cellularJitter;
 
-                                FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
+                                double newDistance = (Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
                                 if (newDistance < distance) {
                                     distance = newDistance;
@@ -1750,7 +1993,7 @@ namespace SquidLib.SquidMath {
                     return ValCoord3D(seed, xc, yc, zc);
 
                 case CellularReturnType.NoiseLookup:
-                    Float3 vec = CELL_3D[CoreMath.Hash256(xc, yc, zc, seed)];
+                    Float3 vec = CELL_3D[Hash256(xc, yc, zc, seed)];
                     return cellularNoiseLookup.GetNoise(xc + vec.x * cellularJitter, yc + vec.y * cellularJitter, zc + vec.z * cellularJitter);
 
                 case CellularReturnType.Distance:
@@ -1760,25 +2003,25 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleCellular2Edge(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
+        private double SingleCellular2Edge(double x, double y, double z) {
             int xr = FastRound(x);
             int yr = FastRound(y);
             int zr = FastRound(z);
 
-            FN_DECIMAL[] distance = { 999999, 999999, 999999, 999999 };
+            double[] distance = { 999999, 999999, 999999, 999999 };
 
             switch (cellularDistanceFunction) {
                 case CellularDistanceFunction.Euclidean:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
+                                Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.x * cellularJitter;
+                                double vecY = yi - y + vec.y * cellularJitter;
+                                double vecZ = zi - z + vec.z * cellularJitter;
 
-                                FN_DECIMAL newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
+                                double newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
                                 for (int i = cellularDistanceIndex1; i > 0; i--)
                                     distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
@@ -1791,13 +2034,13 @@ namespace SquidLib.SquidMath {
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
+                                Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.x * cellularJitter;
+                                double vecY = yi - y + vec.y * cellularJitter;
+                                double vecZ = zi - z + vec.z * cellularJitter;
 
-                                FN_DECIMAL newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
+                                double newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
 
                                 for (int i = cellularDistanceIndex1; i > 0; i--)
                                     distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
@@ -1810,13 +2053,13 @@ namespace SquidLib.SquidMath {
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
-                                Float3 vec = CELL_3D[CoreMath.Hash256(xi, yi, zi, seed)];
+                                Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                                FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
-                                FN_DECIMAL vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.x * cellularJitter;
+                                double vecY = yi - y + vec.y * cellularJitter;
+                                double vecZ = zi - z + vec.z * cellularJitter;
 
-                                FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
+                                double newDistance = (Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
                                 for (int i = cellularDistanceIndex1; i > 0; i--)
                                     distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
@@ -1845,7 +2088,7 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        public FN_DECIMAL GetCellular(FN_DECIMAL x, FN_DECIMAL y) {
+        public double GetCellular(double x, double y) {
             x *= frequency;
             y *= frequency;
 
@@ -1859,11 +2102,11 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleCellular(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleCellular(double x, double y) {
             int xr = FastRound(x);
             int yr = FastRound(y);
 
-            FN_DECIMAL distance = 999999;
+            double distance = 999999;
             int xc = 0, yc = 0;
 
             switch (cellularDistanceFunction) {
@@ -1871,12 +2114,12 @@ namespace SquidLib.SquidMath {
                 case CellularDistanceFunction.Euclidean:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
+                            Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.x * cellularJitter;
+                            double vecY = yi - y + vec.y * cellularJitter;
 
-                            FN_DECIMAL newDistance = vecX * vecX + vecY * vecY;
+                            double newDistance = vecX * vecX + vecY * vecY;
 
                             if (newDistance < distance) {
                                 distance = newDistance;
@@ -1889,12 +2132,12 @@ namespace SquidLib.SquidMath {
                 case CellularDistanceFunction.Manhattan:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
+                            Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.x * cellularJitter;
+                            double vecY = yi - y + vec.y * cellularJitter;
 
-                            FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY));
+                            double newDistance = (Math.Abs(vecX) + Math.Abs(vecY));
 
                             if (newDistance < distance) {
                                 distance = newDistance;
@@ -1907,12 +2150,12 @@ namespace SquidLib.SquidMath {
                 case CellularDistanceFunction.Natural:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
+                            Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.x * cellularJitter;
+                            double vecY = yi - y + vec.y * cellularJitter;
 
-                            FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY)) + (vecX * vecX + vecY * vecY);
+                            double newDistance = (Math.Abs(vecX) + Math.Abs(vecY)) + (vecX * vecX + vecY * vecY);
 
                             if (newDistance < distance) {
                                 distance = newDistance;
@@ -1929,7 +2172,7 @@ namespace SquidLib.SquidMath {
                     return ValCoord2D(seed, xc, yc);
 
                 case CellularReturnType.NoiseLookup:
-                    Float2 vec = CELL_2D[CoreMath.Hash256(xc, yc, seed)];
+                    Float2 vec = CELL_2D[Hash256(xc, yc, seed)];
                     return cellularNoiseLookup.GetNoise(xc + vec.x * cellularJitter, yc + vec.y * cellularJitter);
 
                 case CellularReturnType.Distance:
@@ -1939,23 +2182,23 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private FN_DECIMAL SingleCellular2Edge(FN_DECIMAL x, FN_DECIMAL y) {
+        private double SingleCellular2Edge(double x, double y) {
             int xr = FastRound(x);
             int yr = FastRound(y);
 
-            FN_DECIMAL[] distance = { 999999, 999999, 999999, 999999 };
+            double[] distance = { 999999, 999999, 999999, 999999 };
 
             switch (cellularDistanceFunction) {
                 default:
                 case CellularDistanceFunction.Euclidean:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
+                            Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.x * cellularJitter;
+                            double vecY = yi - y + vec.y * cellularJitter;
 
-                            FN_DECIMAL newDistance = vecX * vecX + vecY * vecY;
+                            double newDistance = vecX * vecX + vecY * vecY;
 
                             for (int i = cellularDistanceIndex1; i > 0; i--)
                                 distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
@@ -1966,12 +2209,12 @@ namespace SquidLib.SquidMath {
                 case CellularDistanceFunction.Manhattan:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
+                            Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.x * cellularJitter;
+                            double vecY = yi - y + vec.y * cellularJitter;
 
-                            FN_DECIMAL newDistance = Math.Abs(vecX) + Math.Abs(vecY);
+                            double newDistance = Math.Abs(vecX) + Math.Abs(vecY);
 
                             for (int i = cellularDistanceIndex1; i > 0; i--)
                                 distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
@@ -1982,12 +2225,12 @@ namespace SquidLib.SquidMath {
                 case CellularDistanceFunction.Natural:
                     for (int xi = xr - 1; xi <= xr + 1; xi++) {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
-                            Float2 vec = CELL_2D[CoreMath.Hash256(xi, yi, seed)];
+                            Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            FN_DECIMAL vecX = xi - x + vec.x * cellularJitter;
-                            FN_DECIMAL vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.x * cellularJitter;
+                            double vecY = yi - y + vec.y * cellularJitter;
 
-                            FN_DECIMAL newDistance = (Math.Abs(vecX) + Math.Abs(vecY)) + (vecX * vecX + vecY * vecY);
+                            double newDistance = (Math.Abs(vecX) + Math.Abs(vecY)) + (vecX * vecX + vecY * vecY);
 
                             for (int i = cellularDistanceIndex1; i > 0; i--)
                                 distance[i] = Math.Max(Math.Min(distance[i], newDistance), distance[i - 1]);
@@ -2013,12 +2256,12 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        public void GradientPerturb(ref FN_DECIMAL x, ref FN_DECIMAL y, ref FN_DECIMAL z) => SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y, ref z);
+        public void GradientPerturb(ref double x, ref double y, ref double z) => SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y, ref z);
 
-        public void GradientPerturbFractal(ref FN_DECIMAL x, ref FN_DECIMAL y, ref FN_DECIMAL z) {
+        public void GradientPerturbFractal(ref double x, ref double y, ref double z) {
             int seed = this.seed;
-            FN_DECIMAL amp = gradientPerturbAmp * fractalBounding;
-            FN_DECIMAL freq = frequency;
+            double amp = gradientPerturbAmp * fractalBounding;
+            double freq = frequency;
 
             SingleGradientPerturb(seed, amp, frequency, ref x, ref y, ref z);
 
@@ -2029,10 +2272,10 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private void SingleGradientPerturb(int seed, FN_DECIMAL perturbAmp, FN_DECIMAL frequency, ref FN_DECIMAL x, ref FN_DECIMAL y, ref FN_DECIMAL z) {
-            FN_DECIMAL xf = x * frequency;
-            FN_DECIMAL yf = y * frequency;
-            FN_DECIMAL zf = z * frequency;
+        private void SingleGradientPerturb(int seed, double perturbAmp, double frequency, ref double x, ref double y, ref double z) {
+            double xf = x * frequency;
+            double yf = y * frequency;
+            double zf = z * frequency;
 
             int x0 = FastFloor(xf);
             int y0 = FastFloor(yf);
@@ -2041,7 +2284,7 @@ namespace SquidLib.SquidMath {
             int y1 = y0 + 1;
             int z1 = z0 + 1;
 
-            FN_DECIMAL xs, ys, zs;
+            double xs, ys, zs;
             switch (interp) {
                 default:
                 case Interp.Linear:
@@ -2061,33 +2304,33 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            Float3 vec0 = CELL_3D[CoreMath.Hash256(x0, y0, z0, seed)];
-            Float3 vec1 = CELL_3D[CoreMath.Hash256(x1, y0, z0, seed)];
+            Float3 vec0 = CELL_3D[Hash256(x0, y0, z0, seed)];
+            Float3 vec1 = CELL_3D[Hash256(x1, y0, z0, seed)];
 
-            FN_DECIMAL lx0x = Lerp(vec0.x, vec1.x, xs);
-            FN_DECIMAL ly0x = Lerp(vec0.y, vec1.y, xs);
-            FN_DECIMAL lz0x = Lerp(vec0.z, vec1.z, xs);
+            double lx0x = Lerp(vec0.x, vec1.x, xs);
+            double ly0x = Lerp(vec0.y, vec1.y, xs);
+            double lz0x = Lerp(vec0.z, vec1.z, xs);
 
-            vec0 = CELL_3D[CoreMath.Hash256(x0, y1, z0, seed)];
-            vec1 = CELL_3D[CoreMath.Hash256(x1, y1, z0, seed)];
+            vec0 = CELL_3D[Hash256(x0, y1, z0, seed)];
+            vec1 = CELL_3D[Hash256(x1, y1, z0, seed)];
 
-            FN_DECIMAL lx1x = Lerp(vec0.x, vec1.x, xs);
-            FN_DECIMAL ly1x = Lerp(vec0.y, vec1.y, xs);
-            FN_DECIMAL lz1x = Lerp(vec0.z, vec1.z, xs);
+            double lx1x = Lerp(vec0.x, vec1.x, xs);
+            double ly1x = Lerp(vec0.y, vec1.y, xs);
+            double lz1x = Lerp(vec0.z, vec1.z, xs);
 
-            FN_DECIMAL lx0y = Lerp(lx0x, lx1x, ys);
-            FN_DECIMAL ly0y = Lerp(ly0x, ly1x, ys);
-            FN_DECIMAL lz0y = Lerp(lz0x, lz1x, ys);
+            double lx0y = Lerp(lx0x, lx1x, ys);
+            double ly0y = Lerp(ly0x, ly1x, ys);
+            double lz0y = Lerp(lz0x, lz1x, ys);
 
-            vec0 = CELL_3D[CoreMath.Hash256(x0, y0, z1, seed)];
-            vec1 = CELL_3D[CoreMath.Hash256(x1, y0, z1, seed)];
+            vec0 = CELL_3D[Hash256(x0, y0, z1, seed)];
+            vec1 = CELL_3D[Hash256(x1, y0, z1, seed)];
 
             lx0x = Lerp(vec0.x, vec1.x, xs);
             ly0x = Lerp(vec0.y, vec1.y, xs);
             lz0x = Lerp(vec0.z, vec1.z, xs);
 
-            vec0 = CELL_3D[CoreMath.Hash256(x0, y1, z1, seed)];
-            vec1 = CELL_3D[CoreMath.Hash256(x1, y1, z1, seed)];
+            vec0 = CELL_3D[Hash256(x0, y1, z1, seed)];
+            vec1 = CELL_3D[Hash256(x1, y1, z1, seed)];
 
             lx1x = Lerp(vec0.x, vec1.x, xs);
             ly1x = Lerp(vec0.y, vec1.y, xs);
@@ -2098,12 +2341,12 @@ namespace SquidLib.SquidMath {
             z += Lerp(lz0y, Lerp(lz0x, lz1x, ys), zs) * perturbAmp;
         }
 
-        public void GradientPerturb(ref FN_DECIMAL x, ref FN_DECIMAL y) => SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y);
+        public void GradientPerturb(ref double x, ref double y) => SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y);
 
-        public void GradientPerturbFractal(ref FN_DECIMAL x, ref FN_DECIMAL y) {
+        public void GradientPerturbFractal(ref double x, ref double y) {
             int seed = this.seed;
-            FN_DECIMAL amp = gradientPerturbAmp * fractalBounding;
-            FN_DECIMAL freq = frequency;
+            double amp = gradientPerturbAmp * fractalBounding;
+            double freq = frequency;
 
             SingleGradientPerturb(seed, amp, frequency, ref x, ref y);
 
@@ -2114,16 +2357,16 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        private void SingleGradientPerturb(int seed, FN_DECIMAL perturbAmp, FN_DECIMAL frequency, ref FN_DECIMAL x, ref FN_DECIMAL y) {
-            FN_DECIMAL xf = x * frequency;
-            FN_DECIMAL yf = y * frequency;
+        private void SingleGradientPerturb(int seed, double perturbAmp, double frequency, ref double x, ref double y) {
+            double xf = x * frequency;
+            double yf = y * frequency;
 
             int x0 = FastFloor(xf);
             int y0 = FastFloor(yf);
             int x1 = x0 + 1;
             int y1 = y0 + 1;
 
-            FN_DECIMAL xs, ys;
+            double xs, ys;
             switch (interp) {
                 default:
                 case Interp.Linear:
@@ -2140,17 +2383,17 @@ namespace SquidLib.SquidMath {
                     break;
             }
 
-            Float2 vec0 = CELL_2D[CoreMath.Hash256(x0, y0, seed)];
-            Float2 vec1 = CELL_2D[CoreMath.Hash256(x1, y0, seed)];
+            Float2 vec0 = CELL_2D[Hash256(x0, y0, seed)];
+            Float2 vec1 = CELL_2D[Hash256(x1, y0, seed)];
 
-            FN_DECIMAL lx0x = Lerp(vec0.x, vec1.x, xs);
-            FN_DECIMAL ly0x = Lerp(vec0.y, vec1.y, xs);
+            double lx0x = Lerp(vec0.x, vec1.x, xs);
+            double ly0x = Lerp(vec0.y, vec1.y, xs);
 
-            vec0 = CELL_2D[CoreMath.Hash256(x0, y1, seed)];
-            vec1 = CELL_2D[CoreMath.Hash256(x1, y1, seed)];
+            vec0 = CELL_2D[Hash256(x0, y1, seed)];
+            vec1 = CELL_2D[Hash256(x1, y1, seed)];
 
-            FN_DECIMAL lx1x = Lerp(vec0.x, vec1.x, xs);
-            FN_DECIMAL ly1x = Lerp(vec0.y, vec1.y, xs);
+            double lx1x = Lerp(vec0.x, vec1.x, xs);
+            double ly1x = Lerp(vec0.y, vec1.y, xs);
 
             x += Lerp(lx0x, lx1x, ys) * perturbAmp;
             y += Lerp(ly0x, ly1x, ys) * perturbAmp;

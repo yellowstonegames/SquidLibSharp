@@ -146,7 +146,7 @@ namespace Demo {
                     time++;
                     for (int i = 0, y = 0; y < 512; y++) {
                         for (int x = 0; x < 512; x++) {
-                            window.colors[i++] = (byte)(noise.GetNoise((x + time) * 0.03125, (y + time) * 0.03125) * 127.5 + 127.5);
+                            window.colors[i++] = (byte)(noise.GetNoise(x * 0.03125, y * 0.03125, time * 0.03125) * 127.5 + 127.5);
                         }
                     }
                     frames++;
@@ -165,7 +165,7 @@ namespace Demo {
             int frames = 0;
 
             FastNoise noise = new FastNoise();
-            noise.SetFrequency(0.03125);
+            noise.SetFrequency(0.03125 * 0.25);
             noise.SetFractalOctaves(1);
             noise.SetNoiseType(FastNoise.NoiseType.Simplex);
 
@@ -181,7 +181,7 @@ namespace Demo {
                     time++;
                     for (int i = 0, y = 0; y < 512; y++) {
                         for (int x = 0; x < 512; x++) {
-                            window.colors[i++] = (byte)(noise.GetSimplex(x + time, y + time) * 125 + 128);
+                            window.colors[i++] = (byte)(noise.GetSimplex(x + y + time, y - x - time, time - x - y, x - y - time) * 125 + 128);
                         }
                     }
                     frames++;
