@@ -69,18 +69,18 @@ namespace SquidLib.SquidMath {
         }
 
         // Returns a 0 float/double
-        public static FN_DECIMAL GetDecimalType() { return 0; }
+        public static FN_DECIMAL GetDecimalType() => 0;
 
         // Returns the seed used by this object
-        public int GetSeed() { return seed; }
+        public int GetSeed() => seed;
 
         // Sets seed used for all noise types
         // Default: 1337
-        public void SetSeed(int seed) { this.seed = seed; }
+        public void SetSeed(int seed) => this.seed = seed;
 
         // Sets frequency for all noise types
         // Default: 0.01
-        public void SetFrequency(FN_DECIMAL frequency) { this.frequency = frequency; }
+        public void SetFrequency(FN_DECIMAL frequency) => this.frequency = frequency;
 
         // Changes the interpolation method used to smooth between noise values
         // Possible interpolation methods (lowest to highest quality) :
@@ -89,11 +89,11 @@ namespace SquidLib.SquidMath {
         // - Quintic
         // Used in Value, Gradient Noise and Position Perturbing
         // Default: Quintic
-        public void SetInterp(Interp interp) { this.interp = interp; }
+        public void SetInterp(Interp interp) => this.interp = interp;
 
         // Sets noise return type of GetNoise(...)
         // Default: Simplex
-        public void SetNoiseType(NoiseType noiseType) { this.noiseType = noiseType; }
+        public void SetNoiseType(NoiseType noiseType) => this.noiseType = noiseType;
 
 
         // Sets octave count for all fractal noise types
@@ -102,7 +102,7 @@ namespace SquidLib.SquidMath {
 
         // Sets octave lacunarity for all fractal noise types
         // Default: 2.0
-        public void SetFractalLacunarity(FN_DECIMAL lacunarity) { this.lacunarity = lacunarity; }
+        public void SetFractalLacunarity(FN_DECIMAL lacunarity) => this.lacunarity = lacunarity;
 
         // Sets octave gain for all fractal noise types
         // Default: 0.5
@@ -110,17 +110,17 @@ namespace SquidLib.SquidMath {
 
         // Sets method for combining octaves in all fractal noise types
         // Default: FBM
-        public void SetFractalType(FractalType fractalType) { this.fractalType = fractalType; }
+        public void SetFractalType(FractalType fractalType) => this.fractalType = fractalType;
 
 
         // Sets return type from cellular noise calculations
         // Note: NoiseLookup requires another FastNoise object be set with SetCellularNoiseLookup() to function
         // Default: CellValue
-        public void SetCellularDistanceFunction(CellularDistanceFunction cellularDistanceFunction) { this.cellularDistanceFunction = cellularDistanceFunction; }
+        public void SetCellularDistanceFunction(CellularDistanceFunction cellularDistanceFunction) => this.cellularDistanceFunction = cellularDistanceFunction;
 
         // Sets distance function used in cellular noise calculations
         // Default: Euclidean
-        public void SetCellularReturnType(CellularReturnType cellularReturnType) { this.cellularReturnType = cellularReturnType; }
+        public void SetCellularReturnType(CellularReturnType cellularReturnType) => this.cellularReturnType = cellularReturnType;
 
         // Sets the 2 distance indicies used for distance2 return types
         // Default: 0, 1
@@ -137,16 +137,16 @@ namespace SquidLib.SquidMath {
         // Sets the maximum distance a cellular point can move from it's grid position
         // Setting this high will make artifacts more common
         // Default: 0.45
-        public void SetCellularJitter(float cellularJitter) { this.cellularJitter = cellularJitter; }
+        public void SetCellularJitter(float cellularJitter) => this.cellularJitter = cellularJitter;
 
         // Noise used to calculate a cell value if cellular return type is NoiseLookup
         // The lookup value is acquired through GetNoise() so ensure you SetNoiseType() on the noise lookup, value, gradient or simplex is recommended
-        public void SetCellularNoiseLookup(FastNoise noise) { cellularNoiseLookup = noise; }
+        public void SetCellularNoiseLookup(FastNoise noise) => cellularNoiseLookup = noise;
 
 
         // Sets the maximum perturb distance from original location when using GradientPerturb{Fractal}(...)
         // Default: 1.0
-        public void SetGradientPerturbAmp(FN_DECIMAL gradientPerturbAmp) { this.gradientPerturbAmp = gradientPerturbAmp; }
+        public void SetGradientPerturbAmp(FN_DECIMAL gradientPerturbAmp) => this.gradientPerturbAmp = gradientPerturbAmp;
 
         private struct Float2 {
             public readonly FN_DECIMAL x, y;
@@ -289,19 +289,19 @@ namespace SquidLib.SquidMath {
     };
 
         [MethodImpl(FN_INLINE)]
-        private static int FastFloor(FN_DECIMAL f) { return (f >= 0 ? (int)f : (int)f - 1); }
+        private static int FastFloor(FN_DECIMAL f) => (f >= 0 ? (int)f : (int)f - 1);
 
         [MethodImpl(FN_INLINE)]
-        private static int FastRound(FN_DECIMAL f) { return (f >= 0) ? (int)(f + 0.5) : (int)(f - 0.5); }
+        private static int FastRound(FN_DECIMAL f) => (f >= 0) ? (int)(f + 0.5) : (int)(f - 0.5);
 
         [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL Lerp(FN_DECIMAL a, FN_DECIMAL b, FN_DECIMAL t) { return a + t * (b - a); }
+        private static FN_DECIMAL Lerp(FN_DECIMAL a, FN_DECIMAL b, FN_DECIMAL t) => a + t * (b - a);
 
         [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL InterpHermiteFunc(FN_DECIMAL t) { return t * t * (3 - 2 * t); }
+        private static FN_DECIMAL InterpHermiteFunc(FN_DECIMAL t) => t * t * (3 - 2 * t);
 
         [MethodImpl(FN_INLINE)]
-        private static FN_DECIMAL InterpQuinticFunc(FN_DECIMAL t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+        private static FN_DECIMAL InterpQuinticFunc(FN_DECIMAL t) => t * t * t * (t * (t * 6 - 15) + 10);
 
         [MethodImpl(FN_INLINE)]
         private static FN_DECIMAL CubicLerp(FN_DECIMAL a, FN_DECIMAL b, FN_DECIMAL c, FN_DECIMAL d, FN_DECIMAL t) {
@@ -396,16 +396,14 @@ namespace SquidLib.SquidMath {
 
         [MethodImpl(FN_INLINE)]
         private static FN_DECIMAL GradCoord2D(int seed, int x, int y, FN_DECIMAL xd, FN_DECIMAL yd) {
-            int hash = seed;
-            hash ^= X_PRIME * x;
-            hash ^= Y_PRIME * y;
+            //int hash = seed;
+            //hash ^= X_PRIME * x;
+            //hash ^= Y_PRIME * y;
 
-            hash = hash * hash * hash * 60493;
-            hash = (hash >> 13) ^ hash;
-
-            Float2 g = GRAD_2D[hash & 7];
-
-            return xd * g.x + yd * g.y;
+            //hash = hash * hash * hash * 60493;
+            //hash = (hash >> 13 ^ hash) & 510;
+            uint hash = CoreMath.Hash256(x, y, seed) << 1;
+            return xd * SimplexNoise.PhiGrad2[hash] + yd * SimplexNoise.PhiGrad2[hash+1];
         }
 
         [MethodImpl(FN_INLINE)]
@@ -623,17 +621,11 @@ namespace SquidLib.SquidMath {
             return ValCoord2D(seed, xi, yi);
         }
 
-        public FN_DECIMAL GetWhiteNoiseInt(int x, int y, int z, int w) {
-            return ValCoord4D(seed, x, y, z, w);
-        }
+        public FN_DECIMAL GetWhiteNoiseInt(int x, int y, int z, int w) => ValCoord4D(seed, x, y, z, w);
 
-        public FN_DECIMAL GetWhiteNoiseInt(int x, int y, int z) {
-            return ValCoord3D(seed, x, y, z);
-        }
+        public FN_DECIMAL GetWhiteNoiseInt(int x, int y, int z) => ValCoord3D(seed, x, y, z);
 
-        public FN_DECIMAL GetWhiteNoiseInt(int x, int y) {
-            return ValCoord2D(seed, x, y);
-        }
+        public FN_DECIMAL GetWhiteNoiseInt(int x, int y) => ValCoord2D(seed, x, y);
 
         // Value Noise
         public FN_DECIMAL GetValueFractal(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
@@ -704,9 +696,7 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetValue(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            return SingleValue(seed, x * frequency, y * frequency, z * frequency);
-        }
+        public FN_DECIMAL GetValue(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) => SingleValue(seed, x * frequency, y * frequency, z * frequency);
 
         private FN_DECIMAL SingleValue(int seed, FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
             int x0 = FastFloor(x);
@@ -810,9 +800,7 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetValue(FN_DECIMAL x, FN_DECIMAL y) {
-            return SingleValue(seed, x * frequency, y * frequency);
-        }
+        public FN_DECIMAL GetValue(FN_DECIMAL x, FN_DECIMAL y) => SingleValue(seed, x * frequency, y * frequency);
 
         private FN_DECIMAL SingleValue(int seed, FN_DECIMAL x, FN_DECIMAL y) {
             int x0 = FastFloor(x);
@@ -912,9 +900,7 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetPerlin(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            return SinglePerlin(seed, x * frequency, y * frequency, z * frequency);
-        }
+        public FN_DECIMAL GetPerlin(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) => SinglePerlin(seed, x * frequency, y * frequency, z * frequency);
 
         private FN_DECIMAL SinglePerlin(int seed, FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
             int x0 = FastFloor(x);
@@ -1026,9 +1012,7 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetPerlin(FN_DECIMAL x, FN_DECIMAL y) {
-            return SinglePerlin(seed, x * frequency, y * frequency);
-        }
+        public FN_DECIMAL GetPerlin(FN_DECIMAL x, FN_DECIMAL y) => SinglePerlin(seed, x * frequency, y * frequency);
 
         private FN_DECIMAL SinglePerlin(int seed, FN_DECIMAL x, FN_DECIMAL y) {
             int x0 = FastFloor(x);
@@ -1133,9 +1117,7 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            return SingleSimplex(seed, x * frequency, y * frequency, z * frequency);
-        }
+        public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) => SingleSimplex(seed, x * frequency, y * frequency, z * frequency);
 
         private const FN_DECIMAL F3 = 1.0 / 3.0;
         private const FN_DECIMAL G3 = 1.0 / 6.0;
@@ -1283,17 +1265,16 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y) {
-            return SingleSimplex(seed, x * frequency, y * frequency);
-        }
+        public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y) => SingleSimplex(seed, x * frequency, y * frequency);
 
-        private const FN_DECIMAL F2 = 1.0 / 2.0;
-        private const FN_DECIMAL G2 = 1.0 / 4.0;
+        private const FN_DECIMAL F2 = 0.36602540378443864676372317075294;
+        private const FN_DECIMAL G2 = 0.21132486540518711774542560974902;
+        private const FN_DECIMAL H2 = G2 * 2;
 
         private static FN_DECIMAL SingleSimplex(int seed, FN_DECIMAL x, FN_DECIMAL y) {
             FN_DECIMAL t = (x + y) * F2;
-            int i = FastFloor(x + t);
-            int j = FastFloor(y + t);
+            long i = CoreMath.LongFloor(x + t);
+            long j = CoreMath.LongFloor(y + t);
 
             t = (i + j) * G2;
             FN_DECIMAL X0 = i - t;
@@ -1302,7 +1283,7 @@ namespace SquidLib.SquidMath {
             FN_DECIMAL x0 = x - X0;
             FN_DECIMAL y0 = y - Y0;
 
-            int i1, j1;
+            long i1, j1;
             if (x0 > y0) {
                 i1 = 1; j1 = 0;
             } else {
@@ -1311,38 +1292,35 @@ namespace SquidLib.SquidMath {
 
             FN_DECIMAL x1 = x0 - i1 + G2;
             FN_DECIMAL y1 = y0 - j1 + G2;
-            FN_DECIMAL x2 = x0 - 1 + F2;
-            FN_DECIMAL y2 = y0 - 1 + F2;
+            FN_DECIMAL x2 = x0 - 1 + H2;
+            FN_DECIMAL y2 = y0 - 1 + H2;
 
             FN_DECIMAL n0, n1, n2;
+            FN_DECIMAL t0 = 0.75 - x0 * x0 - y0 * y0;
+            if (t0 > 0) {
+                uint gi = CoreMath.Hash256(i, j, seed) << 1;
+                t0 *= t0;
+                n0 = t0 * t0 * (SimplexNoise.PhiGrad2[gi] * x0 + SimplexNoise.PhiGrad2[gi + 1] * y0);
+            } else n0 = 0.0;
 
-            t = 0.5 - x0 * x0 - y0 * y0;
-            if (t < 0) n0 = 0;
-            else {
-                t *= t;
-                n0 = t * t * GradCoord2D(seed, i, j, x0, y0);
-            }
+            FN_DECIMAL t1 = 0.75 - x1 * x1 - y1 * y1;
+            if (t1 > 0) {
+                uint gi = CoreMath.Hash256(i + i1, j + j1, seed) << 1;
+                t1 *= t1;
+                n1 = t1 * t1 * (SimplexNoise.PhiGrad2[gi] * x1 + SimplexNoise.PhiGrad2[gi + 1] * y1);
+            } else n1 = 0.0;
 
-            t = 0.5 - x1 * x1 - y1 * y1;
-            if (t < 0) n1 = 0;
-            else {
-                t *= t;
-                n1 = t * t * GradCoord2D(seed, i + i1, j + j1, x1, y1);
-            }
+            FN_DECIMAL t2 = 0.75 - x2 * x2 - y2 * y2;
+            if (t2 > 0) {
+                uint gi = CoreMath.Hash256(i + 1, j + 1, seed) << 1;
+                t2 *= t2;
+                n2 = t2 * t2 * (SimplexNoise.PhiGrad2[gi] * x2 + SimplexNoise.PhiGrad2[gi + 1] * y2);
+            } else n2 = 0.0;
 
-            t = 0.5 - x2 * x2 - y2 * y2;
-            if (t < 0) n2 = 0;
-            else {
-                t *= t;
-                n2 = t * t * GradCoord2D(seed, i + 1, j + 1, x2, y2);
-            }
-
-            return 50 * (n0 + n1 + n2);
+            return 9.11 * (n0 + n1 + n2);
         }
 
-        public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z, FN_DECIMAL w) {
-            return SingleSimplex(seed, x * frequency, y * frequency, z * frequency, w * frequency);
-        }
+        public FN_DECIMAL GetSimplex(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z, FN_DECIMAL w) => SingleSimplex(seed, x * frequency, y * frequency, z * frequency, w * frequency);
 
         private static readonly byte[] SIMPLEX_4D =
         {
@@ -1520,9 +1498,7 @@ namespace SquidLib.SquidMath {
             return sum;
         }
 
-        public FN_DECIMAL GetCubic(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) {
-            return SingleCubic(seed, x * frequency, y * frequency, z * frequency);
-        }
+        public FN_DECIMAL GetCubic(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) => SingleCubic(seed, x * frequency, y * frequency, z * frequency);
 
         private const FN_DECIMAL CUBIC_3D_BOUNDING = 1 / (1.5 * 1.5 * 1.5);
 
@@ -2037,9 +2013,7 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        public void GradientPerturb(ref FN_DECIMAL x, ref FN_DECIMAL y, ref FN_DECIMAL z) {
-            SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y, ref z);
-        }
+        public void GradientPerturb(ref FN_DECIMAL x, ref FN_DECIMAL y, ref FN_DECIMAL z) => SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y, ref z);
 
         public void GradientPerturbFractal(ref FN_DECIMAL x, ref FN_DECIMAL y, ref FN_DECIMAL z) {
             int seed = this.seed;
@@ -2124,9 +2098,7 @@ namespace SquidLib.SquidMath {
             z += Lerp(lz0y, Lerp(lz0x, lz1x, ys), zs) * perturbAmp;
         }
 
-        public void GradientPerturb(ref FN_DECIMAL x, ref FN_DECIMAL y) {
-            SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y);
-        }
+        public void GradientPerturb(ref FN_DECIMAL x, ref FN_DECIMAL y) => SingleGradientPerturb(seed, gradientPerturbAmp, frequency, ref x, ref y);
 
         public void GradientPerturbFractal(ref FN_DECIMAL x, ref FN_DECIMAL y) {
             int seed = this.seed;

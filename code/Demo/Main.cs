@@ -167,7 +167,7 @@ namespace Demo {
             FastNoise noise = new FastNoise();
             noise.SetFrequency(0.03125);
             noise.SetFractalOctaves(1);
-            noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
+            noise.SetNoiseType(FastNoise.NoiseType.Simplex);
 
             int time = 0;
 
@@ -181,7 +181,7 @@ namespace Demo {
                     time++;
                     for (int i = 0, y = 0; y < 512; y++) {
                         for (int x = 0; x < 512; x++) {
-                            window.colors[i++] = (byte)(noise.GetNoise(x + time, y + time) * 125 + 128);
+                            window.colors[i++] = (byte)(noise.GetSimplex(x + time, y + time) * 125 + 128);
                         }
                     }
                     frames++;

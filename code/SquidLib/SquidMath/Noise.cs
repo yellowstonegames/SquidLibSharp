@@ -66,7 +66,8 @@ namespace SquidLib.SquidMath
  */
     public class SimplexNoise : INoise2D, INoise3D
     {
-        protected static readonly double[] PhiGrad2 = {
+        #region VECTORS
+        internal static readonly double[] PhiGrad2 = {
             0.6499429579167653, 0.759982994187637,
             -0.1551483029088119, 0.9878911904175052,
             -0.8516180517334043, 0.5241628506120981,
@@ -324,7 +325,7 @@ namespace SquidLib.SquidMath
             0.9744164792492415, 0.22474991650168097,
             0.462509014279733, 0.8866145790082576,
     };
-        protected static readonly double[] Grad3d =
+        internal static readonly double[] Grad3d =
         {
                     -0.448549002408981,  1.174316525459290,  0.000000000000001,
                      0.000000000000001,  1.069324374198914,  0.660878777503967,
@@ -359,8 +360,8 @@ namespace SquidLib.SquidMath
                     -0.000000000000003, -1.069324374198914,  0.660878777503967,
                      0.448549002408981, -1.174316525459290,  0.000000000000003,
             };
-
-        protected static readonly double
+        #endregion
+        internal static readonly double
             F2 = 0.36602540378443864676372317075294,
             G2 = 0.21132486540518711774542560974902,
             F3 = 1.0 / 3.0,
@@ -438,7 +439,7 @@ namespace SquidLib.SquidMath
             }
             // Add contributions from each corner to get the noise value.
             // The result is scaled to return values in the interval [-1,1].
-            return 9.125 * (n);
+            return 9.125 * n;
         }
 
 
