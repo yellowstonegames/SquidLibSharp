@@ -361,7 +361,7 @@ namespace SquidLib.SquidMath
                      0.448549002408981, -1.174316525459290,  0.000000000000003,
             };
         #endregion
-        internal static readonly double
+        internal const double
             F2 = 0.36602540378443864676372317075294,
             G2 = 0.21132486540518711774542560974902,
             F3 = 1.0 / 3.0,
