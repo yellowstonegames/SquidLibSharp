@@ -139,7 +139,7 @@ namespace Demo {
             using (var window = new NoiseWindow()) {
                 window.VSync = VSyncMode.Off;
                 while (window.WindowUpdate()) {
-                    if (window.GetKey() == Key.Escape) {
+                    if (window.GetKey() == OpenTK.Input.Key.Escape) {
                         window.Close();
                         break;
                     }
@@ -174,7 +174,7 @@ namespace Demo {
             using (var window = new NoiseWindow()) {
                 window.VSync = VSyncMode.Off;
                 while (window.WindowUpdate()) {
-                    if (window.GetKey() == Key.Escape) {
+                    if (window.GetKey() == OpenTK.Input.Key.Escape) {
                         window.Close();
                         break;
                     }
@@ -209,7 +209,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
         protected int first_changed_row, last_changed_row, first_changed_col, last_changed_col;
         protected bool hold_updates;
         protected bool internal_key_pressed;
-        protected Key internal_last_key;
+        protected OpenTK.Input.Key internal_last_key;
         protected FrameEventArgs render_args = new FrameEventArgs(); //This is a necessary step if you're not using the default GameWindow loop.
         protected bool resizing;
         protected int num_elements;
@@ -243,14 +243,14 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
         public int Rows { get { return internal_rows; } }
         public int Cols { get { return internal_cols; } }
         public bool KeyPressed { get { return internal_key_pressed; } }
-        public Key GetKey() {
+        public OpenTK.Input.Key GetKey() {
             if (internal_key_pressed) {
                 internal_key_pressed = false;
                 return internal_last_key;
             }
-            return Key.Unknown;
+            return OpenTK.Input.Key.Unknown;
         }
-        public bool KeyIsDown(Key key) { return OpenTK.Input.Keyboard.GetState().IsKeyDown(key); }
+        public bool KeyIsDown(OpenTK.Input.Key key) { return OpenTK.Input.Keyboard.GetState().IsKeyDown(key); }
 
         private readonly float[] positions = new float[]{
                         -1f,-1f,0f,1, 1,1,1,1, 1,1,1,1,

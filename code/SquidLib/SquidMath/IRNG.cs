@@ -176,10 +176,19 @@ namespace SquidLib.SquidMath {
          * (just not predictably in all cases). If coll is empty, returns null.
          * <br>
          * @param <T>  the type of the returned object
-         * @param coll the Collection to get an element from; remember, Map does not implement Collection
+         * @param coll the IEnumerable to get an element from; for most IDictionary inputs, this will get an entry
          * @return the randomly selected element
          */
         T RandomElement<T>(IEnumerable<T> coll);
+
+        /// <summary>
+        /// Gets a random key, for IndexedDictionary, or key-like unique item, for IndexedSet, from the given data structure.
+        /// To get a random value from an IndexedDictionary, just look up the returned key in the dictionary, as long as it isn't empty.
+        /// </summary>
+        /// <typeparam name="T">The type of the IOrdered keys</typeparam>
+        /// <param name="ordered">An IOrdered, such as an IndexedDictionary or IndexedSet</param>
+        /// <returns></returns>
+        T RandomKey<T>(IOrdered<T> ordered);
 
         /**
          * Shuffle an array using the Fisher-Yates algorithm and returns a shuffled copy, freshly-allocated, without
@@ -245,17 +254,25 @@ namespace SquidLib.SquidMath {
          */
         List<T> Shuffle<T>(IEnumerable<T> elements, List<T> buf);
         /**
-         * Shuffles a Collection of T items in-place using the Fisher-Yates algorithm.
-         * This only shuffles List data structures.
-         * If you don't want the array modified, use {@link #shuffle(Collection)}, which returns a List as well.
+         * Shuffles a List of T items in-place using the Fisher-Yates algorithm.
          * <br>
          * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Wikipedia has more on this algorithm</a>.
          *
-         * @param elements a Collection of T; <b>will</b> be modified
+         * @param elements a List of T; <b>will</b> be modified
          * @param <T>      can be any non-primitive type.
          * @return elements after shuffling it in-place
          */
         List<T> ShuffleInPlace<T>(List<T> elements);
+        /**
+         * Shuffles an IOrdered data structure, such as an IndexedSet or IndexedDictionary, in-place using the Fisher-Yates algorithm.
+         * <br>
+         * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Wikipedia has more on this algorithm</a>.
+         *
+         * @param ordered an IOrdered, such as an IndexedSet or IndexedDictionary; <b>will</b> be modified
+         * @param <T>     disregarded; the type won't affect how this behaves
+         * @return ordered after shuffling it in-place
+         */
+        void ShuffleInPlace<T>(IOrdered<T> ordered);
         /**
          * Gets a random portion of data (an array), assigns that portion to output (an array) so that it fills as much as
          * it can, and then returns output. Will only use a given position in the given data at most once.

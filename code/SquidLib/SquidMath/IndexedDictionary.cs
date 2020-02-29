@@ -22,7 +22,7 @@ namespace SquidLib.SquidMath {
     /// </summary>
     /// <typeparam name="TKey">Key type</typeparam>
     /// <typeparam name="TValue">Value type</typeparam>
-    public class IndexedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IEnumerable<KeyValuePair<TKey, TValue>>, IOrdered<TKey>, IEquatable<IndexedDictionary<TKey, TValue>> {
+    public class IndexedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, IOrdered<TKey>, IEquatable<IndexedDictionary<TKey, TValue>> {
 
         /// <summary>
         ///     Initializes a new instance of the SquidLib.SquidMath.IndexedDictionary class

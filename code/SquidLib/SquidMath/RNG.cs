@@ -798,6 +798,10 @@ namespace SquidLib.SquidMath {
             }
             return dest;
         }
+
+        public T RandomKey<T>(IOrdered<T> ordered) => ordered.Ordering[NextSignedInt(ordered.Ordering.Count)];
+
+        public void ShuffleInPlace<T>(IOrdered<T> ordered) => ShuffleInPlace(ordered.Ordering);
     }
 
 }
