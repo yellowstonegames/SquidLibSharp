@@ -22,7 +22,7 @@ namespace SquidLib.SquidMath {
     /// </summary>
     /// <typeparam name="TKey">Key type</typeparam>
     /// <typeparam name="TValue">Value type</typeparam>
-    public class IndexedDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
+    public class IndexedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IEnumerable<KeyValuePair<TKey, TValue>>, IOrdered<TKey>, IEquatable<IndexedDictionary<TKey, TValue>> {
 
         /// <summary>
         ///     Initializes a new instance of the SquidLib.SquidMath.IndexedDictionary class
@@ -31,7 +31,7 @@ namespace SquidLib.SquidMath {
         /// </summary>
         public IndexedDictionary() {
             Dict = new Dictionary<TKey, TValue>();
-            Items = new List<TKey>();
+            Ordering = new List<TKey>();
         }
         /// <summary>
         ///     Initializes a new instance of the SquidLib.SquidMath.IndexedDictionary class
@@ -41,7 +41,7 @@ namespace SquidLib.SquidMath {
         /// <param name="dictionary">The System.Collections.Generic.IDictionary`2 whose elements are copied to the new SquidLib.SquidMath.IndexedDictionary.</param>
         public IndexedDictionary(IDictionary<TKey, TValue> dictionary) {
             Dict = new Dictionary<TKey, TValue>(dictionary);
-            Items = new List<TKey>(Dict.Keys);
+            Ordering = new List<TKey>(Dict.Keys);
         }
         /// <summary>
         ///     Initializes a new instance of the SquidLib.SquidMath.IndexedDictionary class
@@ -50,7 +50,7 @@ namespace SquidLib.SquidMath {
         /// <param name="comparer">The System.Collections.Generic.IEqualityComparer`1 implementation to use when comparing keys, or null to use the default System.Collections.Generic.EqualityComparer`1 for the type of the key.</param>
         public IndexedDictionary(IEqualityComparer<TKey> comparer) {
             Dict = new Dictionary<TKey, TValue>(comparer);
-            Items = new List<TKey>();
+            Ordering = new List<TKey>();
         }
         /// <summary>
         /// Initializes a new instance of the SquidLib.SquidMath.IndexedDictionary class
@@ -60,7 +60,7 @@ namespace SquidLib.SquidMath {
         /// <param name="capacity">The initial number of elements that the SquidLib.SquidMath.IndexedDictionary can contain.</param>
         public IndexedDictionary(int capacity) {
             Dict = new Dictionary<TKey, TValue>(capacity);
-            Items = new List<TKey>(capacity);
+            Ordering = new List<TKey>(capacity);
         }
         /// <summary>
         /// Initializes a new instance of the SquidLib.SquidMath.IndexedDictionary class
@@ -71,7 +71,7 @@ namespace SquidLib.SquidMath {
         /// <param name="comparer">The System.Collections.Generic.IEqualityComparer`1 implementation to use when comparing keys, or null to use the default System.Collections.Generic.EqualityComparer`1 for the type of the key.</param>
         public IndexedDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer) {
             Dict = new Dictionary<TKey, TValue>(dictionary, comparer);
-            Items = new List<TKey>(Dict.Keys);
+            Ordering = new List<TKey>(Dict.Keys);
         }
         /// <summary>
         /// Initializes a new instance of the SquidLib.SquidMath.IndexedDictionary class
@@ -81,15 +81,17 @@ namespace SquidLib.SquidMath {
         /// <param name="comparer">The System.Collections.Generic.IEqualityComparer`1 implementation to use when comparing keys, or null to use the default System.Collections.Generic.EqualityComparer`1 for the type of the key.</param>
         public IndexedDictionary(int capacity, IEqualityComparer<TKey> comparer) {
             Dict = new Dictionary<TKey, TValue>(capacity, comparer);
-            Items = new List<TKey>(capacity);
+            Ordering = new List<TKey>(capacity);
         }
 
 
         public TValue this[TKey key] {
-            get => Dict[key]; set { 
-                if (!Dict.ContainsKey(key)) 
-                    Items.Add(key);
-                Dict[key] = value; }
+            get => Dict[key];
+            set {
+                if (!Dict.ContainsKey(key))
+                    Ordering.Add(key);
+                Dict[key] = value;
+            }
         }
 
         /// <summary>
@@ -99,9 +101,10 @@ namespace SquidLib.SquidMath {
         /// <param name="index">The index into the ordering of the IndexedSet; must be at least 0 and less than Count</param>
         /// <returns>the TKey at the given index</returns>
         public TKey this[Key op, int index] {
-            get => Items[index]; set {
-                TValue v = Dict[Items[index]];
-                Dict.Remove(Items[index]);
+            get => Ordering[index];
+            set {
+                TValue v = Dict[Ordering[index]];
+                Dict.Remove(Ordering[index]);
                 Dict[value] = v;
             }
         }
@@ -112,52 +115,58 @@ namespace SquidLib.SquidMath {
         /// <param name="index">The index into the ordering of the IndexedSet; must be at least 0 and less than Count</param>
         /// <returns>the TValue at the given index</returns>
         public TValue this[Value op, int index] {
-            get => Dict[Items[index]]; set => Dict[Items[index]] = value;
+            get => Dict[Ordering[index]];
+            set => Dict[Ordering[index]] = value;
         }
 
         public Dictionary<TKey, TValue> Dict { get; private set; }
-        public List<TKey> Items { get; private set; }
+        public List<TKey> Ordering { get; private set; }
 
-        public ICollection<TKey> Keys => Items;
+        public ICollection<TKey> Keys => Ordering;
 
         private ValueCollection values;
         public ICollection<TValue> Values {
             get {
-                if (values == null) values = new ValueCollection(Dict, Items);
+                if (values == null) values = new ValueCollection(Dict, Ordering);
                 return values;
             }
         }
 
-        public int Count => Items.Count;
+        public int Count => Ordering.Count;
 
         public bool IsReadOnly => false;
 
         public void Add(TKey key, TValue value) {
             Dict.Add(key, value);
-            Items.Add(key);
+            Ordering.Add(key);
         }
 
         public void Add(KeyValuePair<TKey, TValue> item) {
             ((IDictionary<TKey, TValue>)Dict).Add(item);
-            Items.Add(item.Key);
+            Ordering.Add(item.Key);
         }
 
         public void Clear() {
             Dict.Clear();
-            Items.Clear();
+            Ordering.Clear();
         }
 
         public bool Contains(KeyValuePair<TKey, TValue> item) => ((IDictionary<TKey, TValue>)Dict).Contains(item);
 
         public bool ContainsKey(TKey key) => Dict.ContainsKey(key);
 
+        /// <summary>
+        /// Copies the entries as KeyValuePair s into the given array; NOT ORDERED.
+        /// </summary>
+        /// <param name="array">The array to copy into.</param>
+        /// <param name="arrayIndex">The first index in array to insert this into.</param>
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) => ((IDictionary<TKey, TValue>)Dict).CopyTo(array, arrayIndex);
 
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => ((IDictionary<TKey, TValue>)Dict).GetEnumerator();
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => new Enumerator(Dict, Ordering);
 
         public bool Remove(TKey key) {
             if (Dict.Remove(key)) {
-                Items.Remove(key);
+                Ordering.Remove(key);
                 return true;
             }
             return false;
@@ -165,7 +174,7 @@ namespace SquidLib.SquidMath {
 
         public bool Remove(KeyValuePair<TKey, TValue> item) {
             if (((IDictionary<TKey, TValue>)Dict).Remove(item)) {
-                Items.Remove(item.Key);
+                Ordering.Remove(item.Key);
                 return true;
             }
             return false;
@@ -173,7 +182,21 @@ namespace SquidLib.SquidMath {
 
         public bool TryGetValue(TKey key, out TValue value) => Dict.TryGetValue(key, out value);
 
-        IEnumerator IEnumerable.GetEnumerator() => ((IDictionary<TKey, TValue>)Dict).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => new Enumerator(Dict, Ordering);
+
+        public override bool Equals(object obj) => Equals(obj as IndexedDictionary<TKey, TValue>);
+
+        public bool Equals(IndexedDictionary<TKey, TValue> other) => other != null &&
+                   EqualityComparer<Dictionary<TKey, TValue>>.Default.Equals(Dict, other.Dict) &&
+                   EqualityComparer<List<TKey>>.Default.Equals(Ordering, other.Ordering);
+
+        public override int GetHashCode() {
+            var hashCode = -392379326;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<TKey, TValue>>.Default.GetHashCode(Dict);
+            hashCode = hashCode * -1521134295 + EqualityComparer<List<TKey>>.Default.GetHashCode(Ordering);
+            return hashCode;
+        }
+
         public sealed class ValueCollection : ICollection<TValue>, ICollection, IReadOnlyCollection<TValue> {
             private readonly List<TKey> _items;
             private readonly Dictionary<TKey, TValue> _dictionary;
@@ -269,44 +292,93 @@ namespace SquidLib.SquidMath {
                 private readonly Dictionary<TKey, TValue> _dictionary;
                 private readonly List<TKey> _items;
                 private int _index;
-                private TValue _currentValue;
 
                 internal Enumerator(Dictionary<TKey, TValue> dictionary, List<TKey> items) {
                     _dictionary = dictionary;
                     _items = items;
                     _index = 0;
-                    _currentValue = default;
+                    Current = default;
                 }
 
                 public void Dispose() {
                 }
 
                 public bool MoveNext() {
-                    if(_index < _items.Count) {
-                        _currentValue = _dictionary[_items[_index++]];
+                    if (_index < _items.Count) {
+                        Current = _dictionary[_items[_index++]];
                         return true;
                     }
                     _index = _items.Count;
-                    _currentValue = default;
+                    Current = default;
                     return false;
                 }
 
-                public TValue Current => _currentValue;
+                public TValue Current { get; private set; }
 
                 object IEnumerator.Current {
                     get {
-                        if (_index == 0 || (_index == _items.Count)) {
+                        if (_index <= 0 || (_index == _items.Count)) {
                             throw new InvalidOperationException("Cannot get current item if the Enumerator hasn't started or has ended.");
                         }
 
-                        return _currentValue;
+                        return Current;
                     }
                 }
 
                 void IEnumerator.Reset() {
                     _index = 0;
-                    _currentValue = default;
+                    Current = default;
                 }
+            }
+        }
+
+        public static bool operator ==(IndexedDictionary<TKey, TValue> left, IndexedDictionary<TKey, TValue> right) {
+            return EqualityComparer<IndexedDictionary<TKey, TValue>>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(IndexedDictionary<TKey, TValue> left, IndexedDictionary<TKey, TValue> right) {
+            return !(left == right);
+        }
+        public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>, IEnumerator {
+            private readonly Dictionary<TKey, TValue> _dictionary;
+            private readonly List<TKey> _items;
+            private int _index;
+
+            internal Enumerator(Dictionary<TKey, TValue> dictionary, List<TKey> items) {
+                _dictionary = dictionary;
+                _items = items;
+                _index = 0;
+                Current = default;
+            }
+
+            public void Dispose() {
+            }
+
+            public bool MoveNext() {
+                if (_index < _items.Count) {
+                    Current = new KeyValuePair<TKey, TValue>(_items[_index], _dictionary[_items[_index++]]);
+                    return true;
+                }
+                _index = _items.Count;
+                Current = default;
+                return false;
+            }
+
+            public KeyValuePair<TKey, TValue> Current { get; private set; }
+
+            object IEnumerator.Current {
+                get {
+                    if (_index <= 0 || (_index == _items.Count)) {
+                        throw new InvalidOperationException("Cannot get current item if the Enumerator hasn't started or has ended.");
+                    }
+
+                    return Current;
+                }
+            }
+
+            void IEnumerator.Reset() {
+                _index = 0;
+                Current = default;
             }
         }
     }

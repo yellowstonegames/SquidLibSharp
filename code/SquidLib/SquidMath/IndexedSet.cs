@@ -5,13 +5,13 @@ using System.Linq;
 
 namespace SquidLib.SquidMath {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "Current name indicates correct level of specificity.")]
-    public class IndexedSet<T> : ISet<T>, IEquatable<IndexedSet<T>> {
+    public class IndexedSet<T> : ISet<T>, IEquatable<IndexedSet<T>>, IOrdered<T> {
         public HashSet<T> Set { get; private set; }
-        public List<T> Items { get; private set; }
+        public List<T> Ordering { get; private set; }
 
         public IndexedSet() {
             Set = new HashSet<T>();
-            Items = new List<T>(16);
+            Ordering = new List<T>(16);
         }
 
         public IndexedSet(IEnumerable<T> collection) : this() {
@@ -23,7 +23,7 @@ namespace SquidLib.SquidMath {
 
         public IndexedSet(IEqualityComparer<T> comparer) {
             Set = new HashSet<T>(comparer);
-            Items = new List<T>(16);
+            Ordering = new List<T>(16);
         }
 
         public IndexedSet(IEnumerable<T> collection, IEqualityComparer<T> comparer) : this(comparer) {
@@ -34,50 +34,50 @@ namespace SquidLib.SquidMath {
         }
 
         public T this[int index] {
-            get => Items[index];
+            get => Ordering[index];
             set {
-                if (index < 0 || index >= Items.Count || Set.Contains(value)) return;
-                Set.Remove(Items[index]);
+                if (index < 0 || index >= Ordering.Count || Set.Contains(value)) return;
+                Set.Remove(Ordering[index]);
                 Set.Add(value);
-                Items[index] = value;
+                Ordering[index] = value;
             }
         }
 
-        public int Count => Items.Count;
+        public int Count => Ordering.Count;
 
         public bool IsReadOnly => false;
 
         public bool Add(T item) {
             if (!Set.Add(item)) return false;
-            Items.Add(item);
+            Ordering.Add(item);
             return true;
         }
 
         public void Clear() {
             Set.Clear();
-            Items.Clear();
+            Ordering.Clear();
         }
 
         public bool Contains(T item) => Set.Contains(item);
 
         public bool Remove(T item) {
             if (!Set.Remove(item)) return false;
-            Items.Remove(item);
+            Ordering.Remove(item);
             return true;
         }
 
-        public void CopyTo(T[] array, int arrayIndex) => Items.CopyTo(array, arrayIndex);
+        public void CopyTo(T[] array, int arrayIndex) => Ordering.CopyTo(array, arrayIndex);
 
         public void ExceptWith(IEnumerable<T> other) {
             Set.ExceptWith(other);
-            Items.RemoveAll(t => !Set.Contains(t));
+            Ordering.RemoveAll(t => !Set.Contains(t));
         }
 
-        public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => Ordering.GetEnumerator();
 
         public void IntersectWith(IEnumerable<T> other) {
             Set.IntersectWith(other);
-            Items.RemoveAll(t => !Set.Contains(t));
+            Ordering.RemoveAll(t => !Set.Contains(t));
         }
 
         public bool IsProperSubsetOf(IEnumerable<T> other) => Set.IsProperSubsetOf(other);
@@ -94,25 +94,25 @@ namespace SquidLib.SquidMath {
 
         public void SymmetricExceptWith(IEnumerable<T> other) {
             Set.SymmetricExceptWith(other);
-            Items.RemoveAll(t => !Set.Contains(t));
-            Items.AddRange(other.Where(t => Set.Contains(t)));
+            Ordering.RemoveAll(t => !Set.Contains(t));
+            Ordering.AddRange(other.Where(t => Set.Contains(t)));
         }
 
         public void UnionWith(IEnumerable<T> other) {
-            Items.AddRange(other.Where(t => !Set.Contains(t)));
+            Ordering.AddRange(other.Where(t => !Set.Contains(t)));
             Set.UnionWith(other);
         }
 
         void ICollection<T>.Add(T item) => Add(item);
 
-        IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => Ordering.GetEnumerator();
 
         public override bool Equals(object obj) => Equals(obj as IndexedSet<T>);
 
         public bool Equals(IndexedSet<T> other) => other != null &&
-                   EqualityComparer<List<T>>.Default.Equals(Items, other.Items);
+                   EqualityComparer<List<T>>.Default.Equals(Ordering, other.Ordering);
 
-        public override int GetHashCode() => -604923257 + EqualityComparer<List<T>>.Default.GetHashCode(Items);
+        public override int GetHashCode() => -604923257 + EqualityComparer<List<T>>.Default.GetHashCode(Ordering);
 
         public static bool operator ==(IndexedSet<T> left, IndexedSet<T> right) => EqualityComparer<IndexedSet<T>>.Default.Equals(left, right);
 
