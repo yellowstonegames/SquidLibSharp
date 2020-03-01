@@ -1,4 +1,7 @@
-﻿namespace SquidLib.SquidMath {
+﻿using System;
+using System.Runtime.CompilerServices;
+
+namespace SquidLib.SquidMath {
     public class SeededHash {
         private readonly ulong seed;
         internal const ulong b0 = 0xA0761D6478BD642FUL;
@@ -299,6 +302,10 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
             return seed - (seed >> 31) + (seed << 33);
         }
+        public ulong Hash64(sbyte[] data) {
+            if (data == null) return 0UL;
+            return Hash64((byte[])(object)data);
+        }
 
         public ulong Hash64(char[] data) {
             if (data == null) return 0UL;
@@ -338,6 +345,29 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             return seed - (seed >> 31) + (seed << 33);
         }
 
+        public ulong Hash64(ushort[] data) {
+            if (data == null) return 0UL;
+            ulong seed = this.seed;
+            int len = data.Length;
+            for (int i = 3; i < len; i += 4) {
+                seed = mum(
+                        mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
+                        mum(data[i - 1] ^ b3, data[i] ^ b4));
+            }
+            switch (len & 3) {
+                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = mum(seed ^ b3, b4 ^ data[len - 1]); break;
+                case 2: seed = mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
+                case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
+            }
+            seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
+            return seed - (seed >> 31) + (seed << 33);
+        }
+        public ulong Hash64(short[] data) {
+            if (data == null) return 0UL;
+            return Hash64((ushort[])(object)data);
+        }
+
         public ulong Hash64(uint[] data) {
             if (data == null) return 0UL;
             ulong seed = this.seed;
@@ -356,6 +386,10 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
             return seed - (seed >> 31) + (seed << 33);
         }
+        public ulong Hash64(int[] data) {
+            if (data == null) return 0UL;
+            return Hash64((uint[])(object)data);
+        }
         public ulong Hash64(ulong[] data) {
             if (data == null) return 0UL;
             ulong seed = this.seed, a = this.seed + b4, b = this.seed + b3, c = this.seed + b2, d = this.seed + b1;
@@ -372,6 +406,58 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
                 case 1: seed = wow(seed, b1 ^ data[len - 1]); break;
                 case 2: seed = wow(seed + data[len - 2], b2 + data[len - 1]); break;
                 case 3: seed = wow(seed + data[len - 3], b2 + data[len - 2]) ^ wow(seed + data[len - 1], seed ^ b3); break;
+            }
+            seed = (seed ^ seed << 16) * ((ulong)len ^ b0 ^ seed >> 32);
+            return seed - (seed >> 31) + (seed << 33);
+        }
+        public ulong Hash64(long[] data) {
+            if (data == null) return 0UL;
+            return Hash64((ulong[])(object)data);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe ulong FloatToULong(float value) {
+            return *((uint*)&value);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe ulong DoubleToULong(double value) {
+            return *((ulong*)&value);
+        }
+        public ulong Hash64(float[] data) {
+            if (data == null) return 0UL;
+            ulong seed = this.seed;
+            int len = data.Length;
+            for (int i = 3; i < len; i += 4) {
+                seed = mum(
+                        mum(FloatToULong(data[i - 3]) ^ b1, FloatToULong(data[i - 2]) ^ b2) + seed,
+                        mum(FloatToULong(data[i - 1]) ^ b3, FloatToULong(data[i]) ^ b4));
+            }
+            switch (len & 3) {
+                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = mum(seed ^ b3, b4 ^ FloatToULong(data[len - 1])); break;
+                case 2: seed = mum(seed ^ FloatToULong(data[len - 2]), b3 ^ FloatToULong(data[len - 1])); break;
+                case 3: seed = mum(seed ^ FloatToULong(data[len - 3]) ^ FloatToULong(data[len - 2]) << 16, b1 ^ FloatToULong(data[len - 1])); break;
+            }
+            seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
+            return seed - (seed >> 31) + (seed << 33);
+        }
+
+        public ulong Hash64(double[] data) {
+            if (data == null) return 0UL;
+            ulong seed = this.seed, a = this.seed + b4, b = this.seed + b3, c = this.seed + b2, d = this.seed + b1;
+            int len = data.Length;
+            for (int i = 3; i < len; i += 4) {
+                a ^= DoubleToULong(data[i - 3]) * b1; a = (a << 23 | a >> 41) * b3;
+                b ^= DoubleToULong(data[i - 2]) * b2; b = (b << 25 | b >> 39) * b4;
+                c ^= DoubleToULong(data[i - 1]) * b3; c = (c << 29 | c >> 35) * b5;
+                d ^= DoubleToULong(data[i    ]) * b4; d = (d << 31 | d >> 33) * b1;
+                seed += a + b + c + d;
+            }
+            seed += b5;
+            switch (len & 3) {
+                case 1: seed = wow(seed, b1 ^ DoubleToULong(data[len - 1])); break;
+                case 2: seed = wow(seed + DoubleToULong(data[len - 2]), b2 + DoubleToULong(data[len - 1])); break;
+                case 3: seed = wow(seed + DoubleToULong(data[len - 3]), b2 + DoubleToULong(data[len - 2])) ^ wow(seed + DoubleToULong(data[len - 1]), seed ^ b3); break;
             }
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0 ^ seed >> 32);
             return seed - (seed >> 31) + (seed << 33);
