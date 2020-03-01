@@ -28,7 +28,7 @@ namespace SquidLib.SquidMath {
          * @param b Coord to end at. This will be the last element of the list.
          * @return A list of points between a and b.
          */
-         // TODO - make this return Coord3D[]
+        // TODO - make this return Coord3D[]
         public static Queue<Coord3D> Line3D(Coord3D a, Coord3D b) => Line3D(a.X, a.Y, a.Z, b.X, b.Y, b.Z);
 
         /**

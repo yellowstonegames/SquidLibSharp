@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SquidLib.SquidMath
-{
-    public interface INoise2D
-    {
+﻿namespace SquidLib.SquidMath {
+    public interface INoise2D {
         double GetNoise(double x, double y);
 
         double GetNoiseSeeded(double x, double y, long seed);
     }
-    public interface INoise3D
-    {
+    public interface INoise3D {
         double GetNoise(double x, double y, double z);
 
         double GetNoiseSeeded(double x, double y, double z, long seed);
@@ -64,8 +57,7 @@ namespace SquidLib.SquidMath
  *      misrepresented as being the original software.
  *   3. This notice may not be removed or altered from any source distribution.
  */
-    public class SimplexNoise : INoise2D, INoise3D
-    {
+    public class SimplexNoise : INoise2D, INoise3D {
         #region VECTORS
         internal static readonly double[] PhiGrad2 = {
             0.6499429579167653, 0.759982994187637,
@@ -366,28 +358,20 @@ namespace SquidLib.SquidMath
             G2 = 0.21132486540518711774542560974902,
             F3 = 1.0 / 3.0,
             G3 = 0.5 / 3.0;
-        private static double gradCoord3D(long seed, int x, int y, int z, double xd, double yd, double zd)
-        {
+        private static double gradCoord3D(long seed, int x, int y, int z, double xd, double yd, double zd) {
             uint hash = CoreMath.Hash32(x, y, z, seed) * 3;
             return xd * Grad3d[hash] + yd * Grad3d[hash + 1] + zd * Grad3d[hash + 2];
         }
 
         public long Seed { get; set; }
 
-        public SimplexNoise(long seed)
-        {
-            Seed = seed;
-        }
+        public SimplexNoise(long seed) => Seed = seed;
 
         public SimplexNoise() : this(0x1337BEEF) { }
 
-        public double GetNoise(double x, double y)
-        {
-            return GetNoiseSeeded(x, y, Seed);
-        }
+        public double GetNoise(double x, double y) => GetNoiseSeeded(x, y, Seed);
 
-        public double GetNoiseSeeded(double x, double y, long seed)
-        {
+        public double GetNoiseSeeded(double x, double y, long seed) {
             double s = (x + y) * F2;
             int i = CoreMath.FastFloor(x + s),
                     j = CoreMath.FastFloor(y + s);
@@ -397,13 +381,10 @@ namespace SquidLib.SquidMath
                     x0 = x - X0,
                     y0 = y - Y0;
             int i1, j1;
-            if (x0 > y0)
-            {
+            if (x0 > y0) {
                 i1 = 1;
                 j1 = 0;
-            }
-            else
-            {
+            } else {
                 i1 = 0;
                 j1 = 1;
             }
@@ -419,21 +400,18 @@ namespace SquidLib.SquidMath
                     gi2 = CoreMath.Hash256(i + 1, j + 1, seed) << 1;
             // Calculate the contribution from the three corners
             double t0 = 0.75 - x0 * x0 - y0 * y0;
-            if (t0 > 0)
-            {
+            if (t0 > 0) {
                 t0 *= t0;
                 n += t0 * t0 * (PhiGrad2[gi0] * x0 + PhiGrad2[gi0 + 1] * y0);
                 // for 2D gradient
             }
             double t1 = 0.75 - x1 * x1 - y1 * y1;
-            if (t1 > 0)
-            {
+            if (t1 > 0) {
                 t1 *= t1;
                 n += t1 * t1 * (PhiGrad2[gi1] * x1 + PhiGrad2[gi1 + 1] * y1);
             }
             double t2 = 0.75 - x2 * x2 - y2 * y2;
-            if (t2 > 0)
-            {
+            if (t2 > 0) {
                 t2 *= t2;
                 n += t2 * t2 * (PhiGrad2[gi2] * x2 + PhiGrad2[gi2 + 1] * y2);
             }
@@ -443,13 +421,9 @@ namespace SquidLib.SquidMath
         }
 
 
-        public double GetNoise(double x, double y, double z)
-        {
-            return GetNoiseSeeded(x, y, z, Seed);
-        }
+        public double GetNoise(double x, double y, double z) => GetNoiseSeeded(x, y, z, Seed);
 
-        public double GetNoiseSeeded(double x, double y, double z, long seed)
-        {
+        public double GetNoiseSeeded(double x, double y, double z, long seed) {
             double n = 0.0;
             double s = (x + y + z) * F3;
             int i = CoreMath.FastFloor(x + s),
@@ -463,28 +437,22 @@ namespace SquidLib.SquidMath
             int i1, j1, k1;
             int i2, j2, k2;
 
-            if (x0 >= y0)
-            {
-                if (y0 >= z0)
-                {
+            if (x0 >= y0) {
+                if (y0 >= z0) {
                     i1 = 1;
                     j1 = 0;
                     k1 = 0;
                     i2 = 1;
                     j2 = 1;
                     k2 = 0;
-                }
-                else if (x0 >= z0)
-                {
+                } else if (x0 >= z0) {
                     i1 = 1;
                     j1 = 0;
                     k1 = 0;
                     i2 = 1;
                     j2 = 0;
                     k2 = 1;
-                }
-                else
-                {
+                } else {
                     i1 = 0;
                     j1 = 0;
                     k1 = 1;
@@ -492,29 +460,22 @@ namespace SquidLib.SquidMath
                     j2 = 0;
                     k2 = 1;
                 }
-            }
-            else
-            {
-                if (y0 < z0)
-                {
+            } else {
+                if (y0 < z0) {
                     i1 = 0;
                     j1 = 0;
                     k1 = 1;
                     i2 = 0;
                     j2 = 1;
                     k2 = 1;
-                }
-                else if (x0 < z0)
-                {
+                } else if (x0 < z0) {
                     i1 = 0;
                     j1 = 1;
                     k1 = 0;
                     i2 = 0;
                     j2 = 1;
                     k2 = 1;
-                }
-                else
-                {
+                } else {
                     i1 = 0;
                     j1 = 1;
                     k1 = 0;
@@ -536,26 +497,22 @@ namespace SquidLib.SquidMath
 
             // Calculate the contribution from the four corners
             double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
-            if (t0 > 0)
-            {
+            if (t0 > 0) {
                 t0 *= t0;
                 n += t0 * t0 * gradCoord3D(seed, i, j, k, x0, y0, z0);
             }
             double t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
-            if (t1 > 0)
-            {
+            if (t1 > 0) {
                 t1 *= t1;
                 n += t1 * t1 * gradCoord3D(seed, i + i1, j + j1, k + k1, x1, y1, z1);
             }
             double t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
-            if (t2 > 0)
-            {
+            if (t2 > 0) {
                 t2 *= t2;
                 n += t2 * t2 * gradCoord3D(seed, i + i2, j + j2, k + k2, x2, y2, z2);
             }
             double t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
-            if (t3 > 0)
-            {
+            if (t3 > 0) {
                 t3 *= t3;
                 n += t3 * t3 * gradCoord3D(seed, i + 1, j + 1, k + 1, x3, y3, z3);
             }

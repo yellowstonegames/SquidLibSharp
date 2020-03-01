@@ -28,6 +28,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+
 using static SquidLib.SquidMath.CoreMath;
 
 namespace SquidLib.SquidMath {
@@ -656,7 +657,7 @@ namespace SquidLib.SquidMath {
         [MethodImpl(FN_INLINE)]
         private static double GradCoord2D(long seed, int x, int y, double xd, double yd) {
             uint hash = Hash256(x, y, seed) << 1;
-            return xd * GRAD_2D[hash] + yd * GRAD_2D[hash+1];
+            return xd * GRAD_2D[hash] + yd * GRAD_2D[hash + 1];
         }
 
         [MethodImpl(FN_INLINE)]

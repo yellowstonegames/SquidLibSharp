@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Text;
+
 using BearLib;
+
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-using OpenTK.Input;
-using SquidLib;
+
 using SquidLib.SquidMath;
 
 namespace Demo {
@@ -33,7 +31,7 @@ namespace Demo {
             noise.SetFractalOctaves(3);
             noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
             noise.SetFrequency(0.5);
-            char[] waterChars = new char[] { '~', '=', '~', '~', '~', ',', '~', ','};
+            char[] waterChars = new char[] { '~', '=', '~', '~', '~', ',', '~', ',' };
             int frames = 1;
             while (keepRunning) {
                 input = Terminal.Peek();
@@ -44,8 +42,8 @@ namespace Demo {
                         input = Terminal.Read();
                     time = DateTime.Now.Subtract(start).TotalSeconds;
                     Terminal.Rgb(0x33, 0xAA, 0xDD);
-                    for(int y = 0; y < height; y++) {
-                        for(int x = 0; x < width; x++) {
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
                             bright = (int)(noise.GetNoise(x * 0.25, y * 0.5, time * 0.75) * 80 + 74);
                             Terminal.BkRgb(bright >> 1, bright + 40 + (bright >> 1), bright + 90 + (bright >> 1));
                             Terminal.Put(x, y, waterChars[bright >> 3 & 7]);
@@ -240,9 +238,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
             Visible = true;
             //WindowBorder = WindowBorder.Fixed;
         }
-        public int Rows { get { return internal_rows; } }
-        public int Cols { get { return internal_cols; } }
-        public bool KeyPressed { get { return internal_key_pressed; } }
+        public int Rows => internal_rows;
+        public int Cols => internal_cols;
+        public bool KeyPressed => internal_key_pressed;
         public OpenTK.Input.Key GetKey() {
             if (internal_key_pressed) {
                 internal_key_pressed = false;
@@ -250,7 +248,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
             }
             return OpenTK.Input.Key.Unknown;
         }
-        public bool KeyIsDown(OpenTK.Input.Key key) { return OpenTK.Input.Keyboard.GetState().IsKeyDown(key); }
+        public bool KeyIsDown(OpenTK.Input.Key key) => OpenTK.Input.Keyboard.GetState().IsKeyDown(key);
 
         private readonly float[] positions = new float[]{
                         -1f,-1f,0f,1, 1,1,1,1, 1,1,1,1,
@@ -269,9 +267,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
             last_changed_row = -1;
             last_changed_col = -1;
         }
-        public void HoldUpdates() {
-            hold_updates = true;
-        }
+        public void HoldUpdates() => hold_updates = true;
         public void ResumeUpdates() {
             hold_updates = false;
             UpdateGLBuffer();
@@ -364,10 +360,10 @@ gl_FragColor = texture2D(texture,texcoord_fs);
             int j = 0;
             int idx = (j + i * cols) * 48;
             int flipped_row = (rows - 1) - i;
-            float fi = ((float)flipped_row / half_height) - 1.0f;
-            float fj = ((float)j / half_width) - 1.0f;
-            float fi_plus1 = ((float)(flipped_row + 1) / half_height) - 1.0f;
-            float fj_plus1 = ((float)(j + 1) / half_width) - 1.0f;
+            float fi = (flipped_row / half_height) - 1.0f;
+            float fj = (j / half_width) - 1.0f;
+            float fi_plus1 = ((flipped_row + 1) / half_height) - 1.0f;
+            float fj_plus1 = ((j + 1) / half_width) - 1.0f;
             float[] values = new float[] { fj, fi, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0,
                         fj, fi_plus1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
                         fj_plus1, fi_plus1, 1.0f, 0, 1, 1, 1, 1, 0, 0, 0, 0,

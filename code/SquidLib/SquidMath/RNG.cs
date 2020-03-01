@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Schema;
 
 namespace SquidLib.SquidMath {
     /// <summary>
@@ -499,7 +497,7 @@ namespace SquidLib.SquidMath {
             switch (enumerable) {
                 case T[] array when array.Length > 0:
                     return array[NextSignedInt(array.Length)];
-                    //TODO: IndexedSet and other shuffle-able sets/maps should implement IOrdered or something like it
+                //TODO: IndexedSet and other shuffle-able sets/maps should implement IOrdered or something like it
                 case IList<T> list when list.Count > 0:
                     return list[NextSignedInt(list.Count)];
                 case ICollection<T> coll when coll.Count > 0:

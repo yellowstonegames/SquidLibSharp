@@ -21,11 +21,11 @@
 */
 
 using System;
-using System.Text;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace BearLib {
 #pragma warning disable IDE0055 // kills auto-formatting

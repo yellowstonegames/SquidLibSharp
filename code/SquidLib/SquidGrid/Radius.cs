@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using SquidLib.SquidMath;
 
 
@@ -63,9 +64,7 @@ namespace SquidLib.SquidGrid {
     public static class RadiusExtensions {
 
         private const double PI2 = Math.PI * 2;
-        public static double Radius(this Radius r, int startx, int starty, int startz, int endx, int endy, int endz) {
-            return Radius(r, startx, starty, startz, endx, endy, (double)endz);
-        }
+        public static double Radius(this Radius r, int startx, int starty, int startz, int endx, int endy, int endz) => Radius(r, startx, starty, startz, endx, endy, (double)endz);
 
         public static double Radius(this Radius r, double startx, double starty, double startz, double endx, double endy, double endz) {
             double dx = Math.Abs(startx - endx);
@@ -74,9 +73,7 @@ namespace SquidLib.SquidGrid {
             return Radius(r, dx, dy, dz);
         }
 
-        public static double Radius(this Radius r, int dx, int dy, int dz) {
-            return Radius(r, (double)dx, dy, dz);
-        }
+        public static double Radius(this Radius r, int dx, int dy, int dz) => Radius(r, (double)dx, dy, dz);
 
         public static double Radius(this Radius r, double dx, double dy, double dz) {
             dx = Math.Abs(dx);
@@ -98,15 +95,9 @@ namespace SquidLib.SquidGrid {
             }
         }
 
-        public static double Radius(this Radius r, int startx, int starty, int endx, int endy) {
-            return Radius(r, (double)startx, starty, endx, endy);
-        }
-        public static double Radius(this Radius r, Coord start, Coord end) {
-            return Radius(r, start.X, start.Y, end.X, end.Y);
-        }
-        public static double Radius(this Radius r, Coord end) {
-            return Radius(0.0, 0.0, end.X, end.Y);
-        }
+        public static double Radius(this Radius r, int startx, int starty, int endx, int endy) => Radius(r, (double)startx, starty, endx, endy);
+        public static double Radius(this Radius r, Coord start, Coord end) => Radius(r, start.X, start.Y, end.X, end.Y);
+        public static double Radius(this Radius r, Coord end) => Radius(0.0, 0.0, end.X, end.Y);
 
         public static double Radius(this Radius r, double startx, double starty, double endx, double endy) {
             double dx = startx - endx;
@@ -114,9 +105,7 @@ namespace SquidLib.SquidGrid {
             return Radius(r, dx, dy);
         }
 
-        public static double Radius(this Radius r, int dx, int dy) {
-            return Radius(r, dx, (double)dy);
-        }
+        public static double Radius(this Radius r, int dx, int dy) => Radius(r, dx, (double)dy);
 
         public static double Radius(this Radius r, double dx, double dy) {
             dx = Math.Abs(dx);
@@ -442,12 +431,8 @@ namespace SquidLib.SquidGrid {
             }
         }
 
-        public static List<Coord> PointsInside(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) {
-            return PointsInside(r, centerX, centerY, radiusLength, surpassEdges, width, height, null);
-        }
-        public static List<Coord> PointsInside(this Radius r, Coord center, int radiusLength, bool surpassEdges, int width, int height) {
-            return PointsInside(r, center.X, center.Y, radiusLength, surpassEdges, width, height, null);
-        }
+        public static List<Coord> PointsInside(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) => PointsInside(r, centerX, centerY, radiusLength, surpassEdges, width, height, null);
+        public static List<Coord> PointsInside(this Radius r, Coord center, int radiusLength, bool surpassEdges, int width, int height) => PointsInside(r, center.X, center.Y, radiusLength, surpassEdges, width, height, null);
 
         public static List<Coord> PointsInside(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) {
             List<Coord> contents = buf ?? new List<Coord>((int)Math.Ceiling(Volume2D(r, radiusLength)));
@@ -522,9 +507,7 @@ namespace SquidLib.SquidGrid {
          * @return a new List containing the points within radiusLength of the center
 
          */
-        public static List<Coord> InSquare(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) {
-            return SquidGrid.Radius.Square.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, null);
-        }
+        public static List<Coord> InSquare(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) => SquidGrid.Radius.Square.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, null);
         /**
          * Gets a List of all Coord points within {@code radiusLength} of {@code center} using Manhattan measurement (making
          * a diamond). Appends Coords to {@code buf} if it is non-null, and returns either buf or a freshly-allocated List
@@ -539,9 +522,7 @@ namespace SquidLib.SquidGrid {
          * @param height the height of the area this can place Coords (exclusive, not relative to center, usually map height)
          * @return a new List containing the points within radiusLength of the center
          */
-        public static List<Coord> InDiamond(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) {
-            return SquidGrid.Radius.Diamond.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, null);
-        }
+        public static List<Coord> InDiamond(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) => SquidGrid.Radius.Diamond.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, null);
         /**
          * Gets a List of all Coord points within {@code radiusLength} of {@code center} using Euclidean measurement (making
          * a circle). Appends Coords to {@code buf} if it is non-null, and returns either buf or a freshly-allocated List of
@@ -556,9 +537,7 @@ namespace SquidLib.SquidGrid {
          * @param height the height of the area this can place Coords (exclusive, not relative to center, usually map height)
          * @return a new List containing the points within radiusLength of the center
          */
-        public static List<Coord> InCircle(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) {
-            return SquidGrid.Radius.Circle.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, null);
-        }
+        public static List<Coord> InCircle(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height) => SquidGrid.Radius.Circle.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, null);
 
         /**
          * Gets a List of all Coord points within {@code radiusLength} of {@code center} using Chebyshev measurement (making
@@ -575,9 +554,7 @@ namespace SquidLib.SquidGrid {
          * @param buf the List of Coord to append points to; may be null to create a new List
          * @return buf, after appending Coords to it, or a new List if buf was null
          */
-        public static List<Coord> InSquare(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) {
-            return SquidGrid.Radius.Square.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, buf);
-        }
+        public static List<Coord> InSquare(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) => SquidGrid.Radius.Square.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, buf);
         /**
          * Gets a List of all Coord points within {@code radiusLength} of {@code center} using Manhattan measurement (making
          * a diamond). Appends Coords to {@code buf} if it is non-null, and returns either buf or a freshly-allocated List
@@ -593,9 +570,7 @@ namespace SquidLib.SquidGrid {
          * @param buf the List of Coord to append points to; may be null to create a new List
          * @return buf, after appending Coords to it, or a new List if buf was null
          */
-        public static List<Coord> InDiamond(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) {
-            return SquidGrid.Radius.Diamond.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, buf);
-        }
+        public static List<Coord> InDiamond(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) => SquidGrid.Radius.Diamond.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, buf);
         /**
          * Gets a List of all Coord points within {@code radiusLength} of {@code center} using Euclidean measurement (making
          * a circle). Appends Coords to {@code buf} if it is non-null, and returns either buf or a freshly-allocated List of
@@ -611,9 +586,7 @@ namespace SquidLib.SquidGrid {
          * @param buf the List of Coord to append points to; may be null to create a new List
          * @return buf, after appending Coords to it, or a new List if buf was null
          */
-        public static List<Coord> InCircle(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) {
-            return SquidGrid.Radius.Circle.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, buf);
-        }
+        public static List<Coord> InCircle(this Radius r, int centerX, int centerY, int radiusLength, bool surpassEdges, int width, int height, List<Coord> buf) => SquidGrid.Radius.Circle.PointsInside(centerX, centerY, radiusLength, surpassEdges, width, height, buf);
 
         /**
          * Given an Iterable of Coord (such as a List or Set), a distance to expand outward by (using this Radius), and the

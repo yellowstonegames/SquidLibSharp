@@ -1,6 +1,4 @@
-﻿
-using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace SquidLib.SquidMath {
     /// <summary>
@@ -17,9 +15,7 @@ namespace SquidLib.SquidMath {
          * @return the floor of t, as a long
          */
         [MethodImpl(FN_INLINE)]
-        public static long LongFloor(double t) {
-            return t >= 0.0 ? (long)t : (long)t - 1L;
-        }
+        public static long LongFloor(double t) => t >= 0.0 ? (long)t : (long)t - 1L;
         /**
          * Like {@link Math#floor(double)}, but takes a float and returns a long.
          * Doesn't consider weird floats like INFINITY and NaN.
@@ -28,9 +24,7 @@ namespace SquidLib.SquidMath {
          * @return the floor of t, as a long
          */
         [MethodImpl(FN_INLINE)]
-        public static long LongFloor(float t) {
-            return t >= 0f ? (long)t : (long)t - 1L;
-        }
+        public static long LongFloor(float t) => t >= 0f ? (long)t : (long)t - 1L;
         /**
          * Like {@link Math#floor(double)} , but returns an int.
          * Doesn't consider weird doubles like INFINITY and NaN.
@@ -38,9 +32,7 @@ namespace SquidLib.SquidMath {
          * @return the floor of t, as an int
          */
         [MethodImpl(FN_INLINE)]
-        public static int FastFloor(double t) {
-            return t >= 0.0 ? (int)t : (int)t - 1;
-        }
+        public static int FastFloor(double t) => t >= 0.0 ? (int)t : (int)t - 1;
         /**
          * Like {@link Math#floor(double)}, but takes a float and returns an int.
          * Doesn't consider weird floats like INFINITY and NaN.
@@ -48,27 +40,25 @@ namespace SquidLib.SquidMath {
          * @return the floor of t, as an int
          */
         [MethodImpl(FN_INLINE)]
-        public static int FastFloor(float t) {
-            return t >= 0f ? (int)t : (int)t - 1;
-        }
+        public static int FastFloor(float t) => t >= 0f ? (int)t : (int)t - 1;
 
-                /**
-         * Gets a 64-bit point hash of a 2D point (x and y are both longs) and a state/seed as a long. This point
-         * hash has close to the best speed of any algorithms tested, and though its quality is mediocre for
-         * traditional uses of hashing (such as hash tables), it's sufficiently random to act as a positional RNG.
-         * <br>
-         * This uses a technique related to the one used by Martin Roberts for his golden-ratio-based sub-random
-         * sequences, where each axis is multiplied by a different constant, and the choice of constants depends on the
-         * number of axes but is always related to a generalized form of golden ratios, repeatedly dividing 1.0 by the
-         * generalized ratio. See
-         * <a href="http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/">Roberts' article</a>
-         * for some more information on how he uses this, but we do things differently because we want random-seeming
-         * results instead of separated sub-random results.
-         * @param x x position; any long
-         * @param y y position; any long
-         * @param s the state/seed; any long
-         * @return 64-bit hash of the x,y point with the given state
-         */
+        /**
+ * Gets a 64-bit point hash of a 2D point (x and y are both longs) and a state/seed as a long. This point
+ * hash has close to the best speed of any algorithms tested, and though its quality is mediocre for
+ * traditional uses of hashing (such as hash tables), it's sufficiently random to act as a positional RNG.
+ * <br>
+ * This uses a technique related to the one used by Martin Roberts for his golden-ratio-based sub-random
+ * sequences, where each axis is multiplied by a different constant, and the choice of constants depends on the
+ * number of axes but is always related to a generalized form of golden ratios, repeatedly dividing 1.0 by the
+ * generalized ratio. See
+ * <a href="http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/">Roberts' article</a>
+ * for some more information on how he uses this, but we do things differently because we want random-seeming
+ * results instead of separated sub-random results.
+ * @param x x position; any long
+ * @param y y position; any long
+ * @param s the state/seed; any long
+ * @return 64-bit hash of the x,y point with the given state
+ */
         [MethodImpl(FN_INLINE)]
         public static ulong HashAll(long X, long Y, long S) {
             ulong x = (ulong)X;
@@ -448,7 +438,7 @@ namespace SquidLib.SquidMath {
             s += x * 0x85EB75C3024385C3UL;
             return (uint)(((s ^ s >> 27 ^ 0x9E3779B97F4A7C15UL) * 0xC6BC279692B5CC83UL) >> 59);
         }
-        
+
         /**
          * Gets a 6-bit point hash of a 2D point (x and y are both longs) and a state/seed as a long. This point
          * hash has close to the best speed of any algorithms tested, and though its quality is mediocre for

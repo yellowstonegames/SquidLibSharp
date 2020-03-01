@@ -136,11 +136,20 @@ namespace SquidLib.SquidMath {
 
         public bool IsReadOnly => false;
 
+        /// <summary>
+        /// Adds at the end of the ordering, or throws an ArgumentException if key is already present.
+        /// </summary>
+        /// <param name="key">The key to add; should not be present in this already.</param>
+        /// <param name="value">The value to associate with the given key.</param>
         public void Add(TKey key, TValue value) {
             Dict.Add(key, value);
             Ordering.Add(key);
         }
 
+        /// <summary>
+        /// Adds at the end of the ordering, or throws an ArgumentException if the key in item is already present.
+        /// </summary>
+        /// <param name="item">The key and value to add; the key should not be present in this already.</param>
         public void Add(KeyValuePair<TKey, TValue> item) {
             ((IDictionary<TKey, TValue>)Dict).Add(item);
             Ordering.Add(item.Key);
@@ -332,13 +341,9 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        public static bool operator ==(IndexedDictionary<TKey, TValue> left, IndexedDictionary<TKey, TValue> right) {
-            return EqualityComparer<IndexedDictionary<TKey, TValue>>.Default.Equals(left, right);
-        }
+        public static bool operator ==(IndexedDictionary<TKey, TValue> left, IndexedDictionary<TKey, TValue> right) => EqualityComparer<IndexedDictionary<TKey, TValue>>.Default.Equals(left, right);
 
-        public static bool operator !=(IndexedDictionary<TKey, TValue> left, IndexedDictionary<TKey, TValue> right) {
-            return !(left == right);
-        }
+        public static bool operator !=(IndexedDictionary<TKey, TValue> left, IndexedDictionary<TKey, TValue> right) => !(left == right);
         public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>, IEnumerator {
             private readonly Dictionary<TKey, TValue> _dictionary;
             private readonly List<TKey> _items;
