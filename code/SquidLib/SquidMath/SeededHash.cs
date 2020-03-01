@@ -243,7 +243,7 @@ AndromaliusAndromalius = new SeededHash("ANDROMALIUS")
         /**
          * Has a length of 192, which may be relevant if automatically choosing a predefined hash functor.
          */
-        public static readonly SeededHash[] predefined = new SeededHash[]{
+        public static readonly SeededHash[] Predefined = new SeededHash[]{
             Alpha, Beta, Gamma, Delta, Epsilon, Zeta, Eta, Theta, Iota, Kappa, Lambda, Mu, Nu, Xi, Omicron, Pi, Rho, Sigma, Tau,
 Upsilon, Phi, Chi, Psi, Omega, AlphaAlpha, BetaBeta, GammaGamma, DeltaDelta, EpsilonEpsilon, ZetaZeta, EtaEta,
 ThetaTheta, IotaIota, KappaKappa, LambdaLambda, MuMu, NuNu, XiXi, OmicronOmicron, PiPi, RhoRho, SigmaSigma, TauTau,
@@ -281,8 +281,27 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             return result;
         }
 
+        public ulong Hash64(byte[] data) {
+            if (data == null) return 0UL;
+            ulong seed = this.seed;
+            int len = data.Length;
+            for (int i = 3; i < len; i += 4) {
+                seed = mum(
+                        mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
+                        mum(data[i - 1] ^ b3, data[i] ^ b4));
+            }
+            switch (len & 3) {
+                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = mum(seed ^ b3, b4 ^ data[len - 1]); break;
+                case 2: seed = mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
+                case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
+            }
+            seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
+            return seed - (seed >> 31) + (seed << 33);
+        }
+
         public ulong Hash64(char[] data) {
-            if (data == null) return 0L;
+            if (data == null) return 0UL;
             ulong seed = this.seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
@@ -301,7 +320,7 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
         }
 
         public ulong Hash64(string data) {
-            if (data == null) return 0L;
+            if (data == null) return 0UL;
             ulong seed = this.seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
@@ -316,6 +335,45 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
                 case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
             }
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
+            return seed - (seed >> 31) + (seed << 33);
+        }
+
+        public ulong Hash64(uint[] data) {
+            if (data == null) return 0UL;
+            ulong seed = this.seed;
+            int len = data.Length;
+            for (int i = 3; i < len; i += 4) {
+                seed = mum(
+                        mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
+                        mum(data[i - 1] ^ b3, data[i] ^ b4));
+            }
+            switch (len & 3) {
+                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = mum(seed ^ b3, b4 ^ data[len - 1]); break;
+                case 2: seed = mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
+                case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
+            }
+            seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
+            return seed - (seed >> 31) + (seed << 33);
+        }
+        public ulong Hash64(ulong[] data) {
+            if (data == null) return 0UL;
+            ulong seed = this.seed, a = this.seed + b4, b = this.seed + b3, c = this.seed + b2, d = this.seed + b1;
+            int len = data.Length;
+            for (int i = 3; i < len; i += 4) {
+                a ^= data[i - 3] * b1; a = (a << 23 | a >> 41) * b3;
+                b ^= data[i - 2] * b2; b = (b << 25 | b >> 39) * b4;
+                c ^= data[i - 1] * b3; c = (c << 29 | c >> 35) * b5;
+                d ^= data[i] * b4; d = (d << 31 | d >> 33) * b1;
+                seed += a + b + c + d;
+            }
+            seed += b5;
+            switch (len & 3) {
+                case 1: seed = wow(seed, b1 ^ data[len - 1]); break;
+                case 2: seed = wow(seed + data[len - 2], b2 + data[len - 1]); break;
+                case 3: seed = wow(seed + data[len - 3], b2 + data[len - 2]) ^ wow(seed + data[len - 1], seed ^ b3); break;
+            }
+            seed = (seed ^ seed << 16) * ((ulong)len ^ b0 ^ seed >> 32);
             return seed - (seed >> 31) + (seed << 33);
         }
 
