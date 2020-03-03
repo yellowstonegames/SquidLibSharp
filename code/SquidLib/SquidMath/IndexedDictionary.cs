@@ -22,7 +22,7 @@ namespace SquidLib.SquidMath {
     /// </summary>
     /// <typeparam name="TKey">Key type</typeparam>
     /// <typeparam name="TValue">Value type</typeparam>
-    public class IndexedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, IOrdered<TKey>, IEquatable<IndexedDictionary<TKey, TValue>> {
+    public class IndexedDictionary<TKey, TValue> : ICollection<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>, ICollection, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, IOrdered<TKey>, IEquatable<IndexedDictionary<TKey, TValue>> {
 
         /// <summary>
         ///     Initializes a new instance of the SquidLib.SquidMath.IndexedDictionary class
@@ -122,6 +122,8 @@ namespace SquidLib.SquidMath {
         public Dictionary<TKey, TValue> Dict { get; private set; }
         public List<TKey> Ordering { get; private set; }
 
+        private Object _syncRoot;
+
         public ICollection<TKey> Keys => Ordering;
 
         private ValueCollection values;
@@ -135,6 +137,26 @@ namespace SquidLib.SquidMath {
         public int Count => Ordering.Count;
 
         public bool IsReadOnly => false;
+
+        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => Ordering;
+
+        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values {
+            get {
+                if (values == null) values = new ValueCollection(Dict, Ordering);
+                return values;
+            }
+        }
+
+        public bool IsSynchronized => false;
+
+        object ICollection.SyncRoot {
+            get {
+                if (_syncRoot == null) {
+                    System.Threading.Interlocked.CompareExchange<Object>(ref _syncRoot, new Object(), null);
+                }
+                return _syncRoot;
+            }
+        }
 
         /// <summary>
         /// Adds at the end of the ordering, or throws an ArgumentException if key is already present.
@@ -204,6 +226,10 @@ namespace SquidLib.SquidMath {
             hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<TKey, TValue>>.Default.GetHashCode(Dict);
             hashCode = hashCode * -1521134295 + EqualityComparer<List<TKey>>.Default.GetHashCode(Ordering);
             return hashCode;
+        }
+
+        public void CopyTo(Array array, int index) {
+            throw new NotImplementedException();
         }
 
         public sealed class ValueCollection : ICollection<TValue>, ICollection, IReadOnlyCollection<TValue> {

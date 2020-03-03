@@ -493,13 +493,57 @@ namespace SquidLib.SquidMath {
         public long NextLong(long min, long max) => min + NextSignedLong(max - min);
         public double NextDouble(double min, double max) => min + NextDouble(max - min);
 
+        /// <summary>
+        /// Retrieves a random key from the given non-empty IndexedDictionary.
+        /// </summary>
+        /// <typeparam name="TKey">Key type of the IndexedDictionary</typeparam>
+        /// <typeparam name="TValue">Value type of the IndexedDictionary</typeparam>
+        /// <param name="dict">a non-empty, non-null IndexedDictionary</param>
+        /// <returns>a randomly-selected key from dict</returns>
+        public TKey RandomKey<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
+            int size;
+            if (dict is null || (size = dict.Count) <= 0)
+                return default;
+            return dict[Key.At, NextSignedInt(size)];
+        }
+
+        /// <summary>
+        /// Retrieves a random value from the given non-empty IndexedDictionary.
+        /// </summary>
+        /// <typeparam name="TKey">Key type of the IndexedDictionary</typeparam>
+        /// <typeparam name="TValue">Value type of the IndexedDictionary</typeparam>
+        /// <param name="dict">a non-empty, non-null IndexedDictionary</param>
+        /// <returns>a randomly-selected value from dict</returns>
+        public TValue RandomValue<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
+            int size;
+            if (dict is null || (size = dict.Count) <= 0)
+                return default;
+            return dict[Value.At, NextSignedInt(size)];
+        }
+        /// <summary>
+        /// Retrieves a random element from the given non-empty IEnumerable.
+        /// This is fastest when working with arrays, generic IList implementations, and IndexedSet s.
+        /// It can also work with generic ICollection implementations, but it has to get an Enumerator and
+        /// traverse a random amount of times in that case. If you have an IndexedDictionary, you can use this
+        /// to get a random KeyValuePair from it, but it's more likely that using the RandomKey() method (and
+        /// maybe looking up a value with that key) or using the RandomValue() method is what you want.
+        /// </summary>
+        /// <typeparam name="T">The generic type of enumerable</typeparam>
+        /// <param name="enumerable">An IEnumerable that must be non-null and non-empty.</param>
+        /// <returns>A random T element from enumerable</returns>
         public T RandomElement<T>(IEnumerable<T> enumerable) {
             switch (enumerable) {
                 case T[] array when array.Length > 0:
                     return array[NextSignedInt(array.Length)];
-                //TODO: IndexedSet and other shuffle-able sets/maps should implement IOrdered or something like it
+
+                // This only works for IndexedSet.
+                // IndexedDictionary is an IEnumerable of KeyValuePair of TKey and TValue, but only an IOrdered of TKey.
+                case IOrdered<T> ordered when ordered.Ordering.Count > 0:
+                    return ordered.Ordering[NextSignedInt(ordered.Ordering.Count)];
                 case IList<T> list when list.Count > 0:
                     return list[NextSignedInt(list.Count)];
+                // this gets used for IndexedDictionary and finds a KeyValuePair of TKey and TValue.
+                // Instead, you should probably use RandomKey() or RandomValue().
                 case ICollection<T> coll when coll.Count > 0:
                     var e = coll.GetEnumerator();
                     for (int target = NextSignedInt(coll.Count); target > 0; target--) {
