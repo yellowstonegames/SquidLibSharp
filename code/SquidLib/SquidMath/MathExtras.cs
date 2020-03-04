@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace SquidLib.SquidMath {
     class MathExtras {
@@ -98,5 +99,11 @@ namespace SquidLib.SquidMath {
                 return p11 + (middle >> 32) + (p01 >> 32);
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double ToDegrees(double radians) => radians * (180 / Math.PI);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double ToDegrees(double x, double y) => ToDegrees(Math.Atan2(y, x));
     }
 }

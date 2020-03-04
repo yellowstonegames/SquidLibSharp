@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace Demo {
-    public sealed class SColor {
+namespace ColorHelper {
+    public sealed class BltColor {
         public static IReadOnlyList<string> Names { get; } = new string[]{
 "alice_blue",
 "alizarin",
