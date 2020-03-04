@@ -27,6 +27,15 @@ namespace RogueDelivery {
         private Coord playerLocation;
         private char playerGlyph = '@';
         private Color playerColor = Color.AliceBlue;
+        private Physical playerPhysical = new Physical() {
+            Name = "Rogue",
+            Class = "Delivery Driver",
+            Health = 23,
+            Strength = 4,
+            Luck = 12,
+            Wiles = 2,
+            XP = 0
+        };
 
         private Dictionary<Direction, char[][]> wagonGlyphs = new Dictionary<Direction, char[][]>() { // do to array processing, these look rotated to their direction names
             {
@@ -160,6 +169,27 @@ namespace RogueDelivery {
 
             Terminal.Color(playerColor);
             PutOnMap(playerLocation, playerGlyph);
+
+            // Status section
+            int startY = windowHeight - statusHeight - 1;
+            Terminal.Color(playerColor);
+            int startX = Put(2, startY, playerPhysical.Name);
+            Terminal.Color(Color.White);
+            startX = Put(startX + 1, startY, "The");
+            Terminal.Color(Color.LightCoral);
+            startX = Put(startX + 1, startY, playerPhysical.Class);
+            Terminal.Color(Color.White);
+            startX = Put(startX + 1, startY, "--");
+            Terminal.Color(Color.Silver);
+            startX = Put(startX + 1, startY, "Strength: " + playerPhysical.Strength);
+            Terminal.Color(Color.HotPink);
+            startX = Put(startX + 2, startY, "Luck: " + playerPhysical.Luck);
+            Terminal.Color(Color.MediumPurple);
+            startX = Put(startX + 2, startY, "Wiles: " + playerPhysical.Wiles);
+            Terminal.Color(Color.RosyBrown);
+            startX = Put(startX + 2, startY, "XP: " + playerPhysical.XP);
+            Terminal.Color(Color.SeaGreen);
+            startX = Put(startX + 2, startY, "Health: " + playerPhysical.Health);
         }
 
         private void PaintBorder() {
@@ -169,6 +199,13 @@ namespace RogueDelivery {
         }
 
         private static void Put(Coord coord, char c) => Terminal.Put(coord.X, coord.Y, c);
+
+        private static int Put(int x, int y, string s) {
+            for (int i = 0; i < s.Length; i++) {
+                Terminal.Put(x + i, y, s[i]);
+            }
+            return x + s.Length;
+        }
 
         /// <summary>
         /// Puts the character on the map if the coordinate is valid, otherwise takes no action.
