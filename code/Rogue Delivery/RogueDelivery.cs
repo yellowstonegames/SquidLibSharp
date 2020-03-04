@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 
 using BearLib;
 using ColorHelper;
 using SquidLib;
+using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
 
 namespace RogueDelivery {
@@ -12,11 +15,54 @@ namespace RogueDelivery {
         private bool keepRunning = true;
         private RNG rng;
 
-        private int width = 120, height = 40;
+        private int windowWidth = 120,
+            windowHeight = 40,
+            logHeight = 3,
+            statusHeight = 1;
+        private int width, height; // for the map area
 
         private Dictionary<Coord, char> borders = new Dictionary<Coord, char>();
 
-        // currently, you can view a rippling water area in ASCII, and can press Escape to close.
+        private char[][] map;
+        private Coord playerLocation;
+        private char playerGlyph = '@';
+        private Color playerColor = Color.AliceBlue;
+
+        private Dictionary<Direction, char[][]> wagonGlyphs = new Dictionary<Direction, char[][]>() { // do to array processing, these look rotated to their direction names
+            {
+                Direction.Left, new char[][]{
+                    " Ŏ ".ToCharArray(),
+                    "∣∣∣".ToCharArray(),
+                    "⍬∣⍬".ToCharArray(),
+                    "∣∣∣".ToCharArray()
+                }
+            },
+            {
+                Direction.Right, new char[][]{
+                    "∣∣∣".ToCharArray(),
+                    "⍬∣⍬".ToCharArray(),
+                    "∣∣∣".ToCharArray(),
+                    " Ŏ ".ToCharArray()
+                }
+            },
+            {
+                Direction.Down, new char[][]{
+                    "-⍬- ".ToCharArray(),
+                    "---Ŏ".ToCharArray(),
+                    "-⍬- ".ToCharArray()
+                }
+            },
+            {
+                Direction.Up, new char[][]{
+                    " -⍬-".ToCharArray(),
+                    "Ŏ---".ToCharArray(),
+                    " -⍬-".ToCharArray()
+                }
+            }
+        };
+        private char[][] wagonGlyph;
+        private Coord wagonLocation;
+
         static void Main() {
             var rd = new RogueDelivery(); // start up the primary system
             rd.Start();
@@ -25,28 +71,40 @@ namespace RogueDelivery {
         private RogueDelivery() {
             rng = new RNG();
 
+            width = windowWidth;
+            height = windowHeight - logHeight - statusHeight - 2;
+            playerLocation = Coord.Get(rng.NextInt(width), rng.NextInt(height));
+            wagonGlyph = wagonGlyphs[Direction.Right];
+            wagonLocation = Coord.Get(width / 2, height / 2);
+
             // init display style
-            for (int x = 1; x < width - 1; x++) {
+            for (int x = 1; x < windowWidth - 1; x++) {
                 borders[Coord.Get(x, 0)] = '─';
-                borders[Coord.Get(x, height - 1)] = '─';
+                borders[Coord.Get(x, windowHeight - 1)] = '─';
+                borders[Coord.Get(x, windowHeight - 1 - statusHeight - 1)] = '─';
+                borders[Coord.Get(x, windowHeight - 1 - statusHeight - 1 - logHeight - 1)] = '─';
             }
-            for (int y = 1; y < height - 1; y++) {
+            for (int y = 1; y < windowHeight - 1; y++) {
                 borders[Coord.Get(0, y)] = '│';
-                borders[Coord.Get(width - 1, y)] = '│';
+                borders[Coord.Get(windowWidth - 1, y)] = '│';
             }
             borders[Coord.Get(0, 0)] = '┌';
-            borders[Coord.Get(width - 1, 0)] = '┐';
-            borders[Coord.Get(0, height - 1)] = '└';
-            borders[Coord.Get(width - 1, height - 1)] = '┘';
+            borders[Coord.Get(windowWidth - 1, 0)] = '┐';
+            borders[Coord.Get(0, windowHeight - 1)] = '└';
+            borders[Coord.Get(windowWidth - 1, windowHeight - 1)] = '┘';
+            borders[Coord.Get(0, windowHeight - 1 - statusHeight - 1)] = '├';
+            borders[Coord.Get(0, windowHeight - 1 - statusHeight - 1 - logHeight - 1)] = '├';
+            borders[Coord.Get(windowWidth - 1, windowHeight - 1 - statusHeight - 1)] = '┤';
+            borders[Coord.Get(windowWidth - 1, windowHeight - 1 - statusHeight - 1 - logHeight - 1)] = '┤';
 
             // Setup terminal
             Terminal.Open();
             Terminal.Set(
-                $"window: title='Rogue Delivery', size={width}x{height};" +
+                $"window: title='Rogue Delivery', size={windowWidth}x{windowHeight};" +
                 $"output: vsync=false;" +
                 $"font: Iosevka.ttf, size=9x21, hinting=autohint"
                 );
-            ColorHelper.BltColor.LoadAurora();
+            BltColor.LoadAurora();
             Terminal.Color(Terminal.ColorFromName(rng.RandomElement(BltColor.AuroraNames)));
             Terminal.Refresh();
         }
@@ -61,12 +119,21 @@ namespace RogueDelivery {
                         case Terminal.TK_CLOSE:
                             keepRunning = false;
                             break;
-                        case int val:
-                            Terminal.Color(Terminal.ColorFromName(rng.RandomElement(BltColor.AuroraNames)));
-                            Terminal.Put(rng.NextInt(width), rng.NextInt(height), ArrayTools.LetterAt(rng.NextInt()));
+                        case Terminal.TK_LEFT:
+                            MovePlayer(Direction.Left);
+                            break;
+                        case Terminal.TK_UP:
+                            MovePlayer(Direction.Up);
+                            break;
+                        case Terminal.TK_DOWN:
+                            MovePlayer(Direction.Down);
+                            break;
+                        case Terminal.TK_RIGHT:
+                            MovePlayer(Direction.Right);
                             break;
                         default:
-
+                            // ignore unknown commands
+                            break;
                     }
                     DrawMap();
                     Terminal.Refresh();
@@ -74,8 +141,25 @@ namespace RogueDelivery {
             }
         }
 
+        private void MovePlayer(Direction direction) {
+            playerLocation = Utilities.Translate(playerLocation, direction);
+            wagonGlyph = wagonGlyphs[direction];
+        }
+
         private void DrawMap() {
+            Terminal.Clear();
+            Terminal.Color(Terminal.ColorFromName(rng.RandomElement(BltColor.AuroraNames)));
             PaintBorder();
+
+            Terminal.Color(Color.SandyBrown);
+            for (int x = 0; x < wagonGlyph.Length; x++) {
+                for (int y = 0; y < wagonGlyph[x].Length; y++) {
+                    PutOnMap(Coord.Get(wagonLocation.X + x, wagonLocation.Y + y), wagonGlyph[x][y]);
+                }
+            }
+
+            Terminal.Color(playerColor);
+            PutOnMap(playerLocation, playerGlyph);
         }
 
         private void PaintBorder() {
@@ -85,6 +169,19 @@ namespace RogueDelivery {
         }
 
         private static void Put(Coord coord, char c) => Terminal.Put(coord.X, coord.Y, c);
+
+        /// <summary>
+        /// Puts the character on the map if the coordinate is valid, otherwise takes no action.
+        /// </summary>
+        /// <param name="coord"></param>
+        /// <param name="c"></param>
+        private void PutOnMap(Coord coord, char c) {
+            if (InMapBounds(coord)) {
+                Terminal.Put(coord.X + 1, coord.Y + 1, c); // handle window offset
+            }
+        }
+
+        private bool InMapBounds(Coord coord) => coord.X >= 0 && coord.X < width && coord.Y >= 0 && coord.Y < height;
 
     }
 }
