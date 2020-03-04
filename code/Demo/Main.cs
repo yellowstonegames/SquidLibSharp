@@ -19,7 +19,7 @@ namespace Demo {
             //Terminal.Set("log: level=trace");
             int width = 90, height = 30;
             Terminal.Set($"window: title='SquidLibSharp Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
-            //SColor.LoadAurora();
+            ColorHelper.BltColor.LoadAurora();
             Terminal.Refresh();
             int input = 0;
             int bright;
@@ -39,12 +39,18 @@ namespace Demo {
                     if (Terminal.HasInput())
                         input = Terminal.Read();
                     time = DateTime.Now.Subtract(start).TotalSeconds;
-                    Terminal.Rgb(0x33, 0xAA, 0xDD);
                     for (int y = 0; y < height; y++) {
                         for (int x = 0; x < width; x++) {
-                            bright = (int)(noise.GetNoise(x * 0.25, y * 0.5, time * 0.75) * 80 + 74);
-                            Terminal.BkRgb(bright >> 1, bright + 40 + (bright >> 1), bright + 90 + (bright >> 1));
-                            Terminal.Put(x, y, waterChars[bright >> 3 & 7]);
+                            if (BlueNoise.GetSeeded(x, y, 1337) < 10) {
+                                Terminal.BkColor("straw");
+                                Terminal.Color("driftwood");
+                                Terminal.Put(x, y, '.');
+                            } else {
+                                bright = (int)(noise.GetNoise(x * 0.25, y * 0.5, time * 0.75) * 80 + 74);
+                                Terminal.Rgb(0x33, 0xAA, 0xDD);
+                                Terminal.BkRgb(bright >> 1, bright + 40 + (bright >> 1), bright + 90 + (bright >> 1));
+                                Terminal.Put(x, y, waterChars[bright >> 3 & 7]);
+                            }
                         }
                     }
 
