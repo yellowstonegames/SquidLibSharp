@@ -58,19 +58,19 @@ namespace SquidLib.SquidMath {
         public int NextBits(int bits) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return (int)((z ^ z >> 26) >> 64 - bits);
+            return (int)((z ^ z >> 26 ^ z >> 6) >> 64 - bits);
         }
 
         public ulong NextULong() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return z ^ z >> 26;
+            return z ^ z >> 26 ^ z >> 6;
         }
 
         public long NextLong() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return (long)(z ^ z >> 26);
+            return (long)(z ^ z >> 26 ^ z >> 6);
         }
 
         /**
@@ -90,12 +90,12 @@ namespace SquidLib.SquidMath {
         public int NextInt() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return (int)(z ^ z >> 26);
+            return (int)(z ^ z >> 26 ^ z >> 6);
         }
         public uint NextUInt() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return (uint)(z ^ z >> 26);
+            return (uint)(z ^ z >> 26 ^ z >> 6);
         }
 
         /**
@@ -108,12 +108,12 @@ namespace SquidLib.SquidMath {
         public int NextInt(int bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
+            return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
         public uint NextUInt(uint bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return (uint)(bound * ((z ^ z >> 26) & 0xFFFFFFFFUL) >> 32);
+            return (uint)(bound * ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL) >> 32);
         }
 
         /**
@@ -128,7 +128,7 @@ namespace SquidLib.SquidMath {
         public int NextSignedInt(int bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return (int)((bound * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
+            return (int)((bound * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
         /// <summary>
@@ -142,13 +142,13 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return (int)((bound * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
+            return (int)((bound * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
         public ulong NextULong(ulong bound) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return MathExtras.MultiplyHigh(z ^ z >> 26, bound);
+            return MathExtras.MultiplyHigh(z ^ z >> 26 ^ z >> 6, bound);
         }
 
         /**
@@ -191,7 +191,7 @@ namespace SquidLib.SquidMath {
         public double NextDouble() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
 
         }
 
@@ -205,7 +205,7 @@ namespace SquidLib.SquidMath {
         public double NextDouble(double outer) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * outer;
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * outer;
         }
 
         /**
@@ -215,12 +215,14 @@ namespace SquidLib.SquidMath {
          */
         public float NextFloat() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
-            return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * floatDivisor;
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor;
         }
 
         public float NextFloat(float outer) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
-            return ((s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) >> 40) * floatDivisor * outer;
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor * outer;
         }
 
         /**
@@ -674,7 +676,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return (int)((z ^ z >> 26) >> 64 - bits);
+            return (int)((z ^ z >> 26 ^ z >> 6) >> 64 - bits);
 
         }
 
@@ -683,7 +685,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return (long)(z ^ z >> 26);
+            return (long)(z ^ z >> 26 ^ z >> 6);
         }
 
         public ulong PreviousULong() {
@@ -691,7 +693,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return z ^ z >> 26;
+            return z ^ z >> 26 ^ z >> 6;
         }
 
         public int PreviousInt() {
@@ -699,7 +701,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return (int)(z ^ z >> 26);
+            return (int)(z ^ z >> 26 ^ z >> 6);
         }
 
         public uint PreviousUInt() {
@@ -707,7 +709,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return (uint)(z ^ z >> 26);
+            return (uint)(z ^ z >> 26 ^ z >> 6);
         }
 
         public int PreviousInt(int bound) {
@@ -715,7 +717,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26) & 0xFFFFFFFFUL)) >> 32);
+            return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
         public uint PreviousUInt(uint bound) {
@@ -723,7 +725,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return (uint)(bound * ((z ^ z >> 26) & 0xFFFFFFFFUL) >> 32);
+            return (uint)(bound * ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL) >> 32);
         }
 
         public long PreviousLong(long bound) => (long)PreviousULong((ulong)Math.Max(0L, bound));
@@ -733,7 +735,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return MathExtras.MultiplyHigh(z ^ z >> 26, bound);
+            return MathExtras.MultiplyHigh(z ^ z >> 26 ^ z >> 6, bound);
         }
 
         public bool PreviousBoolean() {
@@ -749,7 +751,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return ((z ^ z >> 26) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
         }
 
         public double PreviousDouble(double outer) => PreviousDouble() * outer;

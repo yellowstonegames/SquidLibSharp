@@ -166,10 +166,15 @@ namespace Demo {
             DateTime current = DateTime.Now;
             int frames = 0;
 
-            FastNoise noise = new FastNoise();
-            noise.SetFrequency(0.03125 * 0.25);
-            noise.SetFractalOctaves(1);
+            FastNoise noise = new FastNoise(), warp = new FastNoise(12345);
+            noise.SetFrequency(0.03125 * 0.5);
             noise.SetNoiseType(FastNoise.NoiseType.Simplex);
+            warp.SetFrequency(0.03125 * 2.0);
+            warp.SetNoiseType(FastNoise.NoiseType.CubicFractal);
+            warp.SetFractalOctaves(2);
+            warp.SetFractalType(FastNoise.FractalType.Billow);
+            warp.SetFractalLacunarity(2);
+            warp.SetFractalGain(4);
 
             int time = 0;
 
@@ -181,9 +186,10 @@ namespace Demo {
                         break;
                     }
                     time++;
-                    for (int i = 0, y = 0; y < 512; y++) {
-                        for (int x = 0; x < 512; x++) {
-                            window.colors[i++] = (byte)(noise.GetSimplex(x + y + time, y - x - time, time - x - y, x - y - time) * 125 + 128);
+                    for (int i = 0, y = 0; y < window.Height; y++) {
+                        for (int x = 0; x < window.Width; x++) {
+                            //window.colors[i++] = (byte)(noise.GetSimplex(x + y + time, y - x - time, time - x - y, x - y - time) * 125 + 128);
+                            window.colors[i++] = (byte)(noise.GetSimplex(x, y, 0.375 * time, warp.GetNoise(-x, -y, -0.5 * time) * 200) * 125 + 128);
                         }
                     }
                     frames++;
@@ -219,10 +225,10 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
         protected static float half_width;
 
         private int id;
-        internal byte[] colors = new byte[512 * 512];
+        internal byte[] colors;
 
-        public NoiseWindow() : base(512, 512, GraphicsMode.Default, "0 FPS") {
-
+        public NoiseWindow() : base(256, 256, GraphicsMode.Default, "0 FPS") {
+            colors = new byte[Width * Height];
             VSync = VSyncMode.On;
             GL.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             internal_rows = 1;
@@ -288,14 +294,14 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
             base.OnRenderFrame(render_args);
             GL.Clear(ClearBufferMask.ColorBufferBit);
             //GL.BindTexture(TextureTarget.Texture2D, id);
-            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, 512, 512, PixelFormat.Luminance, PixelType.UnsignedByte, colors);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Luminance, PixelType.UnsignedByte, colors);
             GL.DrawElements(PrimitiveType.Triangles, num_elements, DrawElementsType.UnsignedInt, IntPtr.Zero);
             SwapBuffers();
         }
         protected void LoadTexture() {
             id = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, id);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Luminance, 512, 512, 0, PixelFormat.Luminance, PixelType.UnsignedByte, colors);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Luminance, Width, Height, 0, PixelFormat.Luminance, PixelType.UnsignedByte, colors);
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
