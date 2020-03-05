@@ -46,14 +46,21 @@ namespace SquidLib.SquidMath {
         public RNG(ulong seedA, ulong seedB) => state = (seedA, seedB | 1UL);
 
         /// <summary>
-        /// I am pretty sure this will share the given sharedState with any other RNG that uses it.
+        /// This will share the given sharedState with any other RNG that uses it.
         /// </summary>
         /// <param name="sharedState">Will not be copied; will be used by reference and generation calls will mutate this</param>
-        public RNG((ulong a, ulong b) sharedState) {
+        public RNG(ref (ulong a, ulong b) sharedState) {
             state = sharedState;
             state.b |= 1UL;
         }
-        public RNG(string seed) : this(Randomize((ulong)(seed is null ? "" : seed).GetHashCode())) { }
+        /// <summary>
+        /// Uses SeededHash to get two different 64-bit hashes that this will use as its initial state. This can be useful
+        /// if you don't know whether the .NET environment this will run on uses randomized hashing; if it does, just
+        /// initializing an RNG with string.GetHashCode() would be non-deterministic. It also helps that we get 128 bits of
+        /// hash in total here, so quite a lot of generators should be potentially creatable from string seeds.
+        /// </summary>
+        /// <param name="seed">any string; it can be null or empty</param>
+        public RNG(string seed) : this(SeededHash.Alpha.Hash64(seed), SeededHash.Omega.Hash64(seed)) { }
 
         public int NextBits(int bits) {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
@@ -80,7 +87,7 @@ namespace SquidLib.SquidMath {
          *
          * @return a copy of this RandomnessSource
          */
-        public IRNG Copy() => new RNG(state);
+        public IRNG Copy() => new RNG(state.a, state.b);
 
         /**
          * Can return any int, positive or negative, of any size permissible in a 32-bit signed integer.

@@ -182,13 +182,22 @@ namespace SquidLib.SquidMath {
         T RandomElement<T>(IEnumerable<T> coll);
 
         /// <summary>
-        /// Gets a random key, for IndexedDictionary, or key-like unique item, for IndexedSet, from the given data structure.
-        /// To get a random value from an IndexedDictionary, just look up the returned key in the dictionary, as long as it isn't empty.
+        /// Gets a random key from the given IndexedDictionary.
         /// </summary>
-        /// <typeparam name="T">The type of the IOrdered keys</typeparam>
-        /// <param name="ordered">An IOrdered, such as an IndexedDictionary or IndexedSet</param>
-        /// <returns></returns>
-        T RandomKey<T>(IOrdered<T> ordered);
+        /// <typeparam name="TKey">The type of the IndexedDictionary keys</typeparam>
+        /// <typeparam name="TValue">The type of the IndexedDictionary values, ignored here</typeparam>
+        /// <param name="dictionary">A non-null, non-empty IndexedDictionary</param>
+        /// <returns>A randomly selected key from dictionary</returns>
+        TKey RandomKey<TKey, TValue>(IndexedDictionary<TKey, TValue> dictionary);
+
+        /// <summary>
+        /// Gets a random value from the given IndexedDictionary.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the IndexedDictionary keys, used internally</typeparam>
+        /// <typeparam name="TValue">The type of the IndexedDictionary values</typeparam>
+        /// <param name="dictionary">A non-null, non-empty IndexedDictionary</param>
+        /// <returns>A randomly selected value from dictionary</returns>
+        TValue RandomValue<TKey, TValue>(IndexedDictionary<TKey, TValue> dictionary);
 
         /**
          * Shuffle an array using the Fisher-Yates algorithm and returns a shuffled copy, freshly-allocated, without

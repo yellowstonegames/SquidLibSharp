@@ -2,6 +2,14 @@
 using System.Runtime.CompilerServices;
 
 namespace SquidLib.SquidMath {
+    /// <summary>
+    /// A way to get 64-bit hash codes of strings and arrays that vary based on a 64-bit seed.
+    /// This is meant to serve as a countermeasure for the potential non-deterministic behavior of the CLR
+    /// when randomized hashing is enabled. It also helps when many hashes are needed but they need to differ
+    /// based on their seeds, even if they hash the same strings. A common way of using this is by either
+    /// constructing a new SeededHash when a new seed is needeed, by using one of the 192 SeededHash items in
+    /// the <code>Predefined</code> field, or just using <code>Instance</code>.
+    /// </summary>
     public class SeededHash {
         private readonly ulong seed;
         internal const ulong b0 = 0xA0761D6478BD642FUL;
@@ -285,8 +293,8 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
         }
 
         public ulong Hash64(byte[] data) {
-            if (data == null) return 0UL;
             ulong seed = this.seed;
+            if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
                 seed = mum(
@@ -303,13 +311,13 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             return seed - (seed >> 31) + (seed << 33);
         }
         public ulong Hash64(sbyte[] data) {
-            if (data == null) return 0UL;
+            if (data is null) return seed;
             return Hash64((byte[])(object)data);
         }
 
         public ulong Hash64(char[] data) {
-            if (data == null) return 0UL;
             ulong seed = this.seed;
+            if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
                 seed = mum(
@@ -327,8 +335,8 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
         }
 
         public ulong Hash64(string data) {
-            if (data == null) return 0UL;
             ulong seed = this.seed;
+            if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
                 seed = mum(
@@ -346,8 +354,8 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
         }
 
         public ulong Hash64(ushort[] data) {
-            if (data == null) return 0UL;
             ulong seed = this.seed;
+            if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
                 seed = mum(
@@ -364,13 +372,13 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             return seed - (seed >> 31) + (seed << 33);
         }
         public ulong Hash64(short[] data) {
-            if (data == null) return 0UL;
+            if (data is null) return seed;
             return Hash64((ushort[])(object)data);
         }
 
         public ulong Hash64(uint[] data) {
-            if (data == null) return 0UL;
             ulong seed = this.seed;
+            if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
                 seed = mum(
@@ -387,11 +395,11 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             return seed - (seed >> 31) + (seed << 33);
         }
         public ulong Hash64(int[] data) {
-            if (data == null) return 0UL;
+            if (data is null) return seed;
             return Hash64((uint[])(object)data);
         }
         public ulong Hash64(ulong[] data) {
-            if (data == null) return 0UL;
+            if (data is null) return this.seed;
             ulong seed = this.seed, a = this.seed + b4, b = this.seed + b3, c = this.seed + b2, d = this.seed + b1;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
@@ -411,21 +419,17 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             return seed - (seed >> 31) + (seed << 33);
         }
         public ulong Hash64(long[] data) {
-            if (data == null) return 0UL;
+            if (data is null) return seed;
             return Hash64((ulong[])(object)data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe ulong FloatToULong(float value) {
-            return *((uint*)&value);
-        }
+        private static unsafe ulong FloatToULong(float value) => *((uint*)&value);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe ulong DoubleToULong(double value) {
-            return *((ulong*)&value);
-        }
+        private static unsafe ulong DoubleToULong(double value) => *((ulong*)&value);
         public ulong Hash64(float[] data) {
-            if (data == null) return 0UL;
             ulong seed = this.seed;
+            if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
                 seed = mum(
@@ -443,7 +447,7 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
         }
 
         public ulong Hash64(double[] data) {
-            if (data == null) return 0UL;
+            if (data is null) return this.seed;
             ulong seed = this.seed, a = this.seed + b4, b = this.seed + b3, c = this.seed + b2, d = this.seed + b1;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
