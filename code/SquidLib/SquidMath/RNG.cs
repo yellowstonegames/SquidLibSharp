@@ -761,7 +761,7 @@ namespace SquidLib.SquidMath {
             state.a -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * state.b;
             state.b -= 0x9E3779B97F4A7C16UL;
-            return (z >> 40) * floatDivisor;
+            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor;
         }
 
         public float PreviousFloat(float outer) => PreviousFloat() * outer;
@@ -776,14 +776,46 @@ namespace SquidLib.SquidMath {
         public long PreviousLong(long min, long max) => min + PreviousLong(max - min);
 
         public double PreviousDouble(double min, double max) => min + PreviousDouble(max - min);
+        /// <summary>
+        /// Retrieves a random key from the given non-empty IndexedDictionary, changing the state to one earlier step after getting a key.
+        /// </summary>
+        /// <typeparam name="TKey">Key type of the IndexedDictionary</typeparam>
+        /// <typeparam name="TValue">Value type of the IndexedDictionary</typeparam>
+        /// <param name="dict">a non-empty, non-null IndexedDictionary</param>
+        /// <returns>a randomly-selected key from dict</returns>
+        public TKey PreviousRandomKey<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
+            int size;
+            if (dict is null || (size = dict.Count) <= 0)
+                return default;
+            return dict[Key.At, PreviousSignedInt(size)];
+        }
+
+        /// <summary>
+        /// Retrieves a random value from the given non-empty IndexedDictionary, changing the state to one earlier step after getting a value.
+        /// </summary>
+        /// <typeparam name="TKey">Key type of the IndexedDictionary</typeparam>
+        /// <typeparam name="TValue">Value type of the IndexedDictionary</typeparam>
+        /// <param name="dict">a non-empty, non-null IndexedDictionary</param>
+        /// <returns>a randomly-selected value from dict</returns>
+        public TValue PreviousRandomValue<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
+            int size;
+            if (dict is null || (size = dict.Count) <= 0)
+                return default;
+            return dict[Value.At, PreviousSignedInt(size)];
+        }
 
         public T PreviousRandomElement<T>(IEnumerable<T> enumerable) {
             switch (enumerable) {
                 case T[] array when array.Length > 0:
                     return array[PreviousSignedInt(array.Length)];
-                //TODO: IndexedSet and other shuffle-able sets/maps should implement IOrdered or something like it
+                // This only works for IndexedSet.
+                // IndexedDictionary is an IEnumerable of KeyValuePair of TKey and TValue, but only an IOrdered of TKey.
+                case IOrdered<T> ordered when ordered.Ordering.Count > 0:
+                    return ordered.Ordering[PreviousSignedInt(ordered.Ordering.Count)];
                 case IList<T> list when list.Count > 0:
                     return list[PreviousSignedInt(list.Count)];
+                // this gets used for IndexedDictionary and finds a KeyValuePair of TKey and TValue.
+                // Instead, you should probably use PreviousRandomKey() or PreviousRandomValue().
                 case ICollection<T> coll when coll.Count > 0:
                     var e = coll.GetEnumerator();
                     for (int target = PreviousSignedInt(coll.Count); target > 0; target--) {
@@ -843,9 +875,8 @@ namespace SquidLib.SquidMath {
             return dest;
         }
 
-        public T RandomKey<T>(IOrdered<T> ordered) => ordered.Ordering[NextSignedInt(ordered.Ordering.Count)];
-
         public void ShuffleInPlace<T>(IOrdered<T> ordered) => ShuffleInPlace(ordered.Ordering);
+        public void ReverseShuffleInPlace<T>(IOrdered<T> ordered) => ReverseShuffleInPlace(ordered.Ordering);
     }
 
 }
