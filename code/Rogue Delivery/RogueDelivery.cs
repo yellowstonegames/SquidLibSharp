@@ -27,55 +27,63 @@ namespace RogueDelivery {
         private Coord playerLocation;
         private char playerGlyph = '@';
         private Color playerColor = Color.AliceBlue;
-
-        private Dictionary<Direction, char[][]> wagonGlyphs = new Dictionary<Direction, char[][]>() { // do to array processing, these look rotated to their direction names
-            {
-                Direction.Left, new char[][]{
-                    " Ŏ ".ToCharArray(),
-                    "∣∣∣".ToCharArray(),
-                    "⍬∣⍬".ToCharArray(),
-                    "∣∣∣".ToCharArray()
-                }
-            },
-            {
-                Direction.Right, new char[][]{
-                    "∣∣∣".ToCharArray(),
-                    "⍬∣⍬".ToCharArray(),
-                    "∣∣∣".ToCharArray(),
-                    " Ŏ ".ToCharArray()
-                }
-            },
-            {
-                Direction.Down, new char[][]{
-                    "-⍬- ".ToCharArray(),
-                    "---Ŏ".ToCharArray(),
-                    "-⍬- ".ToCharArray()
-                }
-            },
-            {
-                Direction.Up, new char[][]{
-                    " -⍬-".ToCharArray(),
-                    "Ŏ---".ToCharArray(),
-                    " -⍬-".ToCharArray()
-                }
-            }
+        private Physical playerPhysical = new Physical() {
+            Name = "Rogue",
+            Class = "Delivery Driver",
+            Health = 23,
+            Strength = 4,
+            Luck = 12,
+            Wiles = 2,
+            XP = 0
         };
+
         private char[][] wagonGlyph;
-        private Coord wagonLocation;
+        private BigMob wagon;
 
         static void Main() {
             var rd = new RogueDelivery(); // start up the primary system
             rd.Start();
         }
 
+        private void InitObjects() {
+            wagon = new BigMob {
+                DefaultColor = Color.SandyBrown
+            };
+            wagon.SetGlyphs(Direction.Up, 0, 2, new string[] {
+                " Ŏ ",
+                "∣∣∣",
+                "⍬∣⍬",
+                "∣∣∣"
+            });
+            wagon.SetGlyphs(Direction.Down, 0, 1, new string[] {
+                "∣∣∣",
+                "⍬∣⍬",
+                "∣∣∣",
+                " Ŏ "
+            });
+            wagon.SetGlyphs(Direction.Right, 1, 1, new string[] {
+                "-⍬- ",
+                "---Ŏ",
+                "-⍬- "
+            });
+            wagon.SetGlyphs(Direction.Left, 2, 1, new string[] {
+                " -⍬-",
+                "Ŏ---",
+                " -⍬-"
+            });
+        }
+
         private RogueDelivery() {
             rng = new RNG();
+            InitObjects();
 
             width = windowWidth;
             height = windowHeight - logHeight - statusHeight - 2;
+
+            map = ArrayTools.Create<char>(' ', width, height);
+
             playerLocation = Coord.Get(rng.NextInt(width), rng.NextInt(height));
-            wagonGlyph = wagonGlyphs[Direction.Right];
-            wagonLocation = Coord.Get(width / 2, height / 2);
+            wagon.Location = Coord.Get(width / 2, height / 2);
 
             // init display style
             for (int x = 1; x < windowWidth - 1; x++) {
@@ -142,24 +150,59 @@ namespace RogueDelivery {
         }
 
         private void MovePlayer(Direction direction) {
-            playerLocation = Utilities.Translate(playerLocation, direction);
-            wagonGlyph = wagonGlyphs[direction];
+
+            //playerLocation = Utilities.Translate(playerLocation, direction);
+            if (wagon.Facing == direction) {
+                wagon.Location = Utilities.Translate(wagon.Location, direction);
+            } else {
+                wagon.Facing = direction;
+            }
         }
 
         private void DrawMap() {
             Terminal.Clear();
-            Terminal.Color(Terminal.ColorFromName(rng.RandomElement(BltColor.AuroraNames)));
-            PaintBorder();
 
-            Terminal.Color(Color.SandyBrown);
-            for (int x = 0; x < wagonGlyph.Length; x++) {
-                for (int y = 0; y < wagonGlyph[x].Length; y++) {
-                    PutOnMap(Coord.Get(wagonLocation.X + x, wagonLocation.Y + y), wagonGlyph[x][y]);
+            Terminal.Color(Color.LightSlateGray);
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    Terminal.Put(x, y, map[x][y]);
                 }
             }
 
+            Terminal.Color(Terminal.ColorFromName(rng.RandomElement(BltColor.AuroraNames)));
+            PaintBorder();
+
+            Coord center = wagon.Reps[wagon.Facing].ControlPoint;
+            int localX = wagon.Location.X - center.X;
+            int localY = wagon.Location.Y - center.Y;
+            foreach (var rep in wagon.Reps[wagon.Facing].Tiles) {
+                Terminal.Color(rep.Value.Color);
+                PutOnMap(localX + rep.Key.X, localY + rep.Key.Y, rep.Value.Glyph);
+            }
+
+            //Terminal.Color(playerColor);
+            //PutOnMap(playerLocation, playerGlyph);
+
+            // Status section
+            int startY = windowHeight - statusHeight - 1;
             Terminal.Color(playerColor);
-            PutOnMap(playerLocation, playerGlyph);
+            int startX = Put(2, startY, playerPhysical.Name);
+            Terminal.Color(Color.White);
+            startX = Put(startX + 1, startY, "The");
+            Terminal.Color(Color.LightCoral);
+            startX = Put(startX + 1, startY, playerPhysical.Class);
+            Terminal.Color(Color.White);
+            startX = Put(startX + 1, startY, "--");
+            Terminal.Color(Color.Silver);
+            startX = Put(startX + 1, startY, "Strength: " + playerPhysical.Strength);
+            Terminal.Color(Color.HotPink);
+            startX = Put(startX + 2, startY, "Luck: " + playerPhysical.Luck);
+            Terminal.Color(Color.MediumPurple);
+            startX = Put(startX + 2, startY, "Wiles: " + playerPhysical.Wiles);
+            Terminal.Color(Color.RosyBrown);
+            startX = Put(startX + 2, startY, "XP: " + playerPhysical.XP);
+            Terminal.Color(Color.SeaGreen);
+            startX = Put(startX + 2, startY, "Health: " + playerPhysical.Health);
         }
 
         private void PaintBorder() {
@@ -170,18 +213,36 @@ namespace RogueDelivery {
 
         private static void Put(Coord coord, char c) => Terminal.Put(coord.X, coord.Y, c);
 
+        private static int Put(int x, int y, string s) {
+            for (int i = 0; i < s.Length; i++) {
+                Terminal.Put(x + i, y, s[i]);
+            }
+            return x + s.Length;
+        }
+
         /// <summary>
         /// Puts the character on the map if the coordinate is valid, otherwise takes no action.
         /// </summary>
         /// <param name="coord"></param>
         /// <param name="c"></param>
         private void PutOnMap(Coord coord, char c) {
-            if (InMapBounds(coord)) {
-                Terminal.Put(coord.X + 1, coord.Y + 1, c); // handle window offset
+            PutOnMap(coord.X, coord.Y, c);
+        }
+
+        /// <summary>
+        /// Puts the character on the map if the coordinate is valid, otherwise takes no action.
+        /// </summary>
+        /// <param name="coord"></param>
+        /// <param name="c"></param>
+        private void PutOnMap(int x, int y, char c) {
+            if (InMapBounds(x, y)) {
+                Terminal.Put(x + 1, y + 1, c); // handle window offset
             }
         }
 
-        private bool InMapBounds(Coord coord) => coord.X >= 0 && coord.X < width && coord.Y >= 0 && coord.Y < height;
+        private bool InMapBounds(int x, int y) => x >= 0 && x < width && y >= 0 && y < height;
+
+        private bool InMapBounds(Coord coord) => InMapBounds(coord.X, coord.Y);
 
     }
 }
