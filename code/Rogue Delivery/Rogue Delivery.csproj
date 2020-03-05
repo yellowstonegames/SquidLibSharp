@@ -93,6 +93,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Mobs.cs" />
     <Compile Include="Physical.cs" />
     <Compile Include="RogueDelivery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
