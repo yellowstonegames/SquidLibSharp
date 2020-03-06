@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SquidLib.SquidGrid;
 
 namespace SquidLib.SquidMath {
 
@@ -17,13 +18,13 @@ namespace SquidLib.SquidMath {
      */
     public class Elias {
         private List<Coord> path;
-        private double[][] map;
+        private Grid<double> map;
         private int width, height;
         private double threshold = 0.0;
 
         public Elias() => path = new List<Coord>();
 
-        public double[][] LightMap(double startx, double starty, double endx, double endy) {
+        public Grid<double> LightMap(double startx, double starty, double endx, double endy) {
             Line(startx, starty, endx, endy);
             return map;
         }
@@ -41,7 +42,7 @@ namespace SquidLib.SquidMath {
             path.Clear();
             width = (int)(Math.Max(startx, endx) + 1);
             height = (int)(Math.Max(starty, endy) + 1);
-            map = ArrayTools.Create<double>(width, height);
+            map = new Grid<double>(width, height);
             RunLine(startx, starty, endx, endy);
             return path;
         }
@@ -60,7 +61,7 @@ namespace SquidLib.SquidMath {
             path.Clear();
             width = (int)(Math.Max(startx, endx) + 1);
             height = (int)(Math.Max(starty, endy) + 1);
-            map = ArrayTools.Create<double>(width, height);
+            map = new Grid<double>(width, height);
             RunLine(startx, starty, endx, endy);
             return path;
         }
@@ -78,12 +79,10 @@ namespace SquidLib.SquidMath {
          * @param y
          * @param c
          */
-        private void Mark(double x, double y, double c) {
+        private void Mark(int x, int y, double c) {
             //check bounds overflow from antialiasing
-            if (x >= 0 && x < width && y >= 0 && y < height && c > threshold) {
-                path.Add(Coord.Get((int)x, (int)y));
-                map[(int)x][(int)y] = c;
-            }
+            if (c > threshold && map.TrySet(x, y, c))
+                path.Add(Coord.Get(x, y));
         }
 
         private static double Frac(double x) => x - Math.Truncate(x);

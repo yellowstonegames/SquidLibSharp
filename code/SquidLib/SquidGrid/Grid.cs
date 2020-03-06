@@ -35,6 +35,23 @@ namespace SquidLib.SquidGrid {
                     raw[y * Width + x] = value;
             }
         }
+
+        /// <summary>
+        /// If the given x,y position is in-bounds, this sets the T at that position to item and returns true; otherwise it returns false.
+        /// This will return true even when the given position already contains item, as long as it is in-bounds.
+        /// </summary>
+        /// <param name="x">X position, will be bounds checked.</param>
+        /// <param name="y">Y position, will be bounds checked.</param>
+        /// <param name="item">The T item to try to place at x,y.</param>
+        /// <returns>true if x,y is in-bounds, false otherwise.</returns>
+        public bool TrySet(int x, int y, T item) {
+            if (x >= 0 && x < Width && y >= 0 && y < Height) {
+                raw[y * Width + x] = item;
+                return true;
+            }
+            return false;
+        }
+
         public void RowEdit(int x, int y, IEnumerable<T> sequence) {
             if(!(sequence is null) && x >= 0 && x < Width && y >= 0 && y < Height) {
                 foreach(T item in sequence) {
