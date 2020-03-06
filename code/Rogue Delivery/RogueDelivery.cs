@@ -71,6 +71,10 @@ namespace RogueDelivery {
                 "Ŏ---",
                 " -⍬-"
             });
+            wagon.Reps[Direction.Up].Tiles[Coord.Get(1, 0)].Color = Color.White;
+            wagon.Reps[Direction.Down].Tiles[Coord.Get(1, 3)].Color = Color.White;
+            wagon.Reps[Direction.Right].Tiles[Coord.Get(3, 1)].Color = Color.White;
+            wagon.Reps[Direction.Left].Tiles[Coord.Get(0, 1)].Color = Color.White;
         }
 
         private RogueDelivery() {
