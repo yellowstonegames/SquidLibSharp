@@ -25,6 +25,21 @@ namespace SquidLib.SquidGrid {
             }
         }
 
+        public Grid(Grid<T> other) {
+            if(other is null) {
+                Width = 80;
+                Height = 24;
+                Outside = default;
+                raw = new T[Width * Height];
+                return;
+            }
+            Width = other.Width;
+            Height = other.Height;
+            Outside = other.Outside;
+            raw = new T[Width * Height];
+            Array.Copy(other.raw, raw, raw.Length);
+        }
+
         public T this[int x, int y] { get {
                 if (x < 0 || x >= Width || y < 0 || y >= Height)
                     return Outside;

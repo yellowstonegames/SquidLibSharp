@@ -457,6 +457,108 @@ namespace SquidLib.SquidGrid {
             }
             return v;
         }
+        private static readonly char[] wallLookup = new char[]
+        {
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼',
+                    '#', '│', '─', '└', '│', '│', '┌', '│', '─', '┘', '─', '┴', '┐', '┤', '┬', '┤',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '─', '┴',
+                    '#', '│', '─', '└', '│', '│', '┌', '│', '─', '┘', '─', '┴', '┐', '┤', '─', '┘',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '─', '┐', '┤', '┬', '┬',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼',
+                    '#', '│', '─', '└', '│', '│', '┌', '│', '─', '┘', '─', '─', '┐', '┤', '┬', '┐',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '│', '┬', '├',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '─', '┐', '│', '┬', '┌',
+                    '#', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '│', '─', '└',
+                    '#', '│', '─', '└', '│', '│', '┌', '│', '─', '┘', '─', '─', '┐', '│', '─', ' '
+        };
+
+        /**
+         * Takes a char[][] dungeon map that uses '#' to represent walls, and returns a new char[][] that uses unicode box
+         * drawing characters to draw straight, continuous lines for walls, filling regions between walls (that were
+         * filled with more walls before) with space characters, ' '. If keepSingleHashes is true, then '#' will be used if
+         * a wall has no orthogonal wall neighbors; if it is false, then a horizontal line will be used for stand-alone
+         * wall cells. If the lines "point the wrong way," such as having multiple horizontally adjacent vertical lines
+         * where there should be horizontal lines, call transposeLines() on the returned map, which will keep the dimensions
+         * of the map the same and only change the line chars. You will also need to call transposeLines if you call
+         * hashesToLines on a map that already has "correct" line-drawing characters, which means hashesToLines should only
+         * be called on maps that use '#' for walls. If you have a jumbled map that contains two or more of the following:
+         * "correct" line-drawing characters, "incorrect" line-drawing characters, and '#' characters for walls, you can
+         * reset by calling linesToHashes() and then potentially calling hashesToLines() again.
+         *
+         * @param map              a 2D char array indexed with x,y that uses '#' for walls
+         * @param keepSingleHashes true if walls that are not orthogonally adjacent to other walls should stay as '#'
+         * @return a copy of the map passed as an argument with box-drawing characters replacing '#' walls
+         */
+        public static Grid<char> HashesToLines(Grid<char> map, bool keepSingleHashes = true) {
+            if (map is null) return null;
+            Grid<char> dungeon = new Grid<char>(map);
+            map.Outside = '#';
+            int width = dungeon.Width, height = dungeon.Height;
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    if (map[x, y] == '#') {
+                        int q = 0;
+                        q |= (map[x + 0, y - 1] == '#' || map[x + 0, y - 1] == '+' || map[x + 0, y - 1] == '/') ? 1 : 0;
+                        q |= (map[x + 1, y + 0] == '#' || map[x + 1, y + 0] == '+' || map[x + 1, y + 0] == '/') ? 2 : 0;
+                        q |= (map[x + 0, y + 1] == '#' || map[x + 0, y + 1] == '+' || map[x + 0, y + 1] == '/') ? 4 : 0;
+                        q |= (map[x - 1, y + 0] == '#' || map[x - 1, y + 0] == '+' || map[x - 1, y + 0] == '/') ? 8 : 0;
+
+                        q |= (map[x + 1, y - 1] == '#' || map[x + 1, y - 1] == '+' || map[x + 1, y - 1] == '/') ? 16 : 0;
+                        q |= (map[x + 1, y + 1] == '#' || map[x + 1, y + 1] == '+' || map[x + 1, y + 1] == '/') ? 32 : 0;
+                        q |= (map[x - 1, y + 1] == '#' || map[x - 1, y + 1] == '+' || map[x - 1, y + 1] == '/') ? 64 : 0;
+                        q |= (map[x - 1, y - 1] == '#' || map[x - 1, y - 1] == '+' || map[x - 1, y - 1] == '/') ? 128 : 0;
+                        if (!keepSingleHashes && wallLookup[q] == '#') {
+                            dungeon[x, y + 1] = '─';
+                        } else {
+                            dungeon[x, y + 1] = wallLookup[q];
+                        }
+                    }
+                }
+            }
+            map.Outside = dungeon.Outside;
+            return dungeon;
+        }
+
+        /**
+         * Reverses most of the effects of hashesToLines(). The only things that will not be reversed are the placement of
+         * space characters in unreachable wall-cells-behind-wall-cells, which remain as spaces. This is useful if you
+         * have a modified map that contains wall characters of conflicting varieties, as described in hashesToLines().
+         *
+         * @param map a 2D char array indexed with x,y that uses box-drawing characters for walls
+         * @return a copy of the map passed as an argument with '#' replacing box-drawing characters for walls
+         */
+        public static Grid<char> LinesToHashes(Grid<char> map) {
+            if (map is null) return null;
+            Grid<char> dungeon = new Grid<char>(map);
+            int width = dungeon.Width;
+            int height = dungeon.Height;
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    switch (dungeon[i, j]) {
+                        case ' ':
+                        case '├':
+                        case '┤':
+                        case '┴':
+                        case '┬':
+                        case '┌':
+                        case '┐':
+                        case '└':
+                        case '┘':
+                        case '│':
+                        case '─':
+                        case '┼':
+                            dungeon[i, j] = '#';
+                            break;
+                    }
+                }
+            }
+            return dungeon;
+        }
 
     }
 }
