@@ -182,10 +182,6 @@ namespace RogueDelivery {
             return Coord.Get(centroidX, centroidY);
         }
 
-        public static Coord Translate(Coord coord, Direction dir) {
-            return Coord.Get(coord.X + dir.DeltaX(), coord.Y + dir.DeltaY());
-        }
-
         //public static List<Coord> findInternalPolygonCorners(GreasedRegion region, int distance, int pointLimit) {
         //    rng.setState(region.hash64());
         //    GreasedRegion points = region.copy();

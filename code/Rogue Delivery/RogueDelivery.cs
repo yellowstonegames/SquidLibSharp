@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-
+using System.Media;
 using BearLib;
 using ColorHelper;
 using SquidLib;
@@ -12,6 +11,8 @@ using SquidLib.SquidMath;
 
 namespace RogueDelivery {
     class RogueDelivery {
+        private enum ControlType { OnFoot, DrivingWagon }
+
         private bool keepRunning = true;
         private RNG rng;
 
@@ -24,20 +25,10 @@ namespace RogueDelivery {
         private Dictionary<Coord, char> borders = new Dictionary<Coord, char>();
 
         private char[][] map;
-        private Coord playerLocation;
-        private char playerGlyph = '@';
-        private Color playerColor = Color.AliceBlue;
-        private Physical playerPhysical = new Physical() {
-            Name = "Rogue",
-            Class = "Delivery Driver",
-            Health = 23,
-            Strength = 4,
-            Luck = 12,
-            Wiles = 2,
-            XP = 0
-        };
+        private Physical playerPhysical;
 
-        private char[][] wagonGlyph;
+        private ControlType controlType = ControlType.OnFoot;
+        private Mob player;
         private BigMob wagon;
 
         static void Main() {
@@ -46,16 +37,27 @@ namespace RogueDelivery {
         }
 
         private void InitObjects() {
+            player = new Mob { Rep = new Representation { Glyph = '@', Color = Color.Red } };
+            playerPhysical = new Physical() {
+                Name = "Rogue",
+                Class = "Delivery Driver",
+                Health = 23,
+                Strength = 4,
+                Luck = 12,
+                Wiles = 2,
+                XP = 0
+            };
+
             wagon = new BigMob {
                 DefaultColor = Color.SandyBrown
             };
-            wagon.SetGlyphs(Direction.Up, 0, 2, new string[] {
+            wagon.SetGlyphs(Direction.Up, 1, 2, new string[] {
                 " Ŏ ",
                 "∣∣∣",
                 "⍬∣⍬",
                 "∣∣∣"
             });
-            wagon.SetGlyphs(Direction.Down, 0, 1, new string[] {
+            wagon.SetGlyphs(Direction.Down, 1, 1, new string[] {
                 "∣∣∣",
                 "⍬∣⍬",
                 "∣∣∣",
@@ -86,8 +88,8 @@ namespace RogueDelivery {
 
             map = ArrayTools.Create<char>(' ', width, height);
 
-            playerLocation = Coord.Get(rng.NextInt(width), rng.NextInt(height));
             wagon.Location = Coord.Get(width / 2, height / 2);
+            player.Location = Coord.Get(wagon.Location.X - wagon.Width, wagon.Location.Y - wagon.Height); ;
 
             // init display style
             for (int x = 1; x < windowWidth - 1; x++) {
@@ -143,6 +145,12 @@ namespace RogueDelivery {
                         case Terminal.TK_RIGHT:
                             MovePlayer(Direction.Right);
                             break;
+                        case Terminal.TK_SPACE when controlType == ControlType.DrivingWagon:
+                            controlType = ControlType.OnFoot;
+                            break;
+                        case Terminal.TK_SPACE when controlType == ControlType.OnFoot:
+                            controlType = ControlType.DrivingWagon;
+                            break;
                         default:
                             // ignore unknown commands
                             break;
@@ -154,12 +162,17 @@ namespace RogueDelivery {
         }
 
         private void MovePlayer(Direction direction) {
-
-            //playerLocation = Utilities.Translate(playerLocation, direction);
-            if (wagon.Facing == direction) {
-                wagon.Location = Utilities.Translate(wagon.Location, direction);
-            } else {
-                wagon.Facing = direction;
+            switch (controlType) {
+                case ControlType.DrivingWagon:
+                    if (wagon.Facing == direction) {
+                        wagon.Location += direction.Coord();
+                    } else {
+                        wagon.Facing = direction;
+                    }
+                    break;
+                case ControlType.OnFoot:
+                    player.Location += direction.Coord();
+                    break;
             }
         }
 
@@ -176,12 +189,20 @@ namespace RogueDelivery {
             Terminal.Color(Terminal.ColorFromName(rng.RandomElement(BltColor.AuroraNames)));
             PaintBorder();
 
-            Coord center = wagon.Reps[wagon.Facing].ControlPoint;
-            int localX = wagon.Location.X - center.X;
-            int localY = wagon.Location.Y - center.Y;
+            Coord drawingOffset = wagon.DrawingOffset();
             foreach (var rep in wagon.Reps[wagon.Facing].Tiles) {
                 Terminal.Color(rep.Value.Color);
-                PutOnMap(localX + rep.Key.X, localY + rep.Key.Y, rep.Value.Glyph);
+                PutOnMap(drawingOffset + rep.Key, rep.Value.Glyph);
+            }
+
+            switch (controlType) {
+                case ControlType.OnFoot:
+                    PutOnMap(player);
+                    break;
+                case ControlType.DrivingWagon:
+                    player.Location = wagon.Location;
+                    PutOnMap(player);
+                    break;
             }
 
             //Terminal.Color(playerColor);
@@ -189,7 +210,7 @@ namespace RogueDelivery {
 
             // Status section
             int startY = windowHeight - statusHeight - 1;
-            Terminal.Color(playerColor);
+            Terminal.Color(player.Rep.Color);
             int startX = Put(2, startY, playerPhysical.Name);
             Terminal.Color(Color.White);
             startX = Put(startX + 1, startY, "The");
@@ -224,14 +245,17 @@ namespace RogueDelivery {
             return x + s.Length;
         }
 
+        private void PutOnMap(Mob mob) {
+            Terminal.Color(mob.Rep.Color);
+            PutOnMap(mob.Location, mob.Rep.Glyph);
+        }
+
         /// <summary>
         /// Puts the character on the map if the coordinate is valid, otherwise takes no action.
         /// </summary>
         /// <param name="coord"></param>
         /// <param name="c"></param>
-        private void PutOnMap(Coord coord, char c) {
-            PutOnMap(coord.X, coord.Y, c);
-        }
+        private void PutOnMap(Coord coord, char c) => PutOnMap(coord.X, coord.Y, c);
 
         /// <summary>
         /// Puts the character on the map if the coordinate is valid, otherwise takes no action.
