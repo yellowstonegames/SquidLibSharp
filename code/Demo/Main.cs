@@ -159,7 +159,7 @@ namespace Demo {
             noise.SetFractalOctaves(3);
             noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
             noise.SetFrequency(0.5);
-            Color lightPurple = Terminal.ColorFromName("orchid"), deepPurple = Terminal.ColorFromName("purple_freesia");
+            Color lightPurple = Terminal.ColorFromName("greyhound"), deepPurple = Terminal.ColorFromName("purple_freesia");
             float lightHue = lightPurple.GetHue() / 360f, deepHue = deepPurple.GetHue() / 360f, lightSat = lightPurple.GetSaturation(), deepSat = deepPurple.GetSaturation(),
                 lightBright = lightPurple.GetBrightness(), deepBright = deepPurple.GetBrightness();
             //DateTime current = DateTime.Now, start = DateTime.Now;
@@ -169,8 +169,13 @@ namespace Demo {
                 if (input == Terminal.TK_Q || input == Terminal.TK_ESCAPE || input == Terminal.TK_CLOSE)
                     keepRunning = false;
                 else {
-                    if (Terminal.HasInput())
+                    if (Terminal.HasInput()) {
                         input = Terminal.Read();
+                        if (input == Terminal.TK_Q || input == Terminal.TK_ESCAPE || input == Terminal.TK_CLOSE) {
+                            Terminal.Close();
+                            return;
+                        }
+                    }
                     for (int y = 0; y < height; y++) {
                         for (int x = 0; x < width; x++) {
                             char c = big[y][x];
@@ -185,8 +190,8 @@ namespace Demo {
                                 Terminal.Put(x, y, '.');
 //                                }
                             } else {
-                                Terminal.Color(GetHSV(lightHue + (float)noise.GetNoise(x, y) * 0.03125f, lightSat + (float)noise.GetNoise(x, -y) * 0.1f, lightBright + (float)noise.GetNoise(-x, y) * 0.125f));
-                                Terminal.BkColor(GetHSV(deepHue + (float)noise.GetNoise(x, y) * 0.02f, deepSat + (float)noise.GetNoise(x, -y) * 0.075f, deepBright + (float)noise.GetNoise(-x, y) * 0.1f));
+                                Terminal.Color(GetHSV(lightHue + (float)noise.GetNoise(x, y) * 0.05f, lightSat + (float)noise.GetNoise(x, -y) * 0.2f, lightBright));
+                                Terminal.BkColor(GetHSV(deepHue + (float)noise.GetNoise(x, y) * 0.05f, deepSat + (float)noise.GetNoise(x, -y) * 0.15f, deepBright + (float)noise.GetNoise(-x, y) * 0.15f));
                                 //int argb = byHue[(x * 4 + y) % 255];
                                 //Terminal.Color(argb);
                                 //Terminal.BkColor((0xFF << 24) | (argb & 0xFEFEFE) >> 1);
@@ -199,6 +204,7 @@ namespace Demo {
                     Terminal.Refresh();
                 }
             }
+            Terminal.Close();
         }
     }
     public class NoiseDemo {
