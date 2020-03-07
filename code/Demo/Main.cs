@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using BearLib;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-
+using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
 
 namespace Demo {
@@ -76,6 +78,126 @@ namespace Demo {
                 //        break;
                 //}
 
+            }
+        }
+    }
+    public class LogoDemo {
+        private static bool keepRunning = true;
+
+        public static uint GetHSV(float hue, float saturation, float value) {
+            if (value <= 0.0039f) {
+                return 0xFF000000u;
+            } else if (saturation <= 0.0039f) {
+                uint bright = Math.Min(255U, Math.Max(0U, (uint)(value * 255.5f)));
+                return 0xFF000000U | bright * 0x10101u;
+            } else {
+                float h = ((hue + 6f) % 1f) * 6f;
+                uint i = (uint)h;
+                value = Math.Min(255.5f, Math.Max(0f, value * 255.5f));
+                saturation = Math.Min(1f, Math.Max(0f, saturation));
+                uint a = (uint)(value * (1 - saturation));
+                uint b = (uint)(value * (1 - saturation * (h - i)));
+                uint c = (uint)(value * (1 - saturation * (1 - (h - i))));
+                uint v = (uint)value;
+
+                switch (i) {
+                    case 0:
+                        return 0xFF000000U | v << 16 | c << 8 | a;
+                    case 1:
+                        return 0xFF000000U | b << 16 | v << 8 | a;
+                    case 2:
+                        return 0xFF000000U | a << 16 | v << 8 | c;
+                    case 3:
+                        return 0xFF000000U | a << 16 | b << 8 | v;
+                    case 4:
+                        return 0xFF000000U | c << 16 | a << 8 | v;
+                    default:
+                        return 0xFF000000U | v << 16 | a << 8 | b;
+                }
+            }
+        }
+
+
+        // currently, you can view a logo in Unicode, and can press Escape to close.
+        static void Main() {
+            Terminal.Open();
+            string[] big = new string[]{
+                "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::",
+                "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::",
+                "::'######:::'#######::'##::::'##:'####:'########::'##:::::::'####:'########:::",
+                ":'##... ##:'##.... ##: ##:::: ##:. ##:: ##.... ##: ##:::::::. ##:: ##.... ##::",
+                ": ##:::..:: ##:::: ##: ##:::: ##:: ##:: ##:::: ##: ##:::::::: ##:: ##:::: ##::",
+                ":. ######:: ##:::: ##: ##:::: ##:: ##:: ##:::: ##: ##:::::::: ##:: ########:::",
+                "::..... ##: ##:'## ##: ##:::: ##:: ##:: ##:::: ##: ##:::::::: ##:: ##.... ##::",
+                ":'##::: ##: ##:.. ##:: ##:::: ##:: ##:: ##:::: ##: ##:::::::: ##:: ##:::: ##::",
+                ":. ######::. ##### ##:. #######::'####: ########:: ########:'####: ########:::",
+                "::......::::.....:..:::.......:::....::........:::........::....::........::::",
+                "::::::::::::::'######::'##::::'##::::'###::::'########::'########:::::::::::::",
+                ":::::::::::::'##... ##: ##:::: ##:::'## ##::: ##.... ##: ##.... ##::::::::::::",
+                "::::::::::::: ##:::..:: ##:::: ##::'##:. ##:: ##:::: ##: ##:::: ##::::::::::::",
+                ":::::::::::::. ######:: #########:'##:::. ##: ########:: ########:::::::::::::",
+                "::::::::::::::..... ##: ##.... ##: #########: ##.. ##::: ##.....::::::::::::::",
+                ":::::::::::::'##::: ##: ##:::: ##: ##.... ##: ##::. ##:: ##:::::::::::::::::::",
+                ":::::::::::::. ######:: ##:::: ##: ##:::: ##: ##:::. ##: ##:::::::::::::::::::",
+                "::::::::::::::......:::..:::::..::..:::::..::..:::::..::..::::::::::::::::::::",
+                "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+            };
+            int width = big[0].Length, height = big.Length, cellWidth = (int)Math.Round(1280.0 / width), cellHeight = (int)Math.Round(640.0 / height);
+            Grid<char> grid = new Grid<char>(width, height, ' ');
+            char[] raw = grid.RawData();
+            for (int i = 0; i < height; i++) {
+                big[i].CopyTo(0, raw, i * width, width);
+            }
+            Grid<char> lined = LineKit.HashesToLines(grid, false);
+            //// add ", use-box-drawing=true" to the below config string to correct the box drawing characters, but they won't line up.
+            Terminal.Set($"window: title='SquidLibSharp Logo Demo', size={width}x{height}; output: vsync=true; font: Iosevka.ttf, size={cellWidth}x{cellHeight}, hinting=autohint");
+            ColorHelper.BltColor.LoadAurora();
+            List<int> byHue = ColorHelper.BltColor.AuroraNames.Select(Terminal.ColorFromName).OrderBy(color => color.GetHue()).Select(color => color.ToArgb()).ToList();
+            Terminal.Refresh();
+            int input = 0;
+            FastNoise noise = new FastNoise();
+            noise.SetFractalOctaves(3);
+            noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
+            noise.SetFrequency(0.5);
+            Color lightPurple = Terminal.ColorFromName("orchid"), deepPurple = Terminal.ColorFromName("purple_freesia");
+            float lightHue = lightPurple.GetHue() / 360f, deepHue = deepPurple.GetHue() / 360f, lightSat = lightPurple.GetSaturation(), deepSat = deepPurple.GetSaturation(),
+                lightBright = lightPurple.GetBrightness(), deepBright = deepPurple.GetBrightness();
+            //DateTime current = DateTime.Now, start = DateTime.Now;
+            //double time = 0.0;
+            while (keepRunning) {
+                input = Terminal.Peek();
+                if (input == Terminal.TK_Q || input == Terminal.TK_ESCAPE || input == Terminal.TK_CLOSE)
+                    keepRunning = false;
+                else {
+                    if (Terminal.HasInput())
+                        input = Terminal.Read();
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            char c = big[y][x];
+                            if (c != '#') {
+                                //                                if (BlueNoise.GetSeeded(x, y, 1337) < 4) {
+                                //                                    Terminal.BkColor("hot_sauce");
+                                //                                    Terminal.Color("apricot");
+                                //                                    Terminal.Put(x, y, '#');
+                                //                                } else {
+                                Terminal.Gray(BlueNoise.Get(x, y));
+                                Terminal.BkColor("coal_black");
+                                Terminal.Put(x, y, '.');
+//                                }
+                            } else {
+                                Terminal.Color(GetHSV(lightHue + (float)noise.GetNoise(x, y) * 0.03125f, lightSat + (float)noise.GetNoise(x, -y) * 0.1f, lightBright + (float)noise.GetNoise(-x, y) * 0.125f));
+                                Terminal.BkColor(GetHSV(deepHue + (float)noise.GetNoise(x, y) * 0.02f, deepSat + (float)noise.GetNoise(x, -y) * 0.075f, deepBright + (float)noise.GetNoise(-x, y) * 0.1f));
+                                //int argb = byHue[(x * 4 + y) % 255];
+                                //Terminal.Color(argb);
+                                //Terminal.BkColor((0xFF << 24) | (argb & 0xFEFEFE) >> 1);
+                                Terminal.Put(x, y, LineKit.ToHeavy[lined[x, y]]);
+                            }
+
+                        }
+                    }
+
+                    Terminal.Refresh();
+                }
             }
         }
     }

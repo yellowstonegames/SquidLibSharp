@@ -277,6 +277,11 @@ namespace BearLib {
         [DllImport("BearLibTerminal.dll", EntryPoint = "terminal_color", CallingConvention = CallingConvention.Cdecl)]
         public static extern void Color(int argb);
 
+        public static void Color(uint argb)
+        {
+            Color((int)argb);
+        }
+
         public static void Color(Color color)
         {
             Color(color.ToArgb());
@@ -325,6 +330,11 @@ namespace BearLib {
 
         [DllImport("BearLibTerminal.dll", EntryPoint = "terminal_bkcolor", CallingConvention=CallingConvention.Cdecl)]
         public static extern void BkColor(int argb);
+
+        public static void BkColor(uint argb)
+        {
+            BkColor((int)argb);
+        }
 
         public static void BkColor(Color color)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SquidLib.SquidMath;
 
 namespace SquidLib.SquidGrid {
     public static class LineKit {
@@ -9,7 +10,42 @@ namespace SquidLib.SquidGrid {
                            Light = " ─│┘──└┴│┐│┤┌┬├┼".ToCharArray(),
                            Heavy = " ━┃┛━━┗┻┃┓┃┫┏┳┣╋".ToCharArray();
         //                          0123456789ABCDEF
-        
+        public static readonly IndexedDictionary<char, char> ToHeavy = new IndexedDictionary<char, char>(16) {
+            [' '] = ' ',
+            ['╴'] = '╸',
+            ['╵'] = '╹',
+            ['┘'] = '┛',
+            ['╶'] = '╺',
+            ['─'] = '━',
+            ['└'] = '┗',
+            ['┴'] = '┻',
+            ['╷'] = '╻',
+            ['┐'] = '┓',
+            ['│'] = '┃',
+            ['┤'] = '┫',
+            ['┌'] = '┏',
+            ['┬'] = '┳',
+            ['├'] = '┣',
+            ['┼'] = '╋',
+        };
+        public static readonly IndexedDictionary<char, char> ToLight = new IndexedDictionary<char, char>(16) {
+            [' '] = ' ',
+            ['╸'] = '╴',
+            ['╹'] = '╵',
+            ['┛'] = '┘',
+            ['╺'] = '╶',
+            ['━'] = '─',
+            ['┗'] = '└',
+            ['┻'] = '┴',
+            ['╻'] = '╷',
+            ['┓'] = '┐',
+            ['┃'] = '│',
+            ['┫'] = '┤',
+            ['┏'] = '┌',
+            ['┳'] = '┬',
+            ['┣'] = '├',
+            ['╋'] = '┼',
+        };
         /**
          * A constant that represents the encoded pattern for a 4x4 square with all lines possible except those that
          * would extend to touch cells adjacent to the 4x4 area. Meant to restrict cells within the square area by using
@@ -513,9 +549,9 @@ namespace SquidLib.SquidGrid {
                         q |= (map[x - 1, y + 1] == '#' || map[x - 1, y + 1] == '+' || map[x - 1, y + 1] == '/') ? 64 : 0;
                         q |= (map[x - 1, y - 1] == '#' || map[x - 1, y - 1] == '+' || map[x - 1, y - 1] == '/') ? 128 : 0;
                         if (!keepSingleHashes && wallLookup[q] == '#') {
-                            dungeon[x, y + 1] = '─';
+                            dungeon[x, y] = '─';
                         } else {
-                            dungeon[x, y + 1] = wallLookup[q];
+                            dungeon[x, y] = wallLookup[q];
                         }
                     }
                 }

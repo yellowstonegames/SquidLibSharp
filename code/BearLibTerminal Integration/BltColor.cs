@@ -2,6 +2,9 @@
 
 namespace ColorHelper {
     public sealed class BltColor {
+        public static IReadOnlyList<string> Modifiers { get; } = new string[] {
+            "lightest ", "lighter ", "light ", "", "dark ", "darker ", "darkest "
+        };
         public static IReadOnlyList<string> Names { get; } = new string[]{
 "alice_blue",
 "alizarin",
