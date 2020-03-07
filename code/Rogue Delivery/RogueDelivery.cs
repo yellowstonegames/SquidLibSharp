@@ -86,7 +86,18 @@ namespace RogueDelivery {
             width = windowWidth;
             height = windowHeight - logHeight - statusHeight - 2;
 
-            map = ArrayTools.Create<char>(' ', width, height);
+            map = ArrayTools.Create<char>('.', width, height);
+
+            for(int x = 0; x < width; x++) {
+                for(int y = 0; y < height; y++) {
+                    byte blue = BlueNoise.GetSeeded(x, y, 1234567u);
+                    if(blue < 7) {
+                        map[x][y] = '∗';
+                    }
+                    else if (blue < 30)
+                        map[x][y] = '"';
+                }
+            }
 
             wagon.Location = Coord.Get(width / 2, height / 2);
             player.Location = Coord.Get(wagon.Location.X - wagon.Width, wagon.Location.Y - wagon.Height); ;
@@ -119,7 +130,7 @@ namespace RogueDelivery {
                 $"font: Iosevka.ttf, size=9x21, hinting=autohint"
                 );
             BltColor.LoadAurora();
-            Terminal.Color(Terminal.ColorFromName(rng.RandomElement(BltColor.AuroraNames)));
+            Terminal.Color(rng.RandomElement(BltColor.AuroraNames));
             Terminal.Refresh();
         }
 
@@ -159,6 +170,7 @@ namespace RogueDelivery {
                     Terminal.Refresh();
                 }
             }
+            Terminal.Close();
         }
 
         private void MovePlayer(Direction direction) {
@@ -179,14 +191,14 @@ namespace RogueDelivery {
         private void DrawMap() {
             Terminal.Clear();
 
-            Terminal.Color(Color.LightSlateGray);
+            Terminal.Color("patina");
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
                     Terminal.Put(x, y, map[x][y]);
                 }
             }
 
-            Terminal.Color(Terminal.ColorFromName(rng.RandomElement(BltColor.AuroraNames)));
+            Terminal.Color(rng.RandomElement(BltColor.AuroraNames));
             PaintBorder();
 
             Coord drawingOffset = wagon.DrawingOffset();

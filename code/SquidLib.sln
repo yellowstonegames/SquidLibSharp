@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "Demo\Demo.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rogue Delivery", "Rogue Delivery\Rogue Delivery.csproj", "{DDF55858-2A59-42DA-A393-1339CDCF1104}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BearLibTerminal Integration", "BearLibTerminal Integration\BearLibTerminal Integration.csproj", "{2F780FCD-2582-45CD-B045-94CB0726D88C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BearLibTerminalIntegration", "BearLibTerminalIntegration\BearLibTerminalIntegration.csproj", "{2F780FCD-2582-45CD-B045-94CB0726D88C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{36CAD530-7978-4065-B1A5-378C933CE3EA} = {36CAD530-7978-4065-B1A5-378C933CE3EA}
 	EndProjectSection

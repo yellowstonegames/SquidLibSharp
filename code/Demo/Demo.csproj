@@ -91,9 +91,9 @@
     <Analyzer Include="..\packages\Microsoft.NetFramework.Analyzers.2.9.8\analyzers\dotnet\cs\Microsoft.NetFramework.CSharp.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BearLibTerminal Integration\BearLibTerminal Integration.csproj">
+    <ProjectReference Include="..\BearLibTerminalIntegration\BearLibTerminalIntegration.csproj">
       <Project>{2F780FCD-2582-45CD-B045-94CB0726D88C}</Project>
-      <Name>BearLibTerminal Integration</Name>
+      <Name>BearLibTerminalIntegration</Name>
     </ProjectReference>
     <ProjectReference Include="..\SquidLib\SquidLib.csproj">
       <Project>{36CAD530-7978-4065-B1A5-378C933CE3EA}</Project>

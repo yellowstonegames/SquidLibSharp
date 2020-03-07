@@ -159,7 +159,7 @@ namespace Demo {
             noise.SetFractalOctaves(3);
             noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
             noise.SetFrequency(0.5);
-            Color lightPurple = Terminal.ColorFromName("greyhound"), deepPurple = Terminal.ColorFromName("purple_freesia");
+            Color lightPurple = Terminal.ColorFromName("platinum"), deepPurple = Terminal.ColorFromName("purple_freesia");
             float lightHue = lightPurple.GetHue() / 360f, deepHue = deepPurple.GetHue() / 360f, lightSat = lightPurple.GetSaturation(), deepSat = deepPurple.GetSaturation(),
                 lightBright = lightPurple.GetBrightness(), deepBright = deepPurple.GetBrightness();
             //DateTime current = DateTime.Now, start = DateTime.Now;
@@ -195,7 +195,7 @@ namespace Demo {
                                 //int argb = byHue[(x * 4 + y) % 255];
                                 //Terminal.Color(argb);
                                 //Terminal.BkColor((0xFF << 24) | (argb & 0xFEFEFE) >> 1);
-                                Terminal.Put(x, y, LineKit.ToHeavy[lined[x, y]]);
+                                Terminal.Put(x, y, lined[x, y]);
                             }
 
                         }

@@ -10,7 +10,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{DDF55858-2A59-42DA-A393-1339CDCF1104}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>RogueDelivery</RootNamespace>
     <AssemblyName>Rogue Delivery</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -80,6 +80,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -104,9 +105,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BearLibTerminal Integration\BearLibTerminal Integration.csproj">
+    <ProjectReference Include="..\BearLibTerminalIntegration\BearLibTerminalIntegration.csproj">
       <Project>{2F780FCD-2582-45CD-B045-94CB0726D88C}</Project>
-      <Name>BearLibTerminal Integration</Name>
+      <Name>BearLibTerminalIntegration</Name>
     </ProjectReference>
     <ProjectReference Include="..\SquidLib\SquidLib.csproj">
       <Project>{36CAD530-7978-4065-B1A5-378C933CE3EA}</Project>
