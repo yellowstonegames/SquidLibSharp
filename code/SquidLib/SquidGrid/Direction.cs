@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using SquidLib.SquidMath;
 
 namespace SquidLib.SquidGrid {
@@ -23,19 +20,20 @@ namespace SquidLib.SquidGrid {
 
     public static class DirectionExtensions {
         private static IndexedDictionary<Direction, Coord> dictionary = new IndexedDictionary<Direction, Coord>() {
-            {Direction.Up, Coord.Get(0, -1) },
-            {Direction.Down, Coord.Get(0, 1) },
-            {Direction.Left, Coord.Get(-1, 0) },
-            {Direction.Right, Coord.Get(1, 0) },
-            {Direction.UpLeft, Coord.Get(-1, -1) },
-            {Direction.UpRight, Coord.Get(1, -1) },
-            {Direction.DownLeft, Coord.Get(-1, 1) },
-            {Direction.DownRight, Coord.Get(1, 1) },
-            {Direction.None, Coord.Get(0, 0) }
+            {Direction.Up, SquidMath.Coord.Get(0, -1) },
+            {Direction.Down, SquidMath.Coord.Get(0, 1) },
+            {Direction.Left, SquidMath.Coord.Get(-1, 0) },
+            {Direction.Right, SquidMath.Coord.Get(1, 0) },
+            {Direction.UpLeft, SquidMath.Coord.Get(-1, -1) },
+            {Direction.UpRight, SquidMath.Coord.Get(1, -1) },
+            {Direction.DownLeft, SquidMath.Coord.Get(-1, 1) },
+            {Direction.DownRight, SquidMath.Coord.Get(1, 1) },
+            {Direction.None, SquidMath.Coord.Get(0, 0) }
         };
 
         public static int DeltaX(this Direction d) => dictionary[d].X;
         public static int DeltaY(this Direction d) => dictionary[d].Y;
+        public static Coord Coord(this Direction d) => dictionary[d];
 
         /**
      * An array which holds only the four cardinal directions.

@@ -31,6 +31,11 @@ namespace SquidLib.SquidMath {
             }
         }
 
+        public static Coord operator +(Coord left, Coord right) => Get(left.X + right.X, left.Y + right.Y);
+        public static Coord Add(Coord left, Coord right) => left + right;
+        public static Coord operator -(Coord left, Coord right) => Get(left.X - right.X, left.Y - right.Y);
+        public static Coord Subtract(Coord left, Coord right) => left - right;
+
         public static bool operator ==(Coord left, Coord right) => left.Equals(right);
 
         public static bool operator !=(Coord left, Coord right) => !(left == right);
@@ -72,6 +77,12 @@ namespace SquidLib.SquidMath {
                 return -1934021721 * (-1412856951 * (-776648141 * X + Y) + Z);
             }
         }
+
+        public static Coord3D operator +(Coord3D left, Coord3D right) => Get(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
+        public static Coord3D Add(Coord3D left, Coord3D right) => left + right;
+        public static Coord3D operator -(Coord3D left, Coord3D right) => Get(left.X - right.X, left.Y - right.Y, left.Z + right.Z);
+        public static Coord3D Subtract(Coord3D left, Coord3D right) => left - right;
+
 
         public static bool operator ==(Coord3D left, Coord3D right) => left.Equals(right);
 
