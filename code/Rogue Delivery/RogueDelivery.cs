@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using BearLib;
 using ColorHelper;
@@ -60,7 +61,7 @@ namespace RogueDelivery {
         }
 
         private RogueDelivery() {
-            rng = new RNG();
+            rng = new RNG(DateTime.Today.ToString(CultureInfo.InvariantCulture)); // Different seed every day, but the same seed on that day, for testing.
 
             width = windowWidth;
             height = windowHeight - logHeight - statusHeight - 4;
@@ -108,7 +109,7 @@ namespace RogueDelivery {
             Terminal.Open();
             Terminal.Set(
                 $"window: title='Rogue Delivery', size={windowWidth}x{windowHeight};" +
-                $"output: vsync=false;" +
+                $"output: vsync=true;" +
                 $"font: Iosevka.ttf, size=9x21, hinting=autohint"
                 );
             BltColor.LoadAurora();
@@ -228,9 +229,7 @@ namespace RogueDelivery {
         private static void Put(Coord coord, char c) => Terminal.Put(coord.X, coord.Y, c);
 
         private static int Put(int x, int y, string s) {
-            for (int i = 0; i < s.Length; i++) {
-                Terminal.Put(x + i, y, s[i]);
-            }
+            Terminal.Print(x, y, s);
             return x + s.Length;
         }
 

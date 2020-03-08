@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RogueDelivery {
     public static class KeyValuePairExtansions {
-        public static void Deconstruct<K, V>(this KeyValuePair<K, V> kvp, out K key, out V value) {
+        public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> kvp, out TKey key, out TValue value) {
             key = kvp.Key;
             value = kvp.Value;
         }
