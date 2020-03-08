@@ -3,18 +3,39 @@ using SquidLib.SquidMath;
 
 namespace SquidLib.SquidGrid {
 
-    /**
-     * Represents the eight grid directions and the deltaX, deltaY values associated
-     * with those directions.
-     *
-     * The grid referenced has x positive to the right and y positive downwards on
-     * screen.
-     *
-     * @author Eben Howard - http://squidpony.com - howard@squidpony.com
-     */
+    /// <summary>
+    /// Represents the eight grid directions and the deltaX, deltaY values associated with those directions.
+    ///
+    /// The grid referenced has x positive to the right and y positive downwards on screen.
+    /// </summary>
     public enum Direction {
 
         Up, Down, Left, Right, UpLeft, UpRight, DownLeft, DownRight, None
+
+    }
+
+    public static class DirectionTools {
+
+        ///<summary>An array which holds only the four cardinal directions.</summary>
+        public static readonly Direction[] Cardinals = { Direction.Up, Direction.Down, Direction.Left, Direction.Right };
+
+        ///<summary>An array which holds only the four cardinal directions in clockwise order.</summary>
+        public static readonly Direction[] CardinalsClockwise = { Direction.Up, Direction.Right, Direction.Down, Direction.Left };
+
+        ///<summary>An array which holds only the four cardinal directions in counter-clockwise order.</summary>
+        public static readonly Direction[] CardinalsCounterclockwise = { Direction.Up, Direction.Left, Direction.Down, Direction.Right };
+
+        ///<summary>An array which holds only the four diagonal directions.</summary>
+        public static readonly Direction[] Diagonals = { Direction.UpLeft, Direction.UpRight, Direction.DownLeft, Direction.DownRight };
+
+        ///<summary>An array which holds all eight OUTWARDS directions.</summary>
+        public static readonly Direction[] Octals = { Direction.Up, Direction.Down, Direction.Left, Direction.Right, Direction.UpLeft, Direction.UpRight, Direction.DownLeft, Direction.DownRight };
+
+        ///<summary>An array which holds all eight OUTWARDS directions in clockwise order.</summary>
+        public static readonly Direction[] OctalsClockwise = { Direction.Up, Direction.UpRight, Direction.Right, Direction.DownRight, Direction.Down, Direction.DownLeft, Direction.Left, Direction.UpLeft };
+
+        ///<summary>An array which holds all eight OUTWARDS directions in counter-clockwise order.</summary>
+        public static readonly Direction[] OctalsCounterclockwise = { Direction.Up, Direction.UpLeft, Direction.Left, Direction.DownLeft, Direction.Down, Direction.DownRight, Direction.Right, Direction.UpRight };
 
     }
 
@@ -35,49 +56,17 @@ namespace SquidLib.SquidGrid {
         public static int DeltaY(this Direction d) => dictionary[d].Y;
         public static Coord Coord(this Direction d) => dictionary[d];
 
-        /**
-     * An array which holds only the four cardinal directions.
-     */
-        public static readonly Direction[] Cardinals = { Direction.Up, Direction.Down, Direction.Left, Direction.Right };
-        /**
-         * An array which holds only the four cardinal directions in clockwise order.
-         */
-        public static readonly Direction[] CardinalsClockwise = { Direction.Up, Direction.Right, Direction.Down, Direction.Left };
-        /**
-         * An array which holds only the four cardinal directions in counter-clockwise order.
-         */
-        public static readonly Direction[] CardinalsCounterclockwise = { Direction.Up, Direction.Left, Direction.Down, Direction.Right };
-        /**
-         * An array which holds only the four diagonal directions.
-         */
-        public static readonly Direction[] Diagonals = { Direction.UpLeft, Direction.UpRight, Direction.DownLeft, Direction.DownRight };
-        /**
-         * An array which holds all eight OUTWARDS directions.
-         */
-        public static readonly Direction[] Octals = { Direction.Up, Direction.Down, Direction.Left, Direction.Right, Direction.UpLeft, Direction.UpRight, Direction.DownLeft, Direction.DownRight };
-        /**
-         * An array which holds all eight OUTWARDS directions in clockwise order.
-         */
-        public static readonly Direction[] OctalsClockwise = { Direction.Up, Direction.UpRight, Direction.Right, Direction.DownRight, Direction.Down, Direction.DownLeft, Direction.Left, Direction.UpLeft };
-        /**
-         * An array which holds all eight OUTWARDS directions in counter-clockwise order.
-         */
-        public static readonly Direction[] OctalsCounterclockwise = { Direction.Up, Direction.UpLeft, Direction.Left, Direction.DownLeft, Direction.Down, Direction.DownRight, Direction.Right, Direction.UpRight };
-
-
-        /**
-         * Returns the direction that most closely matches the input.
-         *
-         * This can be used to get the primary magnitude intercardinal direction
-         * from an origin point to an event point, such as a mouse click on a grid.
-         *
-         * If the point given is exactly on a boundary between directions then the
-         * direction clockwise is returned.
-         *
-         * @param x
-         * @param y
-         * @return
-         */
+        /// <summary>
+        /// Returns the direction that most closely matches the input.
+        ///
+        /// This can be used to get the primary magnitude intercardinal direction
+        /// from an origin point to an event point, such as a mouse click on a grid.
+        ///
+        /// If the point given is exactly on a boundary between directions then the direction clockwise is returned.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public static Direction GetOctalDirection(int x, int y) {
             if (x == 0 && y == 0) {
                 return Direction.None;
