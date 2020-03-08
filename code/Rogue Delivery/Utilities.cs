@@ -35,9 +35,9 @@ namespace RogueDelivery {
         "⡿⢿⣟⣯⣷⣻⣽⣾", "⣿"
     };
 
-        public static char RandomBraille(long seed, int dots) {
+        public static char RandomBraille(ulong seed, int dots) {
             string s = BrailleByDots[dots % 9];
-            return Rng.RandomElement(s);
+            return s[RNG.DetermineBounded(seed, s.Length)];
         }
 
         public static char BrailleFor(ICollection<Coord> coords) {

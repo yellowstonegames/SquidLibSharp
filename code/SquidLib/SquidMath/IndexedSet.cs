@@ -2,10 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using SquidLib.SquidGrid;
 
 namespace SquidLib.SquidMath {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "Current name indicates correct level of specificity.")]
-    public class IndexedSet<T> : ISet<T>, IEquatable<IndexedSet<T>>, IOrdered<T> {
+    public class IndexedSet<T> : ICollection<T>, IEnumerable<T>, IEnumerable, IReadOnlyCollection<T>, ISet<T>, IEquatable<IndexedSet<T>>, IOrdered<T> {
         public HashSet<T> Set { get; private set; }
         public List<T> Ordering { get; private set; }
 
@@ -18,6 +19,18 @@ namespace SquidLib.SquidMath {
             if (collection is IEnumerable<T>) {// not null check
                 foreach (var t in collection)
                     Add(t);
+            }
+        }
+
+        public void ResetTo(IEnumerable<T> sequence) {
+            Clear();
+            AddAll(sequence);
+        }
+        public void AddAll(IEnumerable<T> sequence) {
+            if (sequence != null) {
+                foreach (T item in sequence) {
+                    Add(item);
+                }
             }
         }
 
