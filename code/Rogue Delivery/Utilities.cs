@@ -17,9 +17,7 @@ namespace RogueDelivery {
         public static readonly long Seed = 0xBEEFEEDADBA77L;
         public static readonly RNG Rng = new RNG(Seed);
 
-        public static char randomBraille() {
-            return (char)(0x2801 + Rng.NextInt(0x2900 - 2801));
-        }
+        public static char RandomBraille() => (char)(0x2801 + Rng.NextInt(0x2900 - 2801));
 
         public static readonly string Sparkles = "#$%&";
         public static readonly string Twinkles = "+※+¤";

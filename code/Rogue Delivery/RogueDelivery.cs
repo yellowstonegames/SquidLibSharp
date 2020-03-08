@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Media;
 using BearLib;
 using ColorHelper;
 using SquidLib;
@@ -24,12 +23,13 @@ namespace RogueDelivery {
 
         private Dictionary<Coord, char> borders = new Dictionary<Coord, char>();
 
-        private char[][] map;
-        private Physical playerPhysical;
-
         private ControlType controlType = ControlType.OnFoot;
         private Mob player;
+        private Physical playerPhysical;
         private BigMob wagon;
+
+        private List<BigMob> bigMobs = new List<BigMob>();
+        private List<Mob> littleMobs = new List<Mob>();
 
         static void Main() {
             var rd = new RogueDelivery(); // start up the primary system
@@ -37,7 +37,7 @@ namespace RogueDelivery {
         }
 
         private void InitObjects() {
-            player = new Mob { Rep = new Representation { Glyph = '@', Color = Color.Red } };
+            player = new Mob { Rep = new Representation { Glyph = '@', Color = Color.Aquamarine } };
             playerPhysical = new Physical() {
                 Name = "Rogue",
                 Class = "Delivery Driver",
@@ -48,59 +48,41 @@ namespace RogueDelivery {
                 XP = 0
             };
 
-            wagon = new BigMob {
-                DefaultColor = Color.SandyBrown
-            };
-            wagon.SetGlyphs(Direction.Up, 1, 2, new string[] {
-                " Ŏ ",
-                "∣∣∣",
-                "⍬∣⍬",
-                "∣∣∣"
-            });
-            wagon.SetGlyphs(Direction.Down, 1, 1, new string[] {
-                "∣∣∣",
-                "⍬∣⍬",
-                "∣∣∣",
-                " Ŏ "
-            });
-            wagon.SetGlyphs(Direction.Right, 1, 1, new string[] {
-                "-⍬- ",
-                "---Ŏ",
-                "-⍬- "
-            });
-            wagon.SetGlyphs(Direction.Left, 2, 1, new string[] {
-                " -⍬-",
-                "Ŏ---",
-                " -⍬-"
-            });
-            wagon.Reps[Direction.Up].Tiles[Coord.Get(1, 0)].Color = Color.White;
-            wagon.Reps[Direction.Down].Tiles[Coord.Get(1, 3)].Color = Color.White;
-            wagon.Reps[Direction.Right].Tiles[Coord.Get(3, 1)].Color = Color.White;
-            wagon.Reps[Direction.Left].Tiles[Coord.Get(0, 1)].Color = Color.White;
+            wagon = new BigMob(Prototype.Wagon);
+            bigMobs.Add(wagon);
+
+            for (int i = 0; i < 20; i++) {
+                bigMobs.Add(new BigMob(Prototype.Log) {
+                    Location = Coord.Get(rng.NextInt(width), rng.NextInt(height)),
+                    Facing = rng.RandomElement(DirectionTools.Cardinals)
+                });
+            }
         }
 
         private RogueDelivery() {
             rng = new RNG();
-            InitObjects();
 
             width = windowWidth;
-            height = windowHeight - logHeight - statusHeight - 2;
+            height = windowHeight - logHeight - statusHeight - 4;
 
-            map = ArrayTools.Create<char>('.', width, height);
+            InitObjects();
 
             for(int x = 0; x < width; x++) {
                 for(int y = 0; y < height; y++) {
                     byte blue = BlueNoise.GetSeeded(x, y, 1234567u);
-                    if(blue < 7) {
-                        map[x][y] = '∗';
+                    if (blue < 7) {
+                        littleMobs.Add(new Mob(Prototype.Pebble) { Location = Coord.Get(x,y) });
+                    } else if (blue < 30) {
+                        littleMobs.Add(new Mob(Prototype.Bush) { Location = Coord.Get(x, y) });
+                    } else {
+                        littleMobs.Add(new Mob(Prototype.Grass) { Location = Coord.Get(x, y) });
                     }
-                    else if (blue < 30)
-                        map[x][y] = '"';
                 }
             }
 
+            // TODO - check that space is clear enough for them to get placed
             wagon.Location = Coord.Get(width / 2, height / 2);
-            player.Location = Coord.Get(wagon.Location.X - wagon.Width, wagon.Location.Y - wagon.Height); ;
+            player.Location = Coord.Get(wagon.Location.X - 4, wagon.Location.Y); ;
 
             // init display style
             for (int x = 1; x < windowWidth - 1; x++) {
@@ -191,20 +173,12 @@ namespace RogueDelivery {
         private void DrawMap() {
             Terminal.Clear();
 
-            Terminal.Color("patina");
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    Terminal.Put(x, y, map[x][y]);
-                }
+            foreach (var mob in littleMobs) {
+                PutOnMap(mob);
             }
 
-            Terminal.Color(rng.RandomElement(BltColor.AuroraNames));
-            PaintBorder();
-
-            Coord drawingOffset = wagon.DrawingOffset();
-            foreach (var rep in wagon.Reps[wagon.Facing].Tiles) {
-                Terminal.Color(rep.Value.Color);
-                PutOnMap(drawingOffset + rep.Key, rep.Value.Glyph);
+            foreach (BigMob bigMob in bigMobs) {
+                PutOnMap(bigMob);
             }
 
             switch (controlType) {
@@ -216,6 +190,9 @@ namespace RogueDelivery {
                     PutOnMap(player);
                     break;
             }
+
+            Terminal.Color(rng.RandomElement(BltColor.AuroraNames));
+            PaintBorder();
 
             //Terminal.Color(playerColor);
             //PutOnMap(playerLocation, playerGlyph);
@@ -260,6 +237,14 @@ namespace RogueDelivery {
         private void PutOnMap(Mob mob) {
             Terminal.Color(mob.Rep.Color);
             PutOnMap(mob.Location, mob.Rep.Glyph);
+        }
+
+        private void PutOnMap(BigMob bigMob) {
+            Coord drawingOffset = bigMob.DrawingOffset();
+            foreach (var (coord, rep) in bigMob.Reps[bigMob.Facing].Tiles) {
+                Terminal.Color(rep.Color);
+                PutOnMap(drawingOffset + coord, rep.Glyph);
+            }
         }
 
         /// <summary>
