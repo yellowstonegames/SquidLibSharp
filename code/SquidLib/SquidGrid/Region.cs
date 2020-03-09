@@ -15,7 +15,13 @@ namespace SquidLib.SquidGrid {
         }
         public Region() : this(80, 24) {
         }
-
+        public Region(Region other) : base(other) {
+            if (other is Region) {
+                Width = other.Width;
+                Height = other.Height;
+            } else throw new ArgumentNullException(nameof(other));
+        }
+        public Region Copy() => new Region(this);
         public static Region FromChars(Grid<char> grid, char match) {
             if (grid == null)
                 return new Region(1, 1);
@@ -23,6 +29,94 @@ namespace SquidLib.SquidGrid {
             for (int x = 0; x < grid.Width; x++) {
                 for (int y = 0; y < grid.Height; y++) {
                     if (grid[x, y] == match)
+                        region.Add(Coord.Get(x, y));
+                }
+            }
+            return region;
+        }
+        public static Region FromGreater<TComp>(Grid<IComparable<TComp>> grid, TComp lowerBound) {
+            if (grid == null)
+                return new Region(1, 1);
+            Region region = new Region(grid.Width, grid.Height);
+            for (int x = 0; x < grid.Width; x++) {
+                for (int y = 0; y < grid.Height; y++) {
+                    if (grid[x, y].CompareTo(lowerBound) > 0)
+                        region.Add(Coord.Get(x, y));
+                }
+            }
+            return region;
+        }
+        public static Region FromAtLeast<TComp>(Grid<IComparable<TComp>> grid, TComp lowerBound) {
+            if (grid == null)
+                return new Region(1, 1);
+            Region region = new Region(grid.Width, grid.Height);
+            for (int x = 0; x < grid.Width; x++) {
+                for (int y = 0; y < grid.Height; y++) {
+                    if (grid[x, y].CompareTo(lowerBound) >= 0)
+                        region.Add(Coord.Get(x, y));
+                }
+            }
+            return region;
+        }
+        public static Region FromLess<TComp>(Grid<IComparable<TComp>> grid, TComp upperBound) {
+            if (grid == null)
+                return new Region(1, 1);
+            Region region = new Region(grid.Width, grid.Height);
+            for (int x = 0; x < grid.Width; x++) {
+                for (int y = 0; y < grid.Height; y++) {
+                    if (grid[x, y].CompareTo(upperBound) < 0)
+                        region.Add(Coord.Get(x, y));
+                }
+            }
+            return region;
+        }
+        public static Region FromAtMost<TComp>(Grid<IComparable<TComp>> grid, TComp upperBound) {
+            if (grid == null)
+                return new Region(1, 1);
+            Region region = new Region(grid.Width, grid.Height);
+            for (int x = 0; x < grid.Width; x++) {
+                for (int y = 0; y < grid.Height; y++) {
+                    if (grid[x, y].CompareTo(upperBound) <= 0)
+                        region.Add(Coord.Get(x, y));
+                }
+            }
+            return region;
+        }
+        /// <summary>
+        /// Creates a Region filled with the items from a Grid that are greater than lowerBound and less than upperBound.
+        /// </summary>
+        /// <typeparam name="TComp">A type that implements IComparable to itself, like int or double.</typeparam>
+        /// <param name="grid">A Grid of TComp items; its Width and Height will be used for the result.</param>
+        /// <param name="lowerBound">The lower exclusive bound for TComp items.</param>
+        /// <param name="upperBound">The upper exclusive bound for TComp items.</param>
+        /// <returns>A new Region with the same Width and Height as grid, and contents drawn from it.</returns>
+        public static Region FromWithin<TComp>(Grid<IComparable<TComp>> grid, TComp lowerBound, TComp upperBound) {
+            if (grid == null)
+                return new Region(1, 1);
+            Region region = new Region(grid.Width, grid.Height);
+            for (int x = 0; x < grid.Width; x++) {
+                for (int y = 0; y < grid.Height; y++) {
+                    if (grid[x, y].CompareTo(lowerBound) > 0 && grid[x, y].CompareTo(upperBound) < 0)
+                        region.Add(Coord.Get(x, y));
+                }
+            }
+            return region;
+        }
+        /// <summary>
+        /// Creates a Region filled with the items from a Grid that are greater than or equal to lowerBound and less than or equal to upperBound.
+        /// </summary>
+        /// <typeparam name="TComp">A type that implements IComparable to itself, like int or double.</typeparam>
+        /// <param name="grid">A Grid of TComp items; its Width and Height will be used for the result.</param>
+        /// <param name="lowerBound">The lower inclusive bound for TComp items.</param>
+        /// <param name="upperBound">The upper inclusive bound for TComp items.</param>
+        /// <returns>A new Region with the same Width and Height as grid, and contents drawn from it.</returns>
+        public static Region FromBetween<TComp>(Grid<IComparable<TComp>> grid, TComp lowerBound, TComp upperBound) {
+            if (grid == null)
+                return new Region(1, 1);
+            Region region = new Region(grid.Width, grid.Height);
+            for (int x = 0; x < grid.Width; x++) {
+                for (int y = 0; y < grid.Height; y++) {
+                    if (grid[x, y].CompareTo(lowerBound) >= 0 && grid[x, y].CompareTo(upperBound) <= 0)
                         region.Add(Coord.Get(x, y));
                 }
             }
