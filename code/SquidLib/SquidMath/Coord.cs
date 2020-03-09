@@ -2,9 +2,10 @@
 
 namespace SquidLib.SquidMath {
     //TODO: more methods
-    public struct Coord : IEquatable<Coord> {
-        public int X { get; private set; }
-        public int Y { get; private set; }
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "Can't use C# 8.0, so no readonly properties.")]
+    public readonly struct Coord : IEquatable<Coord> {
+        public readonly int X;
+        public readonly int Y;
 
         public Coord(int x, int y) {
             X = x;
