@@ -466,26 +466,6 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0 ^ seed >> 32);
             return seed - (seed >> 31) + (seed << 33);
         }
-
-        public ulong Hash64Alt(string data) {
-            ulong seed = this.seed;
-            if (data is null) return seed;
-            int len = data.Length;
-            seed += (ulong)len;
-            for (int i = 3; i < len; i += 4) {
-                seed = mum(
-                        mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
-                        mum(data[i - 1] ^ b3, data[i] ^ b4));
-            }
-            switch (len & 3) {
-                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
-                case 1: seed = mum(seed ^ b3, b4 ^ data[len - 1]); break;
-                case 2: seed = mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
-                case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
-            }
-            seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
-            return seed - (seed >> 31) + (seed << 33);
-        }
         /// <summary>
         /// The hash Java's String.hashCode() uses, for comparison.
         /// </summary>
@@ -508,7 +488,7 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
         /// </summary>
         /// <param name="data">Any string.</param>
         /// <returns>A 64-bit ulong hash code of data.</returns>
-        public static ulong PhiHash(string data) {
+        public static ulong PhiHash64(string data) {
             if (data == null) return 0;
             unchecked {
                 //ulong h = 0xC6BC279692B5C323UL;
@@ -540,5 +520,22 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
                 return h;
             }
         }
+        public static ulong PhiHashSeeded64(ulong seed, string data) {
+            if (data == null) return 0;
+            unchecked {
+                //ulong h = 0xC6BC279692B5C323UL;
+                ulong h1 = 0x4BFD899B8EB6C433UL;
+                ulong h2 = 0x92B5C323U;
+                ulong c;
+                for (int i = 0; i < data.Length; i++) {
+                    c = data[i] ^ seed;
+                    h1 = (h1 ^ c) * 0x9E3779B9B68B5351UL;
+                    //h1 = (h1 ^ h1 >> 32 ^ c) * 0x9E3779B9B68B5351UL;
+                    h2 = (h2 ^ c) * 0x7F4A7C15U;
+                }
+                return h1 << 32 | (h2 & 0xFFFFFFFFUL);
+            }
+        }
+
     }
 }
