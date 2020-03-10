@@ -287,7 +287,7 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             int size = data.Length;
             ulong result = b2 + RNG.Randomize((ulong)size);
             for (int i = 0; i < size; i++) {
-                result ^= RNG.Randomize(result + data[i]);
+                result = RNG.Determine(data[i] + result);
             }
             return result;
         }
