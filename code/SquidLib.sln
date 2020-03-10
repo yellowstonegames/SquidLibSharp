@@ -14,6 +14,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BearLibTerminalIntegration"
 		{36CAD530-7978-4065-B1A5-378C933CE3EA} = {36CAD530-7978-4065-B1A5-378C933CE3EA}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{E01832D1-6D30-43F2-A8A0-88C8C11007C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,6 +108,30 @@ Global
 		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Rogue Delivery Release|Any CPU.Build.0 = Release|x64
 		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Rogue Delivery Release|x64.ActiveCfg = Release|x64
 		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Rogue Delivery Release|x64.Build.0 = Release|x64
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Debug|x64.Build.0 = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Debug|x64.ActiveCfg = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Debug|x64.Build.0 = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Release|Any CPU.Build.0 = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Release|x64.ActiveCfg = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Release|x64.Build.0 = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Release|x64.ActiveCfg = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Release|x64.Build.0 = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Debug|x64.ActiveCfg = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Debug|x64.Build.0 = Debug|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Release|Any CPU.Build.0 = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Release|x64.ActiveCfg = Release|Any CPU
+		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
