@@ -82,5 +82,30 @@ namespace SquidLib.SquidGrid {
         /// <returns>The row-major 1D T array this uses internally.</returns>
         public T[] RawData() => raw;
     }
-
+    public static class GridExtensions {
+        /// <summary>
+        /// Given a "rectangular string" with some form of newlines separating equal-length rows, this creates a Grid of char with its contents.
+        /// </summary>
+        /// <param name="data">A string that should have equal-length rows separated by newlines (Unix or Win32 conventions are both permitted).</param>
+        /// <returns>A Grid of char containing the contents of this string.</returns>
+        public static Grid<char> ToGrid(this string data) {
+            if (data is null) return null;
+            data = data.Replace("\r\n", "\n");
+            int width = data.IndexOf('\n');
+            int height = 1;
+            if (width == -1) {
+                width = data.Length;
+                height = 0;
+            }
+            int idx = width;
+            while(idx != -1) {
+                idx = data.IndexOf('\n', idx + 1);
+                height++;
+            }
+            Grid<char> grid = new Grid<char>(width, height, '#');
+            char[] raw = grid.RawData();
+            data.Replace("\n", "").CopyTo(0, raw, 0, width * height);
+            return grid;
+        }
+    }
 }
