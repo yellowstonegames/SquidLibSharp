@@ -294,18 +294,20 @@ namespace Demo {
             DateTime current = DateTime.Now;
             int frames = 0;
 
-            FastNoise noise = new FastNoise(), warp = new FastNoise(12345);
+            FastNoise noise = new FastNoise(543210);
             noise.SetFrequency(0.03125 * 0.5);
             noise.SetNoiseType(FastNoise.NoiseType.Simplex);
-            warp.SetFrequency(0.03125 * 2.0);
-            warp.SetNoiseType(FastNoise.NoiseType.CubicFractal);
-            warp.SetFractalOctaves(2);
-            warp.SetFractalType(FastNoise.FractalType.Billow);
-            warp.SetFractalLacunarity(2);
-            warp.SetFractalGain(4);
 
-            int time = 0;
-
+//            FastNoise warp = new FastNoise(12345);
+//            warp.SetFrequency(0.03125 * 2.0);
+//            warp.SetNoiseType(FastNoise.NoiseType.CubicFractal);
+//            warp.SetFractalOctaves(2);
+//            warp.SetFractalType(FastNoise.FractalType.Billow);
+//            warp.SetFractalLacunarity(2);
+//            warp.SetFractalGain(4);
+//
+            double time = 0;
+            double result;
             using (var window = new NoiseWindow()) {
                 window.VSync = VSyncMode.Off;
                 while (window.WindowUpdate()) {
@@ -313,11 +315,16 @@ namespace Demo {
                         window.Close();
                         break;
                     }
-                    time++;
+                    time += 0.375;
                     for (int i = 0, y = 0; y < window.Height; y++) {
                         for (int x = 0; x < window.Width; x++) {
-                            //window.colors[i++] = (byte)(noise.GetSimplex(x + y + time, y - x - time, time - x - y, x - y - time) * 125 + 128);
-                            window.colors[i++] = (byte)(noise.GetSimplex(x, y, 0.375 * time, warp.GetNoise(-x, -y, -0.5 * time) * 200) * 125 + 128);
+                            result = noise.GetSimplex(time, time * -0.3333333333333333 + y * 0.9428090415820634, time * -0.3333333333333333 + y * -0.4714045207910317 + x * 0.816496580927726, time * -0.3333333333333333 + y * -0.4714045207910317 + x * -0.816496580927726);
+                            //result = noise.GetSimplex(x + y + time, y - x - time, time - x - y, x - y - time);
+                            //                            result = noise.GetSimplex(x, y, time);
+                            if (result < -1.0) Console.WriteLine($"Result too low! {result}");
+                            if (result > 1.0) Console.WriteLine($"Result too high! {result}");
+                            window.colors[i++] = (byte)(result * 125 + 128);
+                            //window.colors[i++] = (byte)(noise.GetSimplex(x, y, 0.375 * time, warp.GetNoise(-x, -y, -0.5 * time) * 200) * 125 + 128);
                         }
                     }
                     frames++;

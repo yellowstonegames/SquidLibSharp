@@ -668,8 +668,8 @@ namespace SquidLib.SquidMath {
 
         [MethodImpl(FN_INLINE)]
         private static double GradCoord4D(long seed, int x, int y, int z, int w, double xd, double yd, double zd, double wd) {
-            uint hash = Hash64(x, y, z, w, seed) << 2;
-            return xd * GRAD_2D[hash] + yd * GRAD_2D[hash + 1] + zd * GRAD_2D[hash + 2] + wd * GRAD_4D[hash + 3];
+            uint hash = Hash256(x, y, z, w, seed) & 0xFCU;
+            return xd * GRAD_4D[hash] + yd * GRAD_4D[hash + 1] + zd * GRAD_4D[hash + 2] + wd * GRAD_4D[hash + 3];
             //uint hash = Hash32(x, y, z, w, seed);
             //double a, b, c;            
             //switch (hash >> 3) {          // DEPENDING ON HIGH ORDER 2 BITS:
@@ -1360,7 +1360,7 @@ namespace SquidLib.SquidMath {
 
         private const double F3 = 1.0 / 3.0;
         private const double G3 = 1.0 / 6.0;
-        private const double G33 = G3 * 3 - 1;
+        private const double G33 = -0.5;
 
         private static double SingleSimplex(long seed, double x, double y, double z) {
             double t = (x + y + z) * F3;
@@ -1437,7 +1437,7 @@ namespace SquidLib.SquidMath {
                 n3 = t * t * GradCoord3D(seed, i + 1, j + 1, k + 1, x3, y3, z3);
             }
 
-            return 32 * (n0 + n1 + n2 + n3);
+            return 31.5 * (n0 + n1 + n2 + n3);
         }
 
         public double GetSimplexFractal(double x, double y) {
@@ -1563,6 +1563,26 @@ namespace SquidLib.SquidMath {
 
         private static readonly byte[] SIMPLEX_4D =
         {
+            0, 1, 3, 7, 0, 1, 7, 3,
+            0, 0, 0, 0, 0, 3, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 1, 3, 7, 0, 0, 3, 1, 7, 0, 0, 0, 0,
+            0, 7, 1, 3, 0, 7, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 1, 7, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 7, 0, 0, 0, 0,
+            1, 7, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            3, 7, 0, 1, 3, 7, 1, 0, 1, 0, 3, 7, 1, 0, 7, 3,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 7, 1,
+            0, 0, 0, 0, 3, 1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 7, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 1, 3, 7, 0, 3, 1,
+            0, 0, 0, 0, 7, 1, 3, 0, 3, 1, 0, 7, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 7, 1, 0, 3, 0, 0, 0, 0,
+            7, 3, 0, 1, 7, 3, 1, 0,
+    };
+
+        /*
         0,1,2,3,0,1,3,2,0,0,0,0,0,2,3,1,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,0,
         0,2,1,3,0,0,0,0,0,3,1,2,0,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,1,3,2,0,
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -1571,10 +1591,10 @@ namespace SquidLib.SquidMath {
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
         2,0,1,3,0,0,0,0,0,0,0,0,0,0,0,0,3,0,1,2,3,0,2,1,0,0,0,0,3,1,2,0,
         2,1,0,3,0,0,0,0,0,0,0,0,0,0,0,0,3,1,0,2,0,0,0,0,3,2,0,1,3,2,1,0
-    };
 
-        private const double F4 = (2.23606797 - 1.0) / 4.0;
-        private const double G4 = (5.0 - 2.23606797) / 20.0;
+         */
+        private const double F4 = (2.23606797 - 1.0) * 0.25;
+        private const double G4 = (5.0 - 2.23606797) * 0.05;
 
         private static double SingleSimplex(long seed, double x, double y, double z, double w) {
             double n0, n1, n2, n3, n4;
@@ -1606,18 +1626,18 @@ namespace SquidLib.SquidMath {
             int kp = SIMPLEX_4D[c + 2];
             int lp = SIMPLEX_4D[c + 3];
 
-            int i1 = ip == 3 ? 1 : 0;
-            int i2 = ip >= 2 ? 1 : 0;
-            int i3 = ip >= 1 ? 1 : 0;
-            int j1 = jp == 3 ? 1 : 0;
-            int j2 = jp >= 2 ? 1 : 0;
-            int j3 = jp >= 1 ? 1 : 0;
-            int k1 = kp == 3 ? 1 : 0;
-            int k2 = kp >= 2 ? 1 : 0;
-            int k3 = kp >= 1 ? 1 : 0;
-            int l1 = lp == 3 ? 1 : 0;
-            int l2 = lp >= 2 ? 1 : 0;
-            int l3 = lp >= 1 ? 1 : 0;
+            int i1 = ip >> 2;
+            int i2 = ip >> 1 & 1;
+            int i3 = ip & 1;
+            int j1 = jp >> 2;
+            int j2 = jp >> 1 & 1;
+            int j3 = jp & 1;
+            int k1 = kp >> 2;
+            int k2 = kp >> 1 & 1;
+            int k3 = kp & 1;
+            int l1 = lp >> 2;
+            int l2 = lp >> 1 & 1;
+            int l3 = lp & 1;
 
             double x1 = x0 - i1 + G4;
             double y1 = y0 - j1 + G4;
@@ -1667,7 +1687,7 @@ namespace SquidLib.SquidMath {
                 n4 = t * t * GradCoord4D(seed, i + 1, j + 1, k + 1, l + 1, x4, y4, z4, w4);
             }
 
-            return 14.75 * (n0 + n1 + n2 + n3 + n4);
+            return 14.7 * (n0 + n1 + n2 + n3 + n4);
         }
 
         // Cubic Noise
