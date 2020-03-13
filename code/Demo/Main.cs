@@ -315,7 +315,7 @@ namespace Demo {
                         window.Close();
                         break;
                     }
-                    time += 0.375;
+                    time += 0.6180339887498949;
                     for (int i = 0, y = 0; y < window.Height; y++) {
                         for (int x = 0; x < window.Width; x++) {
                             result = noise.GetSimplex(time, time * -0.3333333333333333 + y * 0.9428090415820634, time * -0.3333333333333333 + y * -0.4714045207910317 + x * 0.816496580927726, time * -0.3333333333333333 + y * -0.4714045207910317 + x * -0.816496580927726);

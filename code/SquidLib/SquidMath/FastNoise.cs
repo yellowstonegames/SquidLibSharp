@@ -1613,13 +1613,12 @@ namespace SquidLib.SquidMath {
             double z0 = z - Z0;
             double w0 = w - W0;
 
-            int c = (x0 > y0) ? 32 : 0;
-            c += (x0 > z0) ? 16 : 0;
-            c += (y0 > z0) ? 8 : 0;
-            c += (x0 > w0) ? 4 : 0;
-            c += (y0 > w0) ? 2 : 0;
-            c += (z0 > w0) ? 1 : 0;
-            c <<= 2;
+            int c = (x0 > y0) ? 128 : 0;
+            if (x0 > z0) c += 64;
+            if (y0 > z0) c += 32;
+            if (x0 > w0) c += 16;
+            if (y0 > w0) c += 8;
+            if (z0 > w0) c += 4;
 
             int ip = SIMPLEX_4D[c];
             int jp = SIMPLEX_4D[c + 1];
@@ -1656,38 +1655,38 @@ namespace SquidLib.SquidMath {
             double z4 = z0 - 1 + 4 * G4;
             double w4 = w0 - 1 + 4 * G4;
 
-            t = 0.62 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
+            t = 0.75 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
             if (t < 0) n0 = 0;
             else {
                 t *= t;
                 n0 = t * t * GradCoord4D(seed, i, j, k, l, x0, y0, z0, w0);
             }
-            t = 0.62 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
+            t = 0.75 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
             if (t < 0) n1 = 0;
             else {
                 t *= t;
                 n1 = t * t * GradCoord4D(seed, i + i1, j + j1, k + k1, l + l1, x1, y1, z1, w1);
             }
-            t = 0.62 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
+            t = 0.75 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
             if (t < 0) n2 = 0;
             else {
                 t *= t;
                 n2 = t * t * GradCoord4D(seed, i + i2, j + j2, k + k2, l + l2, x2, y2, z2, w2);
             }
-            t = 0.62 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
+            t = 0.75 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
             if (t < 0) n3 = 0;
             else {
                 t *= t;
                 n3 = t * t * GradCoord4D(seed, i + i3, j + j3, k + k3, l + l3, x3, y3, z3, w3);
             }
-            t = 0.62 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
+            t = 0.75 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
             if (t < 0) n4 = 0;
             else {
                 t *= t;
                 n4 = t * t * GradCoord4D(seed, i + 1, j + 1, k + 1, l + 1, x4, y4, z4, w4);
             }
 
-            return 14.7 * (n0 + n1 + n2 + n3 + n4);
+            return 4.9 * (n0 + n1 + n2 + n3 + n4);
         }
 
         // Cubic Noise
