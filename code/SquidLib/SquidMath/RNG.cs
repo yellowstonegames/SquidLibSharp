@@ -608,11 +608,16 @@ namespace SquidLib.SquidMath {
             return elements;
         }
         public T[] Shuffle<T>(T[] elements, T[] dest) {
-            if (elements is null || dest is null) {
+            if (elements is null) {
                 return null;
             }
-            int size = elements.Length, target = dest.Length;
-            if (size != target) return RandomPortion(elements, dest);
+            int size = elements.Length;
+            if (dest is null)
+                dest = new T[size];
+            else {
+                int target = dest.Length;
+                if (size != target) return RandomPortion(elements, dest);
+            }
             elements.CopyTo(dest, 0);
             ShuffleInPlace(dest);
             return dest;
@@ -847,11 +852,16 @@ namespace SquidLib.SquidMath {
         }
 
         public T[] ReverseShuffle<T>(T[] elements, T[] dest) {
-            if (elements is null || dest is null) {
+            if (elements is null) {
                 return null;
             }
-            int size = elements.Length, target = dest.Length;
-            if (size != target) return ReverseRandomPortion(elements, dest);
+            int size = elements.Length;
+            if (dest is null)
+                dest = new T[size];
+            else {
+                int target = dest.Length;
+                if (size != target) return ReverseRandomPortion(elements, dest);
+            }
             elements.CopyTo(dest, 0);
             ReverseShuffleInPlace(dest);
             return dest;
@@ -882,8 +892,25 @@ namespace SquidLib.SquidMath {
             return dest;
         }
 
-        public void ShuffleInPlace<T>(IOrdered<T> ordered) => ShuffleInPlace(ordered.Ordering);
-        public void ReverseShuffleInPlace<T>(IOrdered<T> ordered) => ReverseShuffleInPlace(ordered.Ordering);
+        public void ShuffleInPlace<T>(IOrdered<T> ordered) => ShuffleInPlace(ordered?.Ordering);
+        public void ReverseShuffleInPlace<T>(IOrdered<T> ordered) => ReverseShuffleInPlace(ordered?.Ordering);
+
+        /// <summary>
+        /// Gets a ulong that identifies which stream of numbers this generator is producing; this stream identifier is always
+        /// an odd ulong and won't change by generating numbers. It is determined at construction and will usually (not
+        /// always) change if setStateA(ulong) or setStateB(ulong) are called. Each stream is a
+        /// probably-unique sequence of 2 to the 64 longs, where approximately 1 / 3 of all possible longs will not ever occur
+        /// (while others occur twice or more), but this set of results is different for every stream. There are 2 to the 64
+        /// possible streams, one for every odd long.
+        /// </summary>
+        /// <returns>An odd long that identifies which stream this TangleRNG is generating from.</returns>
+        /// <remarks>The implementation here is neat; 0x1743CE5C6E1B848BUL is the multiplicative inverse of state.a's increment mod 2 to the 64,
+        /// so subtracting state.a times that gives us how many steps have been taken since state.a was 0. The relationship between state.a
+        /// and state.b is the stream, so stepping state.b back the above number of steps gives us its offset from state.a at all positions.
+        /// I don't have a particular reason why you would want to use CurrentStream(), but one could easily come up; maybe it's important that
+        /// two generators use independent streams?</remarks>
+        public ulong CurrentStream() => state.b - (state.a * 0x1743CE5C6E1B848BUL) * 0x9E3779B97F4A7C16UL;
+
     }
 
 }
