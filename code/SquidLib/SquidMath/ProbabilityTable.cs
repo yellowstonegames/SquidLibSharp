@@ -8,7 +8,7 @@ namespace SquidLib.SquidMath {
     /// are returned by <code>GetItem()</code>. Uses Vose' Alias Method to get constant-time lookups.
     /// </summary>
     /// <typeparam name="TItem">The type of item that this holds, other than weights; this can be an int or id to look up a table entry elsewhere.</typeparam>
-    class ProbabilityTable<TItem> {
+    public class ProbabilityTable<TItem> {
         public List<(TItem item, double weight)> Items { get; private set; }
         private int[] mixed;
         public int Count => Items.Count;
@@ -96,7 +96,7 @@ namespace SquidLib.SquidMath {
             int column = (int)((Count * (state & 0xFFFFFFFFL)) >> 32);
             // use the other half of the bits of state to get a 31-bit int, compare to probability and choose either the
             // current column or the alias for that column based on that probability
-            return Items[(((state & 0x7FFFFFFF00000000L) >> 32) <= mixed[column << 1]) ? column : mixed[column << 1 | 1]].item;
+            return Items[((state >> 32 & 0x7FFFFFFFL) <= mixed[column << 1]) ? column : mixed[column << 1 | 1]].item;
 
         }
     }

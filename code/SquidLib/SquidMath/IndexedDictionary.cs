@@ -149,7 +149,7 @@ namespace SquidLib.SquidMath {
 
         public bool IsSynchronized => false;
 
-        object ICollection.SyncRoot {
+        public object SyncRoot {
             get {
                 if (_syncRoot == null) {
                     System.Threading.Interlocked.CompareExchange<Object>(ref _syncRoot, new Object(), null);
@@ -232,7 +232,7 @@ namespace SquidLib.SquidMath {
             throw new NotImplementedException();
         }
 
-        public sealed class ValueCollection : ICollection<TValue>, ICollection, IReadOnlyCollection<TValue> {
+        internal sealed class ValueCollection : ICollection<TValue>, ICollection, IReadOnlyCollection<TValue> {
             private readonly List<TKey> _items;
             private readonly Dictionary<TKey, TValue> _dictionary;
 
