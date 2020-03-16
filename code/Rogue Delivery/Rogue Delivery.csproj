@@ -98,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
+    <Compile Include="Interactable.cs" />
     <Compile Include="Mobs.cs" />
     <Compile Include="Physical.cs" />
     <Compile Include="Prototype.cs" />

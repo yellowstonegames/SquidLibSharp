@@ -12,7 +12,8 @@ namespace RogueDelivery {
             get {
                 if (wagon is null) {
                     wagon = new BigMob {
-                        DefaultColor = Color.SandyBrown
+                        DefaultColor = Color.SandyBrown,
+                        Blocking = true
                     };
                     wagon.SetGlyphs(Direction.Up, 1, 1, new string[] {
                         " Ŏ ",
@@ -50,7 +51,10 @@ namespace RogueDelivery {
         public static BigMob Log {
             get {
                 if (log is null) {
-                    log = new BigMob { DefaultColor = Color.BurlyWood };
+                    log = new BigMob {
+                        DefaultColor = Color.BurlyWood,
+                        Blocking = true
+                    };
                     log.SetGlyphs(Direction.Up, 0, 0, new string[] {
                         "©",
                         "⋃"

@@ -160,15 +160,42 @@ namespace RogueDelivery {
             switch (controlType) {
                 case ControlType.DrivingWagon:
                     if (wagon.Facing == direction) {
-                        wagon.Location += direction.Coord();
+                        if (IsBlocked(wagon, direction)) {
+                            //
+                        } else {
+                            wagon.Location += direction.Coord();
+                        }
                     } else {
                         wagon.Facing = direction;
                     }
                     break;
                 case ControlType.OnFoot:
-                    player.Location += direction.Coord();
+                    if (IsBlocked(player, direction)) {
+                        //
+                    } else {
+                        player.Location += direction.Coord();
+                    }
                     break;
             }
+        }
+
+        private bool IsBlocked(IInteractable mover, Direction direction) {
+            return IsBlocked(mover, mover.Location + direction.Coord());
+        }
+
+        private bool IsBlocked(IInteractable mover, Coord coord) {
+            return littleMobs
+                .Where(lm => lm.Blocking)
+                .Where(lm => lm != mover)
+                .Select(lm => lm.Location)
+                .Concat(bigMobs
+                    .Where(bm => bm.Blocking)
+                    .Where(bm => bm != mover)
+                    .SelectMany(bm => bm.Reps[bm.Facing].Tiles.Keys.Select(c => c + bm.DrawingOffset())))
+                .Intersect(mover
+                    .Coords()
+                    .Select(c => c + (coord - mover.Location)))
+                .Any();
         }
 
         private void DrawMap() {
