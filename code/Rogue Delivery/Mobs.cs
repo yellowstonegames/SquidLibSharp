@@ -50,6 +50,8 @@ namespace RogueDelivery {
 
         public IEnumerable<Coord> Coords() => new List<Coord>() { Location };
 
+        public IEnumerable<Coord> Coords(Direction facing) => Coords();
+
         public Rectangle OuterBounds() => new Rectangle(Location.X, Location.Y, 1, 1);
 
         public Rectangle OuterBounds(Direction direction) => OuterBounds();
@@ -143,7 +145,9 @@ namespace RogueDelivery {
             Blocking = other.Blocking;
         }
 
-        public IEnumerable<Coord> Coords() => Reps[Facing].Tiles.Keys.Select(c => c + DrawingOffset());
+        public IEnumerable<Coord> Coords() => Coords(Facing);
+
+        public IEnumerable<Coord> Coords(Direction facing) => Reps[facing].Tiles.Keys.Select(c => c + DrawingOffset());
 
         public Rectangle OuterBounds() => Bounds[Facing];
 

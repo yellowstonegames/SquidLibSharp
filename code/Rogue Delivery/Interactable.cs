@@ -17,6 +17,14 @@ namespace RogueDelivery {
         IEnumerable<Coord> Coords();
 
         /// <summary>
+        /// Returns teh Corods that make up the body of this object iwth the curreent location and the
+        /// provided facing.
+        /// </summary>
+        /// <param name="facing"></param>
+        /// <returns></returns>
+        IEnumerable<Coord> Coords(Direction facing);
+
+        /// <summary>
         /// Returns the maximum outer bounds for the current facing.
         /// 
         /// Accounts for the current Location.

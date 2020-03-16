@@ -63,7 +63,7 @@ namespace RogueDelivery {
         private RogueDelivery() {
             rng = new RNG(DateTime.Today.ToString(CultureInfo.InvariantCulture)); // Different seed every day, but the same seed on that day, for testing.
 
-            width = windowWidth;
+            width = windowWidth - 2;
             height = windowHeight - logHeight - statusHeight - 4;
 
             InitObjects();
@@ -120,9 +120,11 @@ namespace RogueDelivery {
         private void Start() {
             DrawMap();
             Terminal.Refresh();
+
             while (keepRunning) {
                 if (Terminal.HasInput()) {
-                    switch (Terminal.Read()) {
+                    int read = Terminal.Read();
+                    switch (read) {
                         case Terminal.TK_ESCAPE:
                         case Terminal.TK_CLOSE:
                             keepRunning = false;
@@ -141,12 +143,16 @@ namespace RogueDelivery {
                             break;
                         case Terminal.TK_SPACE when controlType == ControlType.DrivingWagon:
                             controlType = ControlType.OnFoot;
+                            bigMobs.Add(wagon);
                             break;
                         case Terminal.TK_SPACE when controlType == ControlType.OnFoot:
                             controlType = ControlType.DrivingWagon;
+                            bigMobs.Remove(wagon);
                             break;
                         default:
                             // ignore unknown commands
+                            Terminal.Color(Color.White);
+                            Message($"Pressed {(char)Terminal.State(Terminal.TK_WCHAR)}");
                             break;
                     }
                     DrawMap();
@@ -159,18 +165,22 @@ namespace RogueDelivery {
         private void MovePlayer(Direction direction) {
             switch (controlType) {
                 case ControlType.DrivingWagon:
-                    if (wagon.Facing == direction) {
-                        if (IsBlocked(wagon, direction)) {
+                    if (wagon.Facing == direction || Terminal.Check(Terminal.TK_SHIFT)) {
+                        if (IsBlocked(wagon, wagon.Facing, direction)) {
                             //
                         } else {
                             wagon.Location += direction.Coord();
                         }
                     } else {
-                        wagon.Facing = direction;
+                        if (IsBlocked(wagon, direction, Direction.None)) {
+                            //
+                        } else {
+                            wagon.Facing = direction;
+                        }
                     }
                     break;
                 case ControlType.OnFoot:
-                    if (IsBlocked(player, direction)) {
+                    if (IsBlocked(player, player.Location + direction.Coord())) {
                         //
                     } else {
                         player.Location += direction.Coord();
@@ -179,27 +189,27 @@ namespace RogueDelivery {
             }
         }
 
-        private bool IsBlocked(IInteractable mover, Direction direction) {
-            return IsBlocked(mover, mover.Location + direction.Coord());
-        }
+        private bool IsBlocked(IInteractable mover, Coord coord) => IsBlocked(mover, Direction.Up, coord);
 
-        private bool IsBlocked(IInteractable mover, Coord coord) {
-            return littleMobs
+        private bool IsBlocked(IInteractable mover, Direction facing, Direction direction) =>
+            IsBlocked(mover, facing, mover.Location + direction.Coord());
+
+        private bool IsBlocked(IInteractable mover, Direction facing, Coord coord) =>
+            IsBlocked(mover.Coords(facing).Select(c => coord - mover.Location + c));
+
+        private bool IsBlocked(IEnumerable<Coord> targetCoords) =>
+            targetCoords.Intersect(
+                littleMobs
                 .Where(lm => lm.Blocking)
-                .Where(lm => lm != mover)
                 .Select(lm => lm.Location)
                 .Concat(bigMobs
                     .Where(bm => bm.Blocking)
-                    .Where(bm => bm != mover)
-                    .SelectMany(bm => bm.Reps[bm.Facing].Tiles.Keys.Select(c => c + bm.DrawingOffset())))
-                .Intersect(mover
-                    .Coords()
-                    .Select(c => c + (coord - mover.Location)))
+                    .SelectMany(bm => bm.Reps[bm.Facing].Tiles.Keys
+                        .Select(c => c + bm.DrawingOffset()))))
                 .Any();
-        }
 
         private void DrawMap() {
-            Terminal.Clear();
+            Terminal.ClearArea(1, 1, width, height);
 
             foreach (var mob in littleMobs) {
                 PutOnMap(mob);
@@ -209,6 +219,7 @@ namespace RogueDelivery {
                 PutOnMap(bigMob);
             }
 
+            PutOnMap(wagon); // need to make sure it prints over other things except player
             switch (controlType) {
                 case ControlType.OnFoot:
                     PutOnMap(player);
@@ -221,9 +232,6 @@ namespace RogueDelivery {
 
             Terminal.Color(rng.RandomElement(BltColor.AuroraNames));
             PaintBorder();
-
-            //Terminal.Color(playerColor);
-            //PutOnMap(playerLocation, playerGlyph);
 
             // Status section
             int startY = windowHeight - statusHeight - 1;
@@ -252,6 +260,8 @@ namespace RogueDelivery {
                 Put(kvp.Key, kvp.Value);
             }
         }
+
+        private void Message(string message) => Terminal.Print(1, height + 3, message);
 
         private static void Put(Coord coord, char c) => Terminal.Put(coord.X, coord.Y, c);
 
