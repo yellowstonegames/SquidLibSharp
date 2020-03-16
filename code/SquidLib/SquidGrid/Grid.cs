@@ -91,12 +91,10 @@ namespace SquidLib.SquidGrid {
         public static Grid<char> ToGrid(this string data) {
             if (data is null) return null;
             data = data.Replace("\r\n", "\n");
+            if (data[data.Length - 1] != '\n')
+                data += '\n';
             int width = data.IndexOf('\n');
-            int height = 1;
-            if (width == -1) {
-                width = data.Length;
-                height = 0;
-            }
+            int height = 0;
             int idx = width;
             while(idx != -1) {
                 idx = data.IndexOf('\n', idx + 1);
@@ -106,6 +104,31 @@ namespace SquidLib.SquidGrid {
             char[] raw = grid.RawData();
             data.Replace("\n", "").CopyTo(0, raw, 0, width * height);
             return grid;
+        }
+
+        /// <summary>
+        /// A more specialized counterpart to ToString() that shows the chars in a Grid of char as they often would be rendered,
+        /// with (x=0,y=0) in the upper left and rows separated by newlines (not CRLF, just LF).
+        /// </summary>
+        /// <param name="grid">A Grid of char to get a printable representation for.</param>
+        /// <returns>A string composed of the chars in grid, with rows separated by LF newlines.</returns>
+        public static string Show(this Grid<char> grid) {
+            if (grid is null) return "";
+            StringBuilder builder = new StringBuilder(grid.Height * (grid.Width + 1));
+            char[] raw = grid.RawData();
+            for (int i = 0; i < grid.Height; i++) {
+                builder.Append(raw, i * grid.Width, grid.Width).Append('\n');
+            }
+            return builder.ToString();
+        }
+        public static StringBuilder Append(this StringBuilder builder, Grid<char> grid) {
+            if (builder is null || grid is null)
+                return builder;
+            char[] raw = grid.RawData();
+            for (int i = 0; i < grid.Height; i++) {
+                builder.Append(raw, i * grid.Width, grid.Width).Append('\n');
+            }
+            return builder;
         }
     }
 }
