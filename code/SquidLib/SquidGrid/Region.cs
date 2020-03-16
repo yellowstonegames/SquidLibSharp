@@ -131,9 +131,9 @@ namespace SquidLib.SquidGrid {
             set {
                 if (x >= 0 && x < Width && y >= 0 && y < Height) {
                     if (value)
-                        Remove(Coord.Get(x, y));
-                    else
                         Add(Coord.Get(x, y));
+                    else
+                        Remove(Coord.Get(x, y));
                 }
             }
         }
@@ -207,6 +207,23 @@ namespace SquidLib.SquidGrid {
         }
         public Region Surface8Way(int distance) {
             Retract8Way(distance).SymmetricExceptWith(working);
+            return this;
+        }
+
+        public Region Insert(Region other, int offsetX, int offsetY) {
+            if (other is null)
+                return this;
+            foreach(Coord point in other.Ordering) {
+                this[point.X + offsetX, point.Y + offsetY] = true;
+            }
+            return this;
+        }
+        public Region Translate(int offsetX, int offsetY) {
+            working.ResetTo(this);
+            Clear();
+            foreach(Coord point in working.Ordering) {
+                this[point.X + offsetX, point.Y + offsetY] = true;
+            }
             return this;
         }
     }
