@@ -41,8 +41,16 @@ namespace SquidLib.SquidMath {
             }
             Reset(items);
         }
-        public void Reset(List<(TItem item, double weight)> items)
-        {
+        public void Reset(IndexedDictionary<TItem, double> dict) {
+            if (dict is null)
+                throw new ArgumentNullException(nameof(dict));
+            List<(TItem item, double weight)> items = new List<(TItem item, double weight)>(dict.Count);
+            foreach (var kv in dict) {
+                items.Add((kv.Key, kv.Value));
+            }
+            Reset(items);
+        }
+        public void Reset(List<(TItem item, double weight)> items) {
             if (items is null)
                 throw new ArgumentNullException(nameof(items));
             Items = new List<(TItem item, double weight)>(items);
