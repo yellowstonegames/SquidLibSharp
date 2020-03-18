@@ -23,7 +23,7 @@ namespace SquidLib.SquidGrid {
         }
         public Region Copy() => new Region(this);
         public static Region FromChars(Grid<char> grid, char match) {
-            if (grid == null)
+            if (grid is null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
             for (int x = 0; x < grid.Width; x++) {
@@ -47,7 +47,7 @@ namespace SquidLib.SquidGrid {
             return region;
         }
         public static Region FromAtLeast<TComp>(Grid<IComparable<TComp>> grid, TComp lowerBound) {
-            if (grid == null)
+            if (grid is null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
             for (int x = 0; x < grid.Width; x++) {
@@ -59,7 +59,7 @@ namespace SquidLib.SquidGrid {
             return region;
         }
         public static Region FromLess<TComp>(Grid<IComparable<TComp>> grid, TComp upperBound) {
-            if (grid == null)
+            if (grid is null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
             for (int x = 0; x < grid.Width; x++) {
@@ -71,7 +71,7 @@ namespace SquidLib.SquidGrid {
             return region;
         }
         public static Region FromAtMost<TComp>(Grid<IComparable<TComp>> grid, TComp upperBound) {
-            if (grid == null)
+            if (grid is null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
             for (int x = 0; x < grid.Width; x++) {
@@ -122,6 +122,50 @@ namespace SquidLib.SquidGrid {
             }
             return region;
         }
+        /// <summary>
+        /// Creates a Region filled with the items from a Grid that are equal to match; match must have a type that implements IEquatable,
+        /// but it has no other restrictions.
+        /// </summary>
+        /// <typeparam name="TEq">A type that implements IEquatable to itself, like int or double.</typeparam>
+        /// <param name="grid">A Grid of TEq items; its Width and Height will be used for the result.</param>
+        /// <param name="match">The TEq, which should implement IEquatable, to match.</param>
+        /// <returns>A new Region with the same Width and Height as grid, and contents drawn from it.</returns>
+        public static Region FromExactly<TEq>(Grid<IEquatable<TEq>> grid, TEq match) {
+            if (grid is null)
+                return new Region(1, 1);
+            Region region = new Region(grid.Width, grid.Height);
+            for (int x = 0; x < grid.Width; x++) {
+                for (int y = 0; y < grid.Height; y++) {
+                    if (grid[x, y].Equals(match))
+                        region.Add(Coord.Get(x, y));
+                }
+            }
+            return region;
+        }
+        /// <summary>
+        /// Creates a Region filled with the items from a Grid that can be found in the given Set of items to look for.
+        /// If an item in grid is not found in matches, or if matches is null or empty, that grid cell will be false;
+        /// if the item is found, then that grid cell will be true.
+        /// </summary>
+        /// <typeparam name="TItem">Any type that can be put into both an ISet and a Grid.</typeparam>
+        /// <param name="grid">A Grid of TItem items; its Width and Height will be used for the result.</param>
+        /// <param name="matches">The ISet of TItem to look for matches in.</param>
+        /// <returns>A new Region with the same Width and Height as grid, and contents drawn from it.</returns>
+        public static Region FromSet<TItem>(Grid<TItem> grid, ISet<TItem> matches) {
+            if (grid == null)
+                return new Region(1, 1);
+            Region region = new Region(grid.Width, grid.Height);
+            if (matches is null || matches.Count == 0)
+                return region;
+            for (int x = 0; x < grid.Width; x++) {
+                for (int y = 0; y < grid.Height; y++) {
+                    if (matches.Contains(grid[x, y]))
+                        region.Add(Coord.Get(x, y));
+                }
+            }
+            return region;
+        }
+
         public bool this[int x, int y] {
             get {
                 if (x < 0 || x >= Width || y < 0 || y >= Height)
