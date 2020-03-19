@@ -56,7 +56,7 @@ namespace SquidLib.SquidGrid {
         private class DistanceComparer : Comparer<Coord> {
             internal Coord start;
             public override int Compare(Coord x, Coord y) {
-                return Math.Sign(Radius.Circle.Radius(start, y) - Radius.Circle.Radius(start, x));
+                return Math.Sign(Radius.Circle.Radius(start, x) - Radius.Circle.Radius(start, y));
             }
         }
 
@@ -68,7 +68,7 @@ namespace SquidLib.SquidGrid {
             IndexedSet<Coord> pointSet = new IndexedSet<Coord>();
             for (int x = 0; x < Dungeon.Width; x++) {
                 for (int y = 0; y < Dungeon.Height; y++) {
-                    if (BlueNoise.GetSeeded(x, y, seed) < 4)
+                    if (BlueNoise.GetSeeded(x, y, seed) < 3)
                         pointSet.Add(Coord.Get(x, y));
                 }
             }
@@ -87,7 +87,7 @@ namespace SquidLib.SquidGrid {
                 distanceSorter.start = start;
                 sorted.Sort(distanceSorter);
                 sorted.RemoveAt(0);
-                int links = Random.NextInt(1, 4);
+                int links = Math.Min(Random.NextInt(1, 4), Random.NextInt(1, 4));
                 for (int i = 0; i < sorted.Count && i < links; i++) {
                     connections.Add((start, sorted[i]));
                 }
@@ -173,7 +173,7 @@ namespace SquidLib.SquidGrid {
             if (roomDict is null)
                 roomDict = new IndexedDictionary<DungeonRoom, double>();
             if (roomDict.Count <= 0)
-                roomDict[DungeonRoom.BoxRoom] = 1.0;
+                roomDict[DungeonRoom.Cave] = 1.0;
             if (roomTable is null)
                 roomTable = new ProbabilityTable<DungeonRoom>(Random, roomDict);
             else
@@ -185,6 +185,7 @@ namespace SquidLib.SquidGrid {
                 Direction dir;
                 switch (ct) {
                     case DungeonRoom.Cave:
+                    default:
                         marked.Add(end);
                         if (Environment[end.X, end.Y] != CellCategory.RoomFloor) Environment[end.X, end.Y] = CellCategory.CaveFloor;
                         Store();
@@ -306,7 +307,31 @@ namespace SquidLib.SquidGrid {
             }
 
             Store();
-            //markEnvironmentWalls();
+            marked.RefillExactly(Environment, CellCategory.Untouched);
+            for (int x = 0; x < Environment.Width; x++) {
+                marked.Add(Coord.Get(x, 0));
+                Dungeon[x, 0] = '#';
+                marked.Add(Coord.Get(x, Environment.Height - 1));
+                Dungeon[x, Environment.Height - 1] = '#';
+            }
+            for (int y = 0; y < Environment.Height; y++) {
+                marked.Add(Coord.Get(0, y));
+                Dungeon[0, y] = '#';
+                marked.Add(Coord.Get(Environment.Width - 1, y));
+                Dungeon[Environment.Width - 1, y] = '#';
+            }
+            walled.RefillExactly(Environment, CellCategory.CorridorFloor).Fringe8Way(1).IntersectWith(marked);
+            foreach (Coord c in walled) {
+                Environment[c.X, c.Y] = CellCategory.CorridorWall;
+            }
+            walled.RefillExactly(Environment, CellCategory.CaveFloor).Fringe8Way(1).IntersectWith(marked);
+            foreach (Coord c in walled) {
+                Environment[c.X, c.Y] = CellCategory.CaveWall;
+            }
+            walled.RefillExactly(Environment, CellCategory.RoomFloor).Fringe8Way(1).IntersectWith(marked);
+            foreach (Coord c in walled) {
+                Environment[c.X, c.Y] = CellCategory.RoomWall;
+            }
             HasGenerated = true;
 
             return Dungeon;

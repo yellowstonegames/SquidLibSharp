@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace SquidLib.SquidGrid {
-    public enum CellCategory {
+    public enum CellCategory : int {
         Untouched = 0,
         RoomFloor = 1,
         RoomWall = 2,

@@ -10,6 +10,67 @@ using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
 
 namespace Demo {
+    public class DungeonDemo {
+        private static bool keepRunning = true;
+
+        static void Main() {
+            RNG rng = new RNG();
+
+            Terminal.Open();
+            //Terminal.Set("log: level=trace");
+            int width = 120, height = 40;
+            Terminal.Set($"window: title='SquidLibSharp Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
+            ColorHelper.BltColor.LoadAurora();
+            Terminal.Refresh();
+            int input = 0;
+            WanderingRoomGenerator generator = new WanderingRoomGenerator(width, height, rng);
+            Grid<char> grid = generator.Generate();
+            grid = LineKit.HashesToLines(grid, true);
+            DateTime current = DateTime.Now, start = DateTime.Now;
+            int frames = 1;
+            while (keepRunning) {
+                input = Terminal.Peek();
+                if (input == Terminal.TK_Q || input == Terminal.TK_ESCAPE || input == Terminal.TK_CLOSE)
+                    keepRunning = false;
+                else {
+                    if (Terminal.HasInput())
+                        input = Terminal.Read();
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            Terminal.BkColor("lead");
+                            if (grid[x, y] == '.')
+                                Terminal.Color("cream");
+                            else
+                                Terminal.Color("chinchilla");
+                            Terminal.Put(x, y, grid[x, y]);
+                        }
+                    }
+
+                    frames++;
+                    if (current.Millisecond > DateTime.Now.Millisecond) {
+                        Terminal.Set($"window.title='{frames} FPS'");
+                        frames = 0;
+                    }
+                    current = DateTime.Now;
+                    //Terminal.Color(Terminal.ColorFromName(rng.RandomElement(SColor.AuroraNames)));
+                    //Terminal.Put(rng.NextInt(width), rng.NextInt(height), ArrayTools.LetterAt(input));
+                    Terminal.Refresh();
+                }
+                //switch (Terminal.Read()) {
+                //    case Terminal.TK_ESCAPE:
+                //    case Terminal.TK_CLOSE:
+                //        keepRunning = false;
+                //        break;
+                //    case int val:
+                //        Terminal.Color(Terminal.ColorFromName(rng.RandomElement(SColor.AuroraNames)));
+                //        Terminal.Put(rng.NextInt(width), rng.NextInt(height), ArrayTools.LetterAt(rng.NextInt()));
+                //        Terminal.Refresh();
+                //        break;
+                //}
+
+            }
+        }
+    }
     public class LetterDemo {
         private static bool keepRunning = true;
 

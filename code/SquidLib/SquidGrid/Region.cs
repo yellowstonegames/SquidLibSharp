@@ -34,7 +34,7 @@ namespace SquidLib.SquidGrid {
             }
             return region;
         }
-        public static Region FromGreater<TComp>(Grid<IComparable<TComp>> grid, TComp lowerBound) {
+        public static Region FromGreater<TComp>(Grid<TComp> grid, TComp lowerBound) where TComp : IComparable<TComp> {
             if (grid == null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
@@ -46,7 +46,7 @@ namespace SquidLib.SquidGrid {
             }
             return region;
         }
-        public static Region FromAtLeast<TComp>(Grid<IComparable<TComp>> grid, TComp lowerBound) {
+        public static Region FromAtLeast<TComp>(Grid<TComp> grid, TComp lowerBound) where TComp : IComparable<TComp> {
             if (grid is null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
@@ -58,7 +58,7 @@ namespace SquidLib.SquidGrid {
             }
             return region;
         }
-        public static Region FromLess<TComp>(Grid<IComparable<TComp>> grid, TComp upperBound) {
+        public static Region FromLess<TComp>(Grid<TComp> grid, TComp upperBound) where TComp : IComparable<TComp> {
             if (grid is null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
@@ -70,7 +70,7 @@ namespace SquidLib.SquidGrid {
             }
             return region;
         }
-        public static Region FromAtMost<TComp>(Grid<IComparable<TComp>> grid, TComp upperBound) {
+        public static Region FromAtMost<TComp>(Grid<TComp> grid, TComp upperBound) where TComp : IComparable<TComp> {
             if (grid is null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
@@ -90,7 +90,7 @@ namespace SquidLib.SquidGrid {
         /// <param name="lowerBound">The lower exclusive bound for TComp items.</param>
         /// <param name="upperBound">The upper exclusive bound for TComp items.</param>
         /// <returns>A new Region with the same Width and Height as grid, and contents drawn from it.</returns>
-        public static Region FromWithin<TComp>(Grid<IComparable<TComp>> grid, TComp lowerBound, TComp upperBound) {
+        public static Region FromWithin<TComp>(Grid<TComp> grid, TComp lowerBound, TComp upperBound) where TComp : IComparable<TComp> {
             if (grid == null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
@@ -110,7 +110,7 @@ namespace SquidLib.SquidGrid {
         /// <param name="lowerBound">The lower inclusive bound for TComp items.</param>
         /// <param name="upperBound">The upper inclusive bound for TComp items.</param>
         /// <returns>A new Region with the same Width and Height as grid, and contents drawn from it.</returns>
-        public static Region FromBetween<TComp>(Grid<IComparable<TComp>> grid, TComp lowerBound, TComp upperBound) {
+        public static Region FromBetween<TComp>(Grid<TComp> grid, TComp lowerBound, TComp upperBound) where TComp : IComparable<TComp> {
             if (grid == null)
                 return new Region(1, 1);
             Region region = new Region(grid.Width, grid.Height);
@@ -130,17 +130,33 @@ namespace SquidLib.SquidGrid {
         /// <param name="grid">A Grid of TEq items; its Width and Height will be used for the result.</param>
         /// <param name="match">The TEq, which should implement IEquatable, to match.</param>
         /// <returns>A new Region with the same Width and Height as grid, and contents drawn from it.</returns>
-        public static Region FromExactly<TEq>(Grid<IEquatable<TEq>> grid, TEq match) {
+        public static Region FromExactly<TEq>(Grid<TEq> grid, TEq match) {
             if (grid is null)
                 return new Region(1, 1);
-            Region region = new Region(grid.Width, grid.Height);
-            for (int x = 0; x < grid.Width; x++) {
-                for (int y = 0; y < grid.Height; y++) {
+            return new Region(grid.Width, grid.Height).RefillExactly(grid, match);
+        }
+
+        /// <summary>
+        /// Empties the current contents of this Region, sets its Width and Height to match the given Grid, and
+        /// fills this Region with all items in grid that are equal to match.
+        /// </summary>
+        /// <typeparam name="TEq">A type that implements IEquatable to itself, like int or double.</typeparam>
+        /// <param name="grid">A Grid of TEq items; its Width and Height will be used for the result.</param>
+        /// <param name="match">The TEq, which should implement IEquatable, to match.</param>
+        /// <returns>This region, with potentially different width and height, for chaining.</returns>
+        public Region RefillExactly<TEq>(Grid<TEq> grid, TEq match) {
+            Clear();
+            if (grid is null)
+                return this;
+            Width = grid.Width;
+            Height = grid.Height;
+            for (int x = 0; x < Width; x++) {
+                for (int y = 0; y < Height; y++) {
                     if (grid[x, y].Equals(match))
-                        region.Add(Coord.Get(x, y));
+                        Add(Coord.Get(x, y));
                 }
             }
-            return region;
+            return this;
         }
         /// <summary>
         /// Creates a Region filled with the items from a Grid that can be found in the given Set of items to look for.
