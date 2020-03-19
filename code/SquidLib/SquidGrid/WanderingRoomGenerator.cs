@@ -66,10 +66,11 @@ namespace SquidLib.SquidGrid {
         public void PopulateConnections() {
             uint seed = Random.NextUInt();
             IndexedSet<Coord> pointSet = new IndexedSet<Coord>();
-            for (int x = 0; x < Dungeon.Width; x++) {
-                for (int y = 0; y < Dungeon.Height; y++) {
-                    if (BlueNoise.GetSeeded(x, y, seed) < 3)
+            for (int x = 1; x < Dungeon.Width - 1; x++) {
+                for (int y = 1; y < Dungeon.Height - 1; y++) {
+                    if (BlueNoise.GetSeeded(x, y, seed) < 3) {
                         pointSet.Add(Coord.Get(x, y));
+                    }
                 }
             }
             if (pointSet.Count <= 1) {
@@ -92,10 +93,11 @@ namespace SquidLib.SquidGrid {
                     connections.Add((start, sorted[i]));
                 }
             }
+            connections.Ordering.Sort((a, b) => a.from.X - b.from.X);
         }
         private void Store() {
             foreach (Coord m in marked) {
-                Dungeon[m.X, m.Y] = '.';
+                Dungeon.TrySet(m.X, m.Y, '.');
             }
         }
         private void markEnvironmentCave(int x, int y) {
@@ -104,12 +106,12 @@ namespace SquidLib.SquidGrid {
         private bool mark(Coord position) {
             if (walled.Contains(position))
                 return true;
-            marked.Add(position);
+            marked[position.X, position.Y] = true;
             return false;
         }
 
         private void markPiercingCave(Coord position) {
-            marked.Add(position);
+            marked[position.X, position.Y] = true;
             markEnvironmentCave(position.X, position.Y);
 
         }
@@ -130,15 +132,15 @@ namespace SquidLib.SquidGrid {
                 int dx2 = (dx == 0) ? dx : dy, dy2 = (dx == 0) ? dy : dx;
                 if (r >= (weight * 0.5)) {
                     r -= weight * 0.5;
-                    if (r < weight * (1.0 / 6) + (1 - weight) * (1.0 / 3)) {
+                    if (r < weight * (1.0 / 6.0) + (1 - weight) * (1.0 / 3.0)) {
                         dx2 = -1;
                         dy2 = 0;
-                    } else if (r < weight * (2.0 / 6) + (1 - weight) * (2.0 / 3)) {
+                    } else if (r < weight * (2.0 / 6.0) + (1 - weight) * (2.0 / 3.0)) {
                         dx2 = 1;
                         dy2 = 0;
                     } else {
                         dx2 = 0;
-                        dy2 *= -1;
+                        dy2 = -dy2;
                     }
                 }
                 dir = DirectionExtensions.GetCardinalDirection(dx2, -dy2);
@@ -149,20 +151,20 @@ namespace SquidLib.SquidGrid {
                 } else if (r < weight) {
                     dx = 0;
                 } else if (r < weight + (1 - weight) * 0.5) {
-                    dx *= -1;
+                    dx = -dx;
                     dy = 0;
                 } else {
                     dx = 0;
-                    dy *= -1;
+                    dy = -dy;
                 }
                 dir = DirectionExtensions.GetCardinalDirection(dx, -dy);
             }
             if (current.X + dir.DeltaX() <= 0 || current.X + dir.DeltaX() >= Dungeon.Width - 1) {
                 if (current.Y < target.Y) return Direction.Down;
-                else if (current.Y > target.Y) return Direction.Up;
+                else if (current.Y >= target.Y) return Direction.Up;
             } else if (current.Y + dir.DeltaY() <= 0 || current.Y + dir.DeltaY() >= Dungeon.Height - 1) {
                 if (current.X < target.X) return Direction.Right;
-                else if (current.X > target.X) return Direction.Left;
+                else if (current.X >= target.X) return Direction.Left;
             }
             return dir;
         }
@@ -186,7 +188,7 @@ namespace SquidLib.SquidGrid {
                 switch (ct) {
                     case DungeonRoom.Cave:
                     default:
-                        marked.Add(end);
+                        marked[end.X, end.Y] = true;
                         if (Environment[end.X, end.Y] != CellCategory.RoomFloor) Environment[end.X, end.Y] = CellCategory.CaveFloor;
                         Store();
 
@@ -197,13 +199,13 @@ namespace SquidLib.SquidGrid {
                                 markEnvironmentCave(start.X, start.Y);
                                 centerBlocked = true;
                             } else centerBlocked = false;
-                            if (!marked.Add(start.ChangeX(1)))
+                            if (!marked.Add(start.Add(1, 0)))
                                 markEnvironmentCave(start.X + 1, start.Y);
-                            if (!marked.Add(start.ChangeX(-1)))
+                            if (!marked.Add(start.Add(-1, 0)))
                                 markEnvironmentCave(start.X - 1, start.Y);
-                            if (!marked.Add(start.ChangeY(1)))
+                            if (!marked.Add(start.Add(0, 1)))
                                 markEnvironmentCave(start.X, start.Y + 1);
-                            if (!marked.Add(start.ChangeY(-1)))
+                            if (!marked.Add(start.Add(0, -1)))
                                 markEnvironmentCave(start.X, start.Y - 1);
 
                             if (!centerBlocked) {
@@ -306,7 +308,7 @@ namespace SquidLib.SquidGrid {
                 Store();
             }
 
-            Store();
+            //Store();
             marked.RefillExactly(Environment, CellCategory.Untouched);
             for (int x = 0; x < Environment.Width; x++) {
                 marked.Add(Coord.Get(x, 0));

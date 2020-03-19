@@ -16,6 +16,8 @@ namespace SquidLib.SquidMath {
 
         public Coord ChangeY(int y) => Get(X, y);
 
+        public Coord Add(int x, int y) => Get(X + x, Y + y);
+
         public static Coord Get(int x, int y) => new Coord(x, y);
 
         public override bool Equals(object obj) => obj is Coord coord && Equals(coord);

@@ -198,6 +198,12 @@ namespace SquidLib.SquidGrid {
             }
         }
 
+        public new bool Add(Coord point) {
+            if (point.X >= 0 && point.X < Width && point.Y >= 0 && point.Y < Height)
+                return base.Add(point);
+            return false;
+        }
+
         public Region Expand(int distance) {
             working.ResetTo(this);
             foreach (Coord point in working.Ordering) {

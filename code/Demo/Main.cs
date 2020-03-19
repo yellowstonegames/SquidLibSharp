@@ -25,6 +25,7 @@ namespace Demo {
             int input = 0;
             WanderingRoomGenerator generator = new WanderingRoomGenerator(width, height, rng);
             Grid<char> grid = generator.Generate();
+            Console.WriteLine(grid.Show());
             grid = LineKit.HashesToLines(grid, true);
             DateTime current = DateTime.Now, start = DateTime.Now;
             int frames = 1;
