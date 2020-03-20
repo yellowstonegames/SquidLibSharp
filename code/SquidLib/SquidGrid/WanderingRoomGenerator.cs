@@ -39,8 +39,8 @@ namespace SquidLib.SquidGrid {
             roomDict = new IndexedDictionary<DungeonRoom, double>(5);
             marked = new Region(width, height);
             walled = new Region(width, height);
-            roomWidth = width / 50.0;
-            roomHeight = height / 50.0;
+            roomWidth = width * 0.0175;
+            roomHeight = height * 0.0175;
 
             connections = new IndexedSet<(Coord from, Coord to)>();
         }
