@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Globalization;
 using System.Linq;
 
 using SquidLib;
@@ -79,14 +79,26 @@ namespace RogueDelivery {
             return (char)b;
         }
 
+        /// <summary>
+        /// Capitalizes the first part of the provided string using the current culture settings.
+        /// </summary>
+        /// <param name="original"></param>
+        /// <returns></returns>
         public static string CapitalizeFirst(string original) {
             if (string.IsNullOrWhiteSpace(original)) {
                 return "";
             }
-            return original[0].ToString().ToUpper() + (original.Length > 1 ? original.Substring(1) : "");
+            return original[0].ToString(CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture) + (original.Length > 1 ? original.Substring(1) : "");
         }
 
-        // Replaces all white space with a single space
+        /// <summary>
+        /// Capitalizes all subelements of the string that are preceded by a white space as well as the
+        /// first character.
+        /// 
+        /// Replaces all white space with a single space regardless of originonal whitespace value.
+        /// </summary>
+        /// <param name="original"></param>
+        /// <returns></returns>
         public static string Caps(string original) {
             if (string.IsNullOrWhiteSpace(original)) {
                 return "";

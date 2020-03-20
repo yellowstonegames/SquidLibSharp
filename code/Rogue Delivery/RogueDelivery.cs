@@ -21,6 +21,11 @@ namespace RogueDelivery {
             logHeight = 3,
             statusHeight = 1;
         private int width, height; // for the map area
+        private string[] log = new string[] {
+            "Welcome to Rogue Delivery!",
+            "Arrow keys to move, space to jump in and out of wagon.",
+            "Hold shift when moving to slide instead of turn."
+        };
 
         private Dictionary<Coord, char> borders = new Dictionary<Coord, char>();
 
@@ -211,7 +216,7 @@ namespace RogueDelivery {
         private void DrawMap() {
             Terminal.ClearArea(1, 1, width, height);
 
-            foreach (var mob in littleMobs) {
+            foreach (Mob mob in littleMobs) {
                 PutOnMap(mob);
             }
 
@@ -261,7 +266,16 @@ namespace RogueDelivery {
             }
         }
 
-        private void Message(string message) => Terminal.Print(1, height + 3, message);
+        private void Message(string message) {
+            for (int i = 1; i < log.Length; i++) {
+                log[i - 1] = log[i];
+            }
+            log[log.Length] = message;
+            Terminal.ClearArea(1, height + 3, width, logHeight);
+            for (int i = 0; i < log.Length; i++) {
+                Terminal.Print(1, height + 3 + i, log[i]);
+            }
+        }
 
         private static void Put(Coord coord, char c) => Terminal.Put(coord.X, coord.Y, c);
 
