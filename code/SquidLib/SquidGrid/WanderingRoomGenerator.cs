@@ -374,42 +374,42 @@ namespace SquidLib.SquidGrid {
                             start += dir.Coord();
                         }
                         break;
-                        //case ROUND:
-                        //    markCircle(end, Random.NextInt(2, 6));
-                        //    markCircle(start, Random.NextInt(2, 6));
-                        //    store();
-                        //    dir = Direction.getDirection(end.X - start.X, end.Y - start.Y);
-                        //    if (dir.isDiagonal())
-                        //        dir = rng.nextBoolean() ? Direction.getCardinalDirection(dir.deltaX, 0)
-                        //                : Direction.getCardinalDirection(0, -dir.deltaY);
-                        //    while (start.X != end.X && start.Y != end.Y) {
-                        //        markPiercing(start);
-                        //        markEnvironmentCorridor(start.X, start.Y);
-                        //        start = start.translate(dir);
-                        //    }
-                        //    markCircle(start, 2);
-                        //    dir = Direction.getCardinalDirection(end.X - start.X, -(end.Y - start.Y));
-                        //    while (!(start.X == end.X && start.Y == end.Y)) {
-                        //        markPiercing(start);
-                        //        markEnvironmentCorridor(start.X, start.Y);
-                        //        start = start.translate(dir);
-                        //    }
-                        //    break;
+                    case DungeonRoom.RoundRoom:
+                        markCircle(end, Random.NextInt(2, 6));
+                        markCircle(start, Random.NextInt(2, 6));
+                        Store();
+                        dir = DirectionExtensions.GetOctalDirection(end.X - start.X, end.Y - start.Y);
+                        if (DirectionExtensions.IsDiagonal(dir))
+                            dir = Random.NextBoolean() ? DirectionExtensions.GetCardinalDirection(dir.DeltaX(), 0)
+                                    : DirectionExtensions.GetCardinalDirection(0, -dir.DeltaY());
+                        while (start.X != end.X && start.Y != end.Y) {
+                            markPiercing(start);
+                            markEnvironmentCorridor(start.X, start.Y);
+                            start += dir.Coord();
+                        }
+                        markCircle(start, 2);
+                        dir = DirectionExtensions.GetCardinalDirection(end.X - start.X, -(end.Y - start.Y));
+                        while (!(start.X == end.X && start.Y == end.Y)) {
+                            markPiercing(start);
+                            markEnvironmentCorridor(start.X, start.Y);
+                            start += dir.Coord();
+                        }
+                        break;
                         //case ROUND_WALLED:
                         //    markCircleWalled(end, Random.NextInt(2, 6));
                         //    markCircleWalled(start, Random.NextInt(2, 6));
                         //    store();
-                        //    dir = Direction.getDirection(end.X - start.X, end.Y - start.Y);
-                        //    if (dir.isDiagonal())
-                        //        dir = rng.nextBoolean() ? Direction.getCardinalDirection(dir.deltaX, 0)
-                        //                : Direction.getCardinalDirection(0, -dir.deltaY);
+                        //    dir = DirectionExtensions.GetOctalDirection(end.X - start.X, end.Y - start.Y);
+                        //    if (DirectionExtensions.IsDiagonal(dir))
+                        //        dir = rng.nextBoolean() ? DirectionExtensions.GetCardinalDirection(dir.DeltaX(), 0)
+                        //                : DirectionExtensions.GetCardinalDirection(0, -dir.DeltaY());
                         //    while (start.X != end.X && start.Y != end.Y) {
                         //        markPiercing(start);
                         //        markEnvironmentCorridor(start.X, start.Y);
                         //        start = start.translate(dir);
                         //    }
                         //    markCircleWalled(start, 2);
-                        //    dir = Direction.getCardinalDirection(end.X - start.X, -(end.Y - start.Y));
+                        //    dir = DirectionExtensions.GetCardinalDirection(end.X - start.X, -(end.Y - start.Y));
                         //    while (!(start.X == end.X && start.Y == end.Y)) {
                         //        markPiercing(start);
                         //        markEnvironmentCorridor(start.X, start.Y);
