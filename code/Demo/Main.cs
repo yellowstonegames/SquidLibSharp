@@ -25,7 +25,7 @@ namespace Demo {
             int input = 0;
             WanderingRoomGenerator generator = new WanderingRoomGenerator(width, height, rng);
             generator.SetRoomType(DungeonRoom.WalledBoxRoom, 7.0);
-            generator.SetRoomType(DungeonRoom.RoundRoom, 5.0);
+            generator.SetRoomType(DungeonRoom.WalledRoundRoom, 5.0);
             //generator.SetRoomType(DungeonRoom.Cave, 5.0);
             Grid<char> grid = generator.Generate();
             Console.WriteLine(grid.Show());

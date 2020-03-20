@@ -395,27 +395,27 @@ namespace SquidLib.SquidGrid {
                             start += dir.Coord();
                         }
                         break;
-                        //case ROUND_WALLED:
-                        //    markCircleWalled(end, Random.NextInt(2, 6));
-                        //    markCircleWalled(start, Random.NextInt(2, 6));
-                        //    store();
-                        //    dir = DirectionExtensions.GetOctalDirection(end.X - start.X, end.Y - start.Y);
-                        //    if (DirectionExtensions.IsDiagonal(dir))
-                        //        dir = rng.nextBoolean() ? DirectionExtensions.GetCardinalDirection(dir.DeltaX(), 0)
-                        //                : DirectionExtensions.GetCardinalDirection(0, -dir.DeltaY());
-                        //    while (start.X != end.X && start.Y != end.Y) {
-                        //        markPiercing(start);
-                        //        markEnvironmentCorridor(start.X, start.Y);
-                        //        start = start.translate(dir);
-                        //    }
-                        //    markCircleWalled(start, 2);
-                        //    dir = DirectionExtensions.GetCardinalDirection(end.X - start.X, -(end.Y - start.Y));
-                        //    while (!(start.X == end.X && start.Y == end.Y)) {
-                        //        markPiercing(start);
-                        //        markEnvironmentCorridor(start.X, start.Y);
-                        //        start = start.translate(dir);
-                        //    }
-                        //    break;
+                    case DungeonRoom.WalledRoundRoom:
+                        markCircleWalled(end, Random.NextInt(2, 6));
+                        markCircleWalled(start, Random.NextInt(2, 6));
+                        Store();
+                        dir = DirectionExtensions.GetOctalDirection(end.X - start.X, end.Y - start.Y);
+                        if (DirectionExtensions.IsDiagonal(dir))
+                            dir = Random.NextBoolean() ? DirectionExtensions.GetCardinalDirection(dir.DeltaX(), 0)
+                                    : DirectionExtensions.GetCardinalDirection(0, -dir.DeltaY());
+                        while (start.X != end.X && start.Y != end.Y) {
+                            markPiercing(start);
+                            markEnvironmentCorridor(start.X, start.Y);
+                            start += dir.Coord();
+                        }
+                        markCircleWalled(start, 2);
+                        dir = DirectionExtensions.GetCardinalDirection(end.X - start.X, -(end.Y - start.Y));
+                        while (!(start.X == end.X && start.Y == end.Y)) {
+                            markPiercing(start);
+                            markEnvironmentCorridor(start.X, start.Y);
+                            start += dir.Coord();
+                        }
+                        break;
                 }
                 Store();
             }
