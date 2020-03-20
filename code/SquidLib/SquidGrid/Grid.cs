@@ -4,29 +4,77 @@ using System.Text;
 
 namespace SquidLib.SquidGrid {
     public class Grid<T> {
+
         public int Width { get; private set; }
         public int Height { get; private set; }
         private T[] raw;
+
+        /// <summary>
+        /// This is the object to be returned when a T is requested that is outside of the grid area.
+        /// </summary>
         public T Outside { get; set; }
 
-        public Grid() : this(80, 24, default) { }
+        /// <summary>
+        /// This is the object placed in new Grid locations. This is used during expansion operations
+        /// as well as during initial creation if a constructor that takes it in is used.
+        /// </summary>
+        public T DefaultFill { get; set; }
 
-        public Grid(int width, int height) : this(width, height, default) { }
+        /// <summary>
+        /// Creates a default sized grid.
+        /// 
+        /// Uses the default of the object type used to create the grid for items outside the grid space.
+        /// </summary>
+        public Grid() : this(80, 24, outside: default) { }
 
+        /// <summary>
+        /// Creates a grid with the given size.
+        /// 
+        /// Uses the default of the object type used to create the grid for items outside the grid space.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public Grid(int width, int height) : this(width, height, outside: default) { }
+
+        /// <summary>
+        /// Creates a grid with the given size and given object to be returned on requests that lie outside of
+        /// the grid space.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="outside"></param>
         public Grid(int width, int height, T outside) {
             Width = Math.Max(1, width);
             Height = Math.Max(1, height);
             Outside = outside;
             raw = new T[Width * Height];
         }
-        public Grid(int width, int height, T outside, T initialFill) : this(width, height, outside){
-            for(int i = Width * Height - 1; i >= 0; i--) {
-                raw[i] = initialFill;
+
+        /// <summary>
+        /// Creates a grid with the given size and given object to be returned on requests that lie outside
+        /// of the grid space, as well as the object to fill the interior of the grid space.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="outside">The object that will be returned on requests outside the grid area</param>
+        /// <param name="defaultFill">The object that will be placed in all spaces inside the grid</param>
+        public Grid(int width, int height, T outside, T defaultFill) : this(width, height, outside) {
+            DefaultFill = defaultFill;
+            for (int i = Width * Height - 1; i >= 0; i--) {
+                raw[i] = defaultFill;
             }
         }
 
+        /// <summary>
+        /// Creates a new Grid based on the passed in Grid.
+        /// 
+        /// The origional grid's Outside object and tiles are copied by reference and not created anew.
+        /// 
+        /// If the provided Grid is null then a default Grid object is created.
+        /// </summary>
+        /// <param name="other"></param>
         public Grid(Grid<T> other) {
-            if(other is null) {
+            if (other is null) { // NOTE - should this be valid?
                 Width = 80;
                 Height = 24;
                 Outside = default;
@@ -40,7 +88,20 @@ namespace SquidLib.SquidGrid {
             Array.Copy(other.raw, raw, raw.Length);
         }
 
-        public T this[int x, int y] { get {
+        /// <summary>
+        /// Returns the object at the given location.
+        /// 
+        /// If the location lies outside of the bounds of the Grid then the singular Outside
+        /// object passed in during creation is returned.
+        /// 
+        /// If one of the constructors that does not take an Outside object was used, then
+        /// the Outside object returned is the default type for the Grid's content type.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public T this[int x, int y] {
+            get {
                 if (x < 0 || x >= Width || y < 0 || y >= Height)
                     return Outside;
                 return raw[y * Width + x];
@@ -67,9 +128,18 @@ namespace SquidLib.SquidGrid {
             return false;
         }
 
+        /// <summary>
+        /// Filles the Grid with the provided sequence, starting at the given location.
+        /// 
+        /// If the sequence is longer than the grid starting at the provided location, the grid is filled to its
+        /// width and then the rest of the sequence is ignored where it would not fit in the grid.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="sequence">The items that are to be placed, in the order to place them</param>
         public void RowEdit(int x, int y, IEnumerable<T> sequence) {
-            if(!(sequence is null) && x >= 0 && x < Width && y >= 0 && y < Height) {
-                foreach(T item in sequence) {
+            if (!(sequence is null) && x >= 0 && x < Width && y >= 0 && y < Height) {
+                foreach (T item in sequence) {
                     raw[y * Width + x++] = item;
                     if (x >= Width) break;
                 }
@@ -82,6 +152,7 @@ namespace SquidLib.SquidGrid {
         /// <returns>The row-major 1D T array this uses internally.</returns>
         public T[] RawData() => raw;
     }
+
     public static class GridExtensions {
         /// <summary>
         /// Given a "rectangular string" with some form of newlines separating equal-length rows, this creates a Grid of char with its contents.
@@ -96,7 +167,7 @@ namespace SquidLib.SquidGrid {
             int width = data.IndexOf('\n');
             int height = 0;
             int idx = width;
-            while(idx != -1) {
+            while (idx != -1) {
                 idx = data.IndexOf('\n', idx + 1);
                 height++;
             }
@@ -121,14 +192,50 @@ namespace SquidLib.SquidGrid {
             }
             return builder.ToString();
         }
+
+        /// <summary>
+        /// Adds the provided Grid to the end of this StringBuilder. Newlines are added between rows of the grid so that output
+        /// will render in the same presentation manner as the grid itself.
+        /// </summary>
+        /// <param name="builder">The starting StringBuilder. If this is null then it is treated as an empty builder.</param>
+        /// <param name="grid"></param>
+        /// <returns></returns>
         public static StringBuilder Append(this StringBuilder builder, Grid<char> grid) {
-            if (builder is null || grid is null)
+            if (grid is null)
                 return builder;
+            if (builder is null)
+                builder = new StringBuilder(grid.Width * grid.Height + grid.Height); // capacity is size of grid + 1 per row for newline
             char[] raw = grid.RawData();
             for (int i = 0; i < grid.Height; i++) {
                 builder.Append(raw, i * grid.Width, grid.Width).Append('\n');
             }
             return builder;
+        }
+
+        /// <summary>
+        /// Returns a string that is the combination of this string with the grid appended to it.
+        /// 
+        /// Newlines are added between rows of the grid so that output will render in the same presentation manner as
+        /// the grid itself.
+        /// 
+        /// If possible, using the StringBuilder version of this method should be preferred.
+        /// </summary>
+        /// <param name="input">The starting string. If this is null then it is treated as an empty string.</param>
+        /// <param name="grid"></param>
+        /// <returns></returns>
+        public static string Append(this string input, Grid<char> grid) {
+            if (grid is null)
+                return input;
+            StringBuilder builder;
+            if (input is null)
+                builder = new StringBuilder(grid.Width * grid.Height + grid.Height); // capacity is size of grid + 1 per row for newline
+            else
+                builder = new StringBuilder(input);
+            char[] raw = grid.RawData();
+            for (int i = 0; i < grid.Height; i++) {
+                builder.Append(raw, i * grid.Width, grid.Width).Append('\n');
+            }
+            return builder.ToString();
         }
     }
 }
