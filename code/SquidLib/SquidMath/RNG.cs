@@ -13,7 +13,7 @@ namespace SquidLib.SquidMath {
     /// just one generator.
     /// </summary>
     public class RNG : IRNG, IReversibleRNG {
-        private const double doubleDivisor = 1.0 / (1 << 53);
+        private const double doubleDivisor = 1.0 / (1L << 53);
         private const float floatDivisor = 1.0f / (1 << 24);
         static private Random localRNG = new Random();
 

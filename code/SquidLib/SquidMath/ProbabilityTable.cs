@@ -13,18 +13,46 @@ namespace SquidLib.SquidMath {
         private int[] mixed;
         public int Count => Items.Count;
 
-        public IRNG Random { get; private set; }
+        public RNG Random { get; set; }
 
         public ProbabilityTable(List<(TItem item, double weight)> items) : this(null, items) {
         }
 
-        public ProbabilityTable(IRNG random, List<(TItem item, double weight)> items) {
-            if (items == null)
-                throw new ArgumentNullException(nameof(items));
-            if (random == null)
+        public ProbabilityTable(RNG random, List<(TItem item, double weight)> items) {
+            if (random is null)
                 Random = new RNG();
             else
                 Random = random;
+            Reset(items);
+        }
+        public ProbabilityTable(IndexedDictionary<TItem, double> dict) : this(null, dict) {
+        }
+
+        public ProbabilityTable(RNG random, IndexedDictionary<TItem, double> dict) {
+            if (random is null)
+                Random = new RNG();
+            else
+                Random = random;
+            if (dict is null)
+                throw new ArgumentNullException(nameof(dict));
+            List<(TItem item, double weight)> items = new List<(TItem item, double weight)>(dict.Count);
+            foreach(var kv in dict) {
+                items.Add((kv.Key, kv.Value));
+            }
+            Reset(items);
+        }
+        public void Reset(IndexedDictionary<TItem, double> dict) {
+            if (dict is null)
+                throw new ArgumentNullException(nameof(dict));
+            List<(TItem item, double weight)> items = new List<(TItem item, double weight)>(dict.Count);
+            foreach (var kv in dict) {
+                items.Add((kv.Key, kv.Value));
+            }
+            Reset(items);
+        }
+        public void Reset(List<(TItem item, double weight)> items) {
+            if (items is null)
+                throw new ArgumentNullException(nameof(items));
             Items = new List<(TItem item, double weight)>(items);
             int size = Count;
             mixed = new int[size << 1];

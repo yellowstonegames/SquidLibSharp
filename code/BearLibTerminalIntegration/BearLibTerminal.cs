@@ -139,18 +139,18 @@ namespace BearLib {
         TK_MOUSE_X2         = 0x84,
         TK_MOUSE_MOVE       = 0x85, // Movement event
         TK_MOUSE_SCROLL     = 0x86, // Mouse scroll event
-        TK_MOUSE_X          = 0x87, // Cusor position in cells
+        TK_MOUSE_X          = 0x87, // Cursor position in cells
         TK_MOUSE_Y          = 0x88,
         TK_MOUSE_PIXEL_X    = 0x89, // Cursor position in pixels
         TK_MOUSE_PIXEL_Y    = 0x8A,
         TK_MOUSE_WHEEL      = 0x8B, // Scroll direction and amount
         TK_MOUSE_CLICKS     = 0x8C, // Number of consecutive clicks
 
-        //If key was released instead of pressed, it's code will be OR'ed withTK_KEY_RELEASED
+        //If key was released instead of pressed, it's code will be OR'ed with TK_KEY_RELEASED
         TK_KEY_RELEASED     = 0x100,
 
         // Virtual key-codes for internal terminal states/variables.
-        // These can be accessed via terminal_state function.
+        // These can be accessed via Terminal.State() function.
         TK_WIDTH            = 0xC0, // Terminal width in cells
         TK_HEIGHT           = 0xC1, // Terminal height in cells
         TK_CELL_WIDTH       = 0xC2, // Cell width in pixels
