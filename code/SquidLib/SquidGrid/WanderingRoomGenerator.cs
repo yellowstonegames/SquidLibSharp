@@ -98,7 +98,6 @@ namespace SquidLib.SquidGrid {
                     connections.Add((start, sorted[i]));
                 }
             }
-            connections.Ordering.Sort((a, b) => a.from.X - b.from.X);
         }
         private void Store() {
             foreach (Coord m in marked) {
@@ -354,27 +353,27 @@ namespace SquidLib.SquidGrid {
                             start += dir.Coord();
                         }
                         break;
-                        //case BOX_WALLED:
-                        //    markRectangleWalled(end, Random.NextInt(1, 5), Random.NextInt(1, 5));
-                        //    markRectangleWalled(start, Random.NextInt(1, 4), Random.NextInt(1, 4));
-                        //    store();
-                        //    dir = Direction.getDirection(end.X - start.X, end.Y - start.Y);
-                        //    if (dir.isDiagonal())
-                        //        dir = rng.nextBoolean() ? Direction.getCardinalDirection(dir.deltaX, 0)
-                        //                : Direction.getCardinalDirection(0, -dir.deltaY);
-                        //    while (start.X != end.X && start.Y != end.Y) {
-                        //        markPiercing(start);
-                        //        markEnvironmentCorridor(start.X, start.Y);
-                        //        start = start.translate(dir);
-                        //    }
-                        //    markRectangleWalled(start, 1, 1);
-                        //    dir = Direction.getCardinalDirection(end.X - start.X, -(end.Y - start.Y));
-                        //    while (!(start.X == end.X && start.Y == end.Y)) {
-                        //        markPiercing(start);
-                        //        markEnvironmentCorridor(start.X, start.Y);
-                        //        start = start.translate(dir);
-                        //    }
-                        //    break;
+                    case DungeonRoom.WalledBoxRoom:
+                        markRectangleWalled(end, Random.NextInt(1, 5), Random.NextInt(1, 5));
+                        markRectangleWalled(start, Random.NextInt(1, 4), Random.NextInt(1, 4));
+                        Store();
+                        dir = DirectionExtensions.GetOctalDirection(end.X - start.X, end.Y - start.Y);
+                        if (DirectionExtensions.IsDiagonal(dir))
+                            dir = Random.NextBoolean() ? DirectionExtensions.GetCardinalDirection(dir.DeltaX(), 0)
+                                    : DirectionExtensions.GetCardinalDirection(0, -dir.DeltaY());
+                        while (start.X != end.X && start.Y != end.Y) {
+                            markPiercing(start);
+                            markEnvironmentCorridor(start.X, start.Y);
+                            start += dir.Coord();
+                        }
+                        markRectangleWalled(start, 1, 1);
+                        dir = DirectionExtensions.GetCardinalDirection(end.X - start.X, -(end.Y - start.Y));
+                        while (!(start.X == end.X && start.Y == end.Y)) {
+                            markPiercing(start);
+                            markEnvironmentCorridor(start.X, start.Y);
+                            start += dir.Coord();
+                        }
+                        break;
                         //case ROUND:
                         //    markCircle(end, Random.NextInt(2, 6));
                         //    markCircle(start, Random.NextInt(2, 6));

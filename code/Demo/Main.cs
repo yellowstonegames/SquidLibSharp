@@ -24,6 +24,9 @@ namespace Demo {
             Terminal.Refresh();
             int input = 0;
             WanderingRoomGenerator generator = new WanderingRoomGenerator(width, height, rng);
+            generator.SetRoomType(DungeonRoom.WalledBoxRoom, 7.0);
+            //generator.SetRoomType(DungeonRoom.BoxRoom, 1.0);
+            generator.SetRoomType(DungeonRoom.Cave, 5.0);
             Grid<char> grid = generator.Generate();
             Console.WriteLine(grid.Show());
             grid = LineKit.HashesToLines(grid, true);
