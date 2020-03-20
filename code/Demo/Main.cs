@@ -277,22 +277,19 @@ namespace Demo {
 
         static void Main() {
 
-            RNG rng = new RNG();
             double time = 0.0;
             Terminal.Open();
-            int width = 512, height = 512;
+            int width = 256, height = 256;
             //Terminal.Set($"window.size={width}x{height};");
             Terminal.Set($"window: title='SquidLibSharp Noise Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=1x1");
-            int[] grayscale = new int[256];
-            for (int i = 0; i < 256; i++) {
-                grayscale[i] = Color.FromArgb(i, i, i).ToArgb();
-            }
             FastNoise noise = new FastNoise();
             noise.SetFrequency(0.03125);
-            noise.SetFractalOctaves(3);
-            noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
+            noise.SetFractalOctaves(1);
+            noise.SetNoiseType(FastNoise.NoiseType.Simplex);
+            //noise.SetFractalOctaves(3);
+            //noise.SetNoiseType(FastNoise.NoiseType.SimplexFractal);
             double frames = 1;
-            DateTime current = DateTime.Now;
+            DateTime current = DateTime.Now, startTime = DateTime.Now;
             Terminal.Refresh();
             int input;
             while (keepRunning) {
@@ -303,11 +300,10 @@ namespace Demo {
                     if (Terminal.HasInput()) {
                         _ = Terminal.Read();
                     }
-                    // this is a really bad practice; I just want to get an idea of how fast or slow this is.
-                    time++;
-                    for (int x = 0; x < 512; x++) {
-                        for (int y = 0; y < 512; y++) {
-                            Terminal.BkColor(grayscale[(int)(noise.GetNoise(x + time, y + time) * 125 + 127.5)]);
+                    time = DateTime.Now.Subtract(startTime).TotalMilliseconds * 0.06180339887498949;
+                    for (int x = 0; x < 256; x++) {
+                        for (int y = 0; y < 256; y++) {
+                            Terminal.BkGray((int)(noise.GetNoise(x, y, time) * 125 + 127.5));
                             Terminal.Put(x, y, ' ');
                         }
                     }
@@ -324,12 +320,12 @@ namespace Demo {
     }
     public static class NoiseDemoTK {
         private static void Main() {
-            DateTime current = DateTime.Now;
+            DateTime current = DateTime.Now, startTime = DateTime.Now;
             int frames = 0;
 
             SimplexNoise noise = new SimplexNoise();
 
-            int time = 0;
+            double time = 0;
 
             using (var window = new NoiseWindow()) {
                 window.VSync = VSyncMode.Off;
@@ -338,10 +334,10 @@ namespace Demo {
                         window.Close();
                         break;
                     }
-                    time++;
-                    for (int i = 0, y = 0; y < 512; y++) {
-                        for (int x = 0; x < 512; x++) {
-                            window.colors[i++] = (byte)(noise.GetNoise(x * 0.03125, y * 0.03125, time * 0.03125) * 127.5 + 127.5);
+                    time = DateTime.Now.Subtract(startTime).TotalSeconds * 0.6180339887498949;
+                    for (int i = 0, y = 0; y < window.Height; y++) {
+                        for (int x = 0; x < window.Width; x++) {
+                            window.colors[i++] = (byte)(noise.GetNoise(x * 0.03125, y * 0.03125, time) * 127.5 + 127.5);
                         }
                     }
                     frames++;
@@ -356,11 +352,11 @@ namespace Demo {
     }
     public static class FastNoiseDemoTK {
         private static void Main() {
-            DateTime current = DateTime.Now;
+            DateTime current = DateTime.Now, startTime = DateTime.Now;
             int frames = 0;
 
             FastNoise noise = new FastNoise(543210);
-            noise.SetFrequency(0.03125 * 0.5);
+            noise.SetFrequency(0.03125);
             noise.SetNoiseType(FastNoise.NoiseType.Simplex);
 
 //            FastNoise warp = new FastNoise(12345);
@@ -380,18 +376,21 @@ namespace Demo {
                         window.Close();
                         break;
                     }
-                    time += 0.6180339887498949;
+                    time = DateTime.Now.Subtract(startTime).TotalSeconds * (32.0 * 0.6180339887498949);
                     for (int i = 0, y = 0; y < window.Height; y++) {
                         for (int x = 0; x < window.Width; x++) {
-                            result = noise.GetSimplex(
-                                time,
-                                time * -0.3333333333333333 + y * 0.9428090415820634,
-                                time * -0.3333333333333333 + y * -0.4714045207910317 + x * 0.816496580927726,
-                                time * -0.3333333333333333 + y * -0.4714045207910317 + x * -0.816496580927726);
+                            result = noise.GetSimplex(x, y, time);
+                            //result = noise.GetSimplex(
+                            //    time,
+                            //    time * -0.3333333333333333 + y * 0.9428090415820634,
+                            //    time * -0.3333333333333333 + y * -0.4714045207910317 + x * 0.816496580927726,
+                            //    time * -0.3333333333333333 + y * -0.4714045207910317 + x * -0.816496580927726);
+
                             //result = noise.GetSimplex(x + y + time, y - x - time, time - x - y, x - y - time);
                             //                            result = noise.GetSimplex(x, y, time);
-                            if (result < -1.0) Console.WriteLine($"Result too low! {result}");
-                            if (result > 1.0) Console.WriteLine($"Result too high! {result}");
+
+                            //if (result < -1.0) Console.WriteLine($"Result too low! {result}");
+                            //if (result > 1.0) Console.WriteLine($"Result too high! {result}");
                             window.colors[i++] = (byte)(result * 127.5 + 127.5);
                             //window.colors[i++] = (byte)(noise.GetSimplex(x, y, 0.375 * time, warp.GetNoise(-x, -y, -0.5 * time) * 200) * 125 + 128);
                         }
