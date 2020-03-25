@@ -69,5 +69,75 @@ namespace SquidLib.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Hilbert2D_Dist {
+            get {
+                object obj = ResourceManager.GetObject("Hilbert2D_Dist", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Hilbert2D_X {
+            get {
+                object obj = ResourceManager.GetObject("Hilbert2D_X", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Hilbert2D_Y {
+            get {
+                object obj = ResourceManager.GetObject("Hilbert2D_Y", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Hilbert3D_Dist {
+            get {
+                object obj = ResourceManager.GetObject("Hilbert3D_Dist", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Hilbert3D_X {
+            get {
+                object obj = ResourceManager.GetObject("Hilbert3D_X", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Hilbert3D_Y {
+            get {
+                object obj = ResourceManager.GetObject("Hilbert3D_Y", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Hilbert3D_Z {
+            get {
+                object obj = ResourceManager.GetObject("Hilbert3D_Z", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }
