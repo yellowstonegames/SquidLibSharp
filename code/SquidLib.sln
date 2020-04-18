@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BearLibTerminalIntegration"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{E01832D1-6D30-43F2-A8A0-88C8C11007C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoiseDemo", "NoiseDemo\NoiseDemo.csproj", "{B26E35CD-4C20-4C28-A7DB-FA63542AD4D0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TkDemo", "NoiseDemo\TkDemo.csproj", "{B26E35CD-4C20-4C28-A7DB-FA63542AD4D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

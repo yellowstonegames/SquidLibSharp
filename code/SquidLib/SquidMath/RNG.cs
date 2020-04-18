@@ -12,7 +12,17 @@ namespace SquidLib.SquidMath {
     /// encouraged to make lots of these RNGs where their results need to be independent, rather than skipping around in
     /// just one generator.
     /// </summary>
-    public class RNG : IRNG, IReversibleRNG {
+    /// <remarks>
+    /// Some codebases may just want this class and not the rest of SquidLibSharp; if you want to copy this class out,
+    /// you can remove the interfaces this implements (IRNG and IReversibleRNG), remove the constructor that takes a
+    /// string, and remove any code that references IOrdered or IndexedDictionary (like RandomKey(), and a section of
+    /// RandomElement()). This is a pretty good type of random number generator, in part because it can step forwards or
+    /// backwards (making some shuffle-related code much better), but also because it can repeat or skip varying sets of
+    /// output numbers depending on its stream. If a generator always produced a sequence of numbers that excluded about
+    /// a third of the possible range, that would be bad, but if each generator produced a different such sequence, that
+    /// would be good, because it makes predicting the output much harder.
+    /// </remarks>
+    public class RNG : Random, IRNG, IReversibleRNG {
         private const double doubleDivisor = 1.0 / (1L << 53);
         private const float floatDivisor = 1.0f / (1 << 24);
         static private Random localRNG = new Random();
@@ -39,6 +49,7 @@ namespace SquidLib.SquidMath {
                 (ulong)(localRNG.NextDouble() * 0x10000000000000UL)
                     ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL)) { }
 
+        public RNG(int seed) => state = ((ulong)seed, Randomize((ulong)seed) | 1UL);
         public RNG(long seed) => state = ((ulong)seed, Randomize((ulong)seed) | 1UL);
 
         public RNG(ulong seed) => state = (seed, Randomize(seed) | 1UL);
@@ -88,6 +99,7 @@ namespace SquidLib.SquidMath {
          * @return a copy of this RandomnessSource
          */
         public IRNG Copy() => new RNG(state.a, state.b);
+
 
         /**
          * Can return any int, positive or negative, of any size permissible in a 32-bit signed integer.
@@ -195,11 +207,10 @@ namespace SquidLib.SquidMath {
          *
          * @return a random double at least equal to 0.0 and less than 1.0
          */
-        public double NextDouble() {
+        public override double NextDouble() {
             ulong s = (state.a += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
-
         }
 
         /**
@@ -245,11 +256,11 @@ namespace SquidLib.SquidMath {
 
         /**
          * Given a byte array as a parameter, this will fill the array with random bytes (modifying it
-         * in-place). Calls NextLong() {@code Math.ceil(bytes.length / 8.0)} times.
+         * in-place). Calls NextULong() {@code Math.ceil(bytes.length / 8.0)} times.
          *
          * @param bytes a byte array that will have its contents overwritten with random bytes.
          */
-        public void NextBytes(byte[] bytes) {
+        public override void NextBytes(byte[] bytes) {
             if (bytes is null) {
                 return;
             }
@@ -910,7 +921,47 @@ namespace SquidLib.SquidMath {
         /// I don't have a particular reason why you would want to use CurrentStream(), but one could easily come up; maybe it's important that
         /// two generators use independent streams?</remarks>
         public ulong CurrentStream() => state.b - (state.a * 0x1743CE5C6E1B848BUL) * 0x9E3779B97F4A7C16UL;
+    public override bool Equals(object obj) {
+            //       
+            // See the full list of guidelines at
+            //   http://go.microsoft.com/fwlink/?LinkID=85237  
+            // and also the guidance for operator== at
+            //   http://go.microsoft.com/fwlink/?LinkId=85238
+            //
 
+            if (obj == null || GetType() != obj.GetType()) {
+                return false;
+            }
+            return state.Equals(((RNG)obj).state);
+        }
+
+        // override object.GetHashCode
+        public override int GetHashCode() {
+            return state.GetHashCode();
+        }
+        public override int Next() {
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return (int)(z ^ z >> 26 ^ z >> 6) & 0x7FFFFFFF;
+        }
+
+        public override int Next(int maxValue) {
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return (int)((Math.Max(0, maxValue) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
+        }
+
+        public override int Next(int minValue, int maxValue) {
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return minValue + (int)((Math.Max(0, maxValue - minValue) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
+        }
+
+        protected override double Sample() {
+            ulong s = (state.a += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
+        }
     }
 
 }
