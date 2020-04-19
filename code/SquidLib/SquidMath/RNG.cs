@@ -53,21 +53,17 @@ namespace SquidLib.SquidMath {
                 (ulong)(localRNG.NextDouble() * 0x10000000000000UL)
                     ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL)) { }
 
-        public RNG(int seed) => State = ((ulong)seed, Randomize((ulong)seed) | 1UL);
-        public RNG(long seed) => State = ((ulong)seed, Randomize((ulong)seed) | 1UL);
+        public RNG(int seed) : this((ulong)seed, Randomize((ulong)seed)) { }
+        
+        public RNG(long seed) : this((ulong)seed, Randomize((ulong)seed)) { }
 
-        public RNG(ulong seed) => State = (seed, Randomize(seed) | 1UL);
+        public RNG(ulong seed) : this(seed, Randomize(seed)) { }
 
-        public RNG(ulong seedA, ulong seedB) => State = (seedA, seedB | 1UL);
-
-        /// <summary>
-        /// This will share the given sharedState with any other RNG that uses it.
-        /// </summary>
-        /// <param name="sharedState">Will not be copied; will be used by reference and generation calls will mutate this</param>
-        public RNG(ref (ulong a, ulong b) sharedState) {
-            State = sharedState;
-            StateB |= 1UL;
+        public RNG(ulong seedA, ulong seedB) {
+            StateA = seedA;
+            StateB = seedB;
         }
+
         /// <summary>
         /// Uses SeededHash to get two different 64-bit hashes that this will use as its initial state. This can be useful
         /// if you don't know whether the .NET environment this will run on uses randomized hashing; if it does, just
@@ -916,24 +912,13 @@ namespace SquidLib.SquidMath {
         /// I don't have a particular reason why you would want to use CurrentStream(), but one could easily come up; maybe it's important that
         /// two generators use independent streams?</remarks>
         public ulong CurrentStream() => StateB - (StateA * 0x1743CE5C6E1B848BUL) * 0x9E3779B97F4A7C16UL;
-    public override bool Equals(object obj) {
-            //       
-            // See the full list of guidelines at
-            //   http://go.microsoft.com/fwlink/?LinkID=85237  
-            // and also the guidance for operator== at
-            //   http://go.microsoft.com/fwlink/?LinkId=85238
-            //
-
+        public override bool Equals(object obj) {
             if (obj == null || GetType() != obj.GetType()) {
                 return false;
             }
-            return State.Equals(((RNG)obj).State);
+            return StateA == ((RNG)obj).StateA && StateB == ((RNG)obj).StateB;
         }
-
-        // override object.GetHashCode
-        public override int GetHashCode() {
-            return State.GetHashCode();
-        }
+        public override int GetHashCode() => (int)(StateA + stateB >> 32);
         public override int Next() {
             ulong s = (StateA += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
