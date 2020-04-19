@@ -19,24 +19,28 @@ namespace SquidLib.SquidMath {
     /// RandomElement()). This is a pretty good type of random number generator, in part because it can step forwards or
     /// backwards (making some shuffle-related code much better), but also because it can repeat or skip varying sets of
     /// output numbers depending on its stream. If a generator always produced a sequence of numbers that excluded about
-    /// a third of the possible range, that would be bad, but if each generator produced a different such sequence, that
-    /// would be good, because it makes predicting the output much harder.
+    /// a third of the possible range, that would be bad, but since each generator produces a different such sequence, it
+    /// is good, because it makes predicting the output much harder.
     /// </remarks>
+    [Serializable]
     public class RNG : Random, IRNG, IReversibleRNG {
         private const double doubleDivisor = 1.0 / (1L << 53);
         private const float floatDivisor = 1.0f / (1 << 24);
-        static private Random localRNG = new Random();
+        private static Random localRNG = new Random();
 
-        private (ulong a, ulong b) state;
+        public (ulong a, ulong b) State { get => (StateA, StateB); set { StateA = value.a; StateB = value.b; } }
+        private ulong stateB;
+        public ulong StateA { get; set; }
+        public ulong StateB { get => stateB; set => stateB = (value | 1UL); }
 
         public string StateCode {
-            get => $"{state.a:X16}{state.b:X16}";
+            get => $"{StateA:X16}{StateB:X16}";
             set {
                 if (value is null) {
                     value = ""; //the following ulong.Parse() will throw a sensible exception
                 }
-                state.a = ulong.Parse(value.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-                state.b = ulong.Parse(value.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                StateA = ulong.Parse(value.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                StateB = ulong.Parse(value.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
             }
         }
 
@@ -49,45 +53,46 @@ namespace SquidLib.SquidMath {
                 (ulong)(localRNG.NextDouble() * 0x10000000000000UL)
                     ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL)) { }
 
-        public RNG(int seed) => state = ((ulong)seed, Randomize((ulong)seed) | 1UL);
-        public RNG(long seed) => state = ((ulong)seed, Randomize((ulong)seed) | 1UL);
+        public RNG(int seed) => State = ((ulong)seed, Randomize((ulong)seed) | 1UL);
+        public RNG(long seed) => State = ((ulong)seed, Randomize((ulong)seed) | 1UL);
 
-        public RNG(ulong seed) => state = (seed, Randomize(seed) | 1UL);
+        public RNG(ulong seed) => State = (seed, Randomize(seed) | 1UL);
 
-        public RNG(ulong seedA, ulong seedB) => state = (seedA, seedB | 1UL);
+        public RNG(ulong seedA, ulong seedB) => State = (seedA, seedB | 1UL);
 
         /// <summary>
         /// This will share the given sharedState with any other RNG that uses it.
         /// </summary>
         /// <param name="sharedState">Will not be copied; will be used by reference and generation calls will mutate this</param>
         public RNG(ref (ulong a, ulong b) sharedState) {
-            state = sharedState;
-            state.b |= 1UL;
+            State = sharedState;
+            StateB |= 1UL;
         }
         /// <summary>
         /// Uses SeededHash to get two different 64-bit hashes that this will use as its initial state. This can be useful
         /// if you don't know whether the .NET environment this will run on uses randomized hashing; if it does, just
         /// initializing an RNG with string.GetHashCode() would be non-deterministic. It also helps that we get 128 bits of
-        /// hash in total here, so quite a lot of generators should be potentially creatable from string seeds.
+        /// hash in total here (we only use 127 bits), so quite a lot of generators should be potentially creatable from
+        /// string seeds.
         /// </summary>
-        /// <param name="seed">any string; it can be null or empty</param>
+        /// <param name="seed">any string; it is allowed to be null or empty</param>
         public RNG(string seed) : this(SeededHash.Alpha.Hash64(seed), SeededHash.Omega.Hash64(seed)) { }
 
         public int NextBits(int bits) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (int)((z ^ z >> 26 ^ z >> 6) >> 64 - bits);
         }
 
         public ulong NextULong() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return z ^ z >> 26 ^ z >> 6;
         }
 
         public long NextLong() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (long)(z ^ z >> 26 ^ z >> 6);
         }
 
@@ -98,7 +103,7 @@ namespace SquidLib.SquidMath {
          *
          * @return a copy of this RandomnessSource
          */
-        public IRNG Copy() => new RNG(state.a, state.b);
+        public IRNG Copy() => new RNG(StateA, StateB);
 
 
         /**
@@ -107,13 +112,13 @@ namespace SquidLib.SquidMath {
          * @return any int, all 32 bits are random
          */
         public int NextInt() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (int)(z ^ z >> 26 ^ z >> 6);
         }
         public uint NextUInt() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (uint)(z ^ z >> 26 ^ z >> 6);
         }
 
@@ -125,13 +130,13 @@ namespace SquidLib.SquidMath {
          * @return a random int between 0 (inclusive) and bound (exclusive)
          */
         public int NextInt(int bound) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
         public uint NextUInt(uint bound) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (uint)(bound * ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL) >> 32);
         }
 
@@ -145,8 +150,8 @@ namespace SquidLib.SquidMath {
          * @return a random int between 0 (inclusive) and bound (exclusive)
          */
         public int NextSignedInt(int bound) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (int)((bound * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
@@ -157,16 +162,16 @@ namespace SquidLib.SquidMath {
         /// <param name="bound"></param>
         /// <returns></returns>
         public int PreviousSignedInt(int bound) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (int)((bound * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
         public ulong NextULong(ulong bound) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return MathExtras.MultiplyHigh(z ^ z >> 26 ^ z >> 6, bound);
         }
 
@@ -208,8 +213,8 @@ namespace SquidLib.SquidMath {
          * @return a random double at least equal to 0.0 and less than 1.0
          */
         public override double NextDouble() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
         }
 
@@ -221,8 +226,8 @@ namespace SquidLib.SquidMath {
          * @return a random double between 0.0 (inclusive) and outer (exclusive)
          */
         public double NextDouble(double outer) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * outer;
         }
 
@@ -232,14 +237,14 @@ namespace SquidLib.SquidMath {
          * @return a random float at least equal to 0.0 and less than 1.0
          */
         public float NextFloat() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor;
         }
 
         public float NextFloat(float outer) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor * outer;
         }
 
@@ -250,8 +255,8 @@ namespace SquidLib.SquidMath {
          * @return a random true or false value.
          */
         public bool NextBoolean() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            return (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) < 0x8000000000000000UL;
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            return (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL) < 0x8000000000000000UL;
         }
 
         /**
@@ -271,17 +276,7 @@ namespace SquidLib.SquidMath {
             }
         }
 
-        public void SetState(string seed) {
-            if (seed is null) {
-                seed = ""; // rely on following Parse to throw relevant exceptions
-            }
-            state.a = ulong.Parse(seed.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-            state.b = ulong.Parse(seed.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-        }
-
-        public string GetState() => $"{state.a:X16}{state.b:X16}";
-
-        public override string ToString() => $"RNG with state (0x{state.a:X16}UL,0x{state.b:X16}UL)";
+        public override string ToString() => $"RNG with state (0x{StateA:X16}UL,0x{StateB:X16}UL)";
 
         /**
          * Fast static randomizing method that takes its state as a parameter; state is expected to change between calls to
@@ -695,95 +690,95 @@ namespace SquidLib.SquidMath {
         }
 
         public int PreviousBits(int bits) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (int)((z ^ z >> 26 ^ z >> 6) >> 64 - bits);
 
         }
 
         public long PreviousLong() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (long)(z ^ z >> 26 ^ z >> 6);
         }
 
         public ulong PreviousULong() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return z ^ z >> 26 ^ z >> 6;
         }
 
         public int PreviousInt() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (int)(z ^ z >> 26 ^ z >> 6);
         }
 
         public uint PreviousUInt() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (uint)(z ^ z >> 26 ^ z >> 6);
         }
 
         public int PreviousInt(int bound) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
         public uint PreviousUInt(uint bound) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (uint)(bound * ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL) >> 32);
         }
 
         public long PreviousLong(long bound) => (long)PreviousULong((ulong)Math.Max(0L, bound));
 
         public ulong PreviousULong(ulong bound) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return MathExtras.MultiplyHigh(z ^ z >> 26 ^ z >> 6, bound);
         }
 
         public bool PreviousBoolean() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return z < 0x8000000000000000UL;
         }
 
         public double PreviousDouble() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
         }
 
         public double PreviousDouble(double outer) => PreviousDouble() * outer;
 
         public float PreviousFloat() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor;
         }
 
@@ -920,7 +915,7 @@ namespace SquidLib.SquidMath {
         /// and state.b is the stream, so stepping state.b back the above number of steps gives us its offset from state.a at all positions.
         /// I don't have a particular reason why you would want to use CurrentStream(), but one could easily come up; maybe it's important that
         /// two generators use independent streams?</remarks>
-        public ulong CurrentStream() => state.b - (state.a * 0x1743CE5C6E1B848BUL) * 0x9E3779B97F4A7C16UL;
+        public ulong CurrentStream() => StateB - (StateA * 0x1743CE5C6E1B848BUL) * 0x9E3779B97F4A7C16UL;
     public override bool Equals(object obj) {
             //       
             // See the full list of guidelines at
@@ -932,34 +927,34 @@ namespace SquidLib.SquidMath {
             if (obj == null || GetType() != obj.GetType()) {
                 return false;
             }
-            return state.Equals(((RNG)obj).state);
+            return State.Equals(((RNG)obj).State);
         }
 
         // override object.GetHashCode
         public override int GetHashCode() {
-            return state.GetHashCode();
+            return State.GetHashCode();
         }
         public override int Next() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (int)(z ^ z >> 26 ^ z >> 6) & 0x7FFFFFFF;
         }
 
         public override int Next(int maxValue) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (int)((Math.Max(0, maxValue) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
         public override int Next(int minValue, int maxValue) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return minValue + (int)((Math.Max(0, maxValue - minValue) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
         protected override double Sample() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
         }
     }
