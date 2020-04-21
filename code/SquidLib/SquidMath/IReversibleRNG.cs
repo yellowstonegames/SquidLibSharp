@@ -162,16 +162,35 @@ namespace SquidLib.SquidMath {
          */
         double PreviousDouble(double min, double max);
 
-        /**
-         * Returns a random element from the provided IEnumerable, which should have predictable iteration order if you want
-         * predictable behavior for identical RNG seeds, though it will get a random element just fine for any Collection
-         * (just not predictably in all cases). If coll is empty, returns null.
-         * <br>
-         * @param <T>  the type of the returned object
-         * @param coll the Collection to get an element from; remember, Map does not implement Collection
-         * @return the randomly selected element
-         */
-        T PreviousRandomElement<T>(IEnumerable<T> coll);
+        /// <summary>
+        /// Retrieves the previously-chosen random element from the given non-empty IList of T (or array of T).
+        /// This runs in constant time if the element accessor in <see cref="IList{T}"/> runs in constant time,
+        /// which is the case for <see cref="List{T}"/> and <see cref="Array"/> but not <see cref="LinkedList{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The generic type of IList</typeparam>
+        /// <param name="list">An IList that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <returns>The previously-chosen random T element from list.</returns>
+        T PreviousRandomElement<T>(IList<T> list);
+
+        /// <summary>
+        /// Retrieves the previously-chosen random element from the given non-empty IOrdered of T (or array of T).
+        /// This typically should only be run on <see cref="IndexedSet{T}"/>; if you have an <see cref="IndexedDictionary{TKey, TValue}"/>,
+        /// then use <see cref="RandomKey{TKey, TValue}(IndexedDictionary{TKey, TValue})"/> and/or <see cref="RandomValue{TKey, TValue}(IndexedDictionary{TKey, TValue})"/>.
+        /// This should generally run in constant time.
+        /// </summary>
+        /// <typeparam name="T">The generic type of IOrdered</typeparam>
+        /// <param name="ordered">An IOrdered that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <returns>The previously-chosen random T element from ordered.</returns>
+        T PreviousRandomElement<T>(IOrdered<T> ordered);
+
+        /// <summary>
+        /// Retrieves the previously-chosen random element from the given non-empty ICollection of T (an IList or array uses a different overload).
+        /// This runs at best in linear time, since it has to iterate through a random amount of coll before it has a result.
+        /// </summary>
+        /// <typeparam name="T">The generic type of ICollection</typeparam>
+        /// <param name="coll">An ICollection that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <returns>The previously-chosen random T element from coll.</returns>
+        T PreviousRandomElement<T>(ICollection<T> coll);
 
         /**
          * Shuffle an array using the Fisher-Yates algorithm and returns a shuffled copy, freshly-allocated, without
