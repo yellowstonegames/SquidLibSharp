@@ -12,21 +12,35 @@ namespace SquidLib.SquidMath {
     /// encouraged to make lots of these RNGs where their results need to be independent, rather than skipping around in
     /// just one generator.
     /// </summary>
-    public class RNG : IRNG, IReversibleRNG {
+    /// <remarks>
+    /// Some codebases may just want this class and not the rest of SquidLibSharp; if you want to copy this class out,
+    /// you can remove the interfaces this implements (IRNG and IReversibleRNG), remove the constructor that takes a
+    /// string, and remove any code that references IOrdered or IndexedDictionary (like RandomKey(), and a section of
+    /// RandomElement()). This is a pretty good type of random number generator, in part because it can step forwards or
+    /// backwards (making some shuffle-related code much better), but also because it can repeat or skip varying sets of
+    /// output numbers depending on its stream. If a generator always produced a sequence of numbers that excluded about
+    /// a third of the possible range, that would be bad, but since each generator produces a different such sequence, it
+    /// is good, because it makes predicting the output much harder.
+    /// </remarks>
+    [Serializable]
+    public class RNG : Random, IRNG, IReversibleRNG {
         private const double doubleDivisor = 1.0 / (1L << 53);
         private const float floatDivisor = 1.0f / (1 << 24);
-        static private Random localRNG = new Random();
+        private static Random localRNG = new Random();
 
-        private (ulong a, ulong b) state;
+        public (ulong a, ulong b) State { get => (StateA, StateB); set { StateA = value.a; StateB = value.b; } }
+        private ulong stateB;
+        public ulong StateA { get; set; }
+        public ulong StateB { get => stateB; set => stateB = (value | 1UL); }
 
         public string StateCode {
-            get => $"{state.a:X16}{state.b:X16}";
+            get => $"{StateA:X16}{StateB:X16}";
             set {
                 if (value is null) {
                     value = ""; //the following ulong.Parse() will throw a sensible exception
                 }
-                state.a = ulong.Parse(value.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-                state.b = ulong.Parse(value.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                StateA = ulong.Parse(value.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                StateB = ulong.Parse(value.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
             }
         }
 
@@ -39,102 +53,97 @@ namespace SquidLib.SquidMath {
                 (ulong)(localRNG.NextDouble() * 0x10000000000000UL)
                     ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL)) { }
 
-        public RNG(long seed) => state = ((ulong)seed, Randomize((ulong)seed) | 1UL);
+        public RNG(int seed) : this((ulong)seed, Randomize((ulong)seed)) { }
+        
+        public RNG(long seed) : this((ulong)seed, Randomize((ulong)seed)) { }
 
-        public RNG(ulong seed) => state = (seed, Randomize(seed) | 1UL);
+        public RNG(ulong seed) : this(seed, Randomize(seed)) { }
 
-        public RNG(ulong seedA, ulong seedB) => state = (seedA, seedB | 1UL);
-
-        /// <summary>
-        /// This will share the given sharedState with any other RNG that uses it.
-        /// </summary>
-        /// <param name="sharedState">Will not be copied; will be used by reference and generation calls will mutate this</param>
-        public RNG(ref (ulong a, ulong b) sharedState) {
-            state = sharedState;
-            state.b |= 1UL;
+        public RNG(ulong seedA, ulong seedB) {
+            StateA = seedA;
+            StateB = seedB;
         }
+
         /// <summary>
         /// Uses SeededHash to get two different 64-bit hashes that this will use as its initial state. This can be useful
         /// if you don't know whether the .NET environment this will run on uses randomized hashing; if it does, just
         /// initializing an RNG with string.GetHashCode() would be non-deterministic. It also helps that we get 128 bits of
-        /// hash in total here, so quite a lot of generators should be potentially creatable from string seeds.
+        /// hash in total here (we only use 127 bits), so quite a lot of generators should be potentially creatable from
+        /// string seeds.
         /// </summary>
-        /// <param name="seed">any string; it can be null or empty</param>
+        /// <param name="seed">any string; it is allowed to be null or empty</param>
         public RNG(string seed) : this(SeededHash.Alpha.Hash64(seed), SeededHash.Omega.Hash64(seed)) { }
 
+        /// <summary>
+        /// Produces a copy of other such that, if Next() or other generator methods are called on this object and the
+        /// copy, both will generate the same sequence of random numbers from the point the copy constructor was called.
+        /// </summary>
+        /// <param name="other">Another RNG that must not be null, and will be copied exactly.</param>
+        public RNG(RNG other) : this(other.StateA, other.StateB) { }
+
+        public IRNG Copy() => new RNG(StateA, StateB);
+
         public int NextBits(int bits) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (int)((z ^ z >> 26 ^ z >> 6) >> 64 - bits);
         }
 
         public ulong NextULong() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return z ^ z >> 26 ^ z >> 6;
         }
 
         public long NextLong() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (long)(z ^ z >> 26 ^ z >> 6);
         }
 
-        /**
-         * Produces a copy of this RandomnessSource that, if next() and/or NextLong() are called on this object and the
-         * copy, both will generate the same sequence of random numbers from the point copy() was called. This just need to
-         * copy the state so it isn't shared, usually, and produce a new value with the same exact state.
-         *
-         * @return a copy of this RandomnessSource
-         */
-        public IRNG Copy() => new RNG(state.a, state.b);
-
-        /**
-         * Can return any int, positive or negative, of any size permissible in a 32-bit signed integer.
-         *
-         * @return any int, all 32 bits are random
-         */
+        /// <summary>
+        /// Can return any int, positive or negative, of any size permissible in a 32-bit signed integer.
+        /// </summary>
+        /// <returns>any int, all 32 bits are random</returns>
         public int NextInt() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (int)(z ^ z >> 26 ^ z >> 6);
         }
         public uint NextUInt() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (uint)(z ^ z >> 26 ^ z >> 6);
         }
 
-        /**
-         * Exclusive on the outer bound.  The inner bound is 0.
-         * If the bound is negative, this returns 0 but still advances the state normally.
-         *
-         * @param bound the upper bound; should be positive
-         * @return a random int between 0 (inclusive) and bound (exclusive)
-         */
-        public int NextInt(int bound) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
+        /// <summary>
+        /// Exclusive on the outer bound.  The inner bound is 0.
+        /// If the bound is negative, this returns 0 but still advances the state normally.
+        /// </summary>
+        /// <param name="maxValue">bound the upper bound; should be positive</param>
+        /// <returns>a random int between 0 (inclusive) and bound (exclusive)</returns>
+        public int NextInt(int maxValue) {
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
+            return (int)((Math.Max(0, maxValue) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
         public uint NextUInt(uint bound) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (uint)(bound * ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL) >> 32);
         }
 
-        /**
-         * Exclusive on the outer bound.  The inner bound is 0.
-         * The bound can be negative, which makes this produce either a negative int or 0.
-         * This should perform like NextUInt(uint), that is, a little faster than NextInt(int).
-         * Keep in mind, NextSignedLong(long) does not perform as well as NextULong(ulong).
-         * 
-         * @param bound the upper bound; should be positive
-         * @return a random int between 0 (inclusive) and bound (exclusive)
-         */
+        /// <summary>
+        /// Exclusive on the outer bound.  The inner bound is 0.
+        /// The bound can be negative, which makes this produce either a negative int or 0.
+        /// This should perform like NextUInt(uint), that is, a little faster than NextInt(int).
+        /// Keep in mind, NextSignedLong(long) does not perform as well as NextULong(ulong).
+        /// </summary>
+        /// <param name="bound">bound the upper bound; should be positive</param>
+        /// <returns>a random int between 0 (inclusive) and bound (exclusive)</returns>
         public int NextSignedInt(int bound) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return (int)((bound * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
@@ -145,111 +154,120 @@ namespace SquidLib.SquidMath {
         /// <param name="bound"></param>
         /// <returns></returns>
         public int PreviousSignedInt(int bound) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (int)((bound * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
         public ulong NextULong(ulong bound) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
-            return MathExtras.MultiplyHigh(z ^ z >> 26 ^ z >> 6, bound);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
+
+            ulong x = z ^ z >> 26 ^ z >> 6;
+            ulong x0 = (uint)x;
+            ulong x1 = x >> 32;
+
+            ulong y0 = (uint)bound;
+            ulong y1 = bound >> 32;
+
+            ulong p11 = x1 * y1;
+            ulong p01 = x0 * y1;
+            ulong p10 = x1 * y0;
+            ulong p00 = x0 * y0;
+
+            // 64-bit product + two 32-bit values
+            ulong middle = p10 + (p00 >> 32) + (uint)p01;
+
+            // 64-bit product + two 32-bit values
+            return p11 + (middle >> 32) + (p01 >> 32);
         }
 
-        /**
-         * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
-         * If the bound is negative, this returns 0 but still advances the state normally.
-         * <br>
-         * Credit goes to https://gist.github.com/cocowalla/6070a53445e872f2bb24304712a3e1d2 ,
-         * who ported this StackOverflow answer by catid https://stackoverflow.com/a/51587262 .
-         * It also always gets exactly one random long, so by default it advances the state as much
-         * as {@link #NextLong()}.
-         *
-         * @param bound the outer exclusive bound; can be positive or negative
-         * @return a random long between 0 (inclusive) and bound (exclusive)
-         */
+        /// <summary>
+        /// Exclusive on bound (which may be positive or negative), with an inner bound of 0.
+        /// If the bound is negative, this returns 0 but still advances the state normally.
+        /// <br/>
+        /// Credit goes to https://gist.github.com/cocowalla/6070a53445e872f2bb24304712a3e1d2 ,
+        /// who ported this StackOverflow answer by catid https://stackoverflow.com/a/51587262 .
+        /// It also always gets exactly one random long, so by default it advances the state as much
+        /// as <see cref="NextULong"/>.
+        /// </summary>
+        /// <param name="bound">the outer exclusive bound; can be positive or negative</param>
+        /// <returns>a random long between 0 (inclusive) and bound (exclusive)</returns>
         public long NextLong(long bound) => (long)NextULong((ulong)Math.Max(0L, bound));
 
-        /**
-         * Exclusive on bound (which may be positive or negative), with an inner bound of 0.
-         * If bound is negative this returns a negative long; if bound is positive this returns a positive long. The bound
-         * can even be 0, which will cause this to return 0L every time.
-         * <br>
-         * Credit goes to https://gist.github.com/cocowalla/6070a53445e872f2bb24304712a3e1d2 ,
-         * who ported this StackOverflow answer by catid https://stackoverflow.com/a/51587262 .
-         * It also always gets exactly one random long, so by default it advances the state as much
-         * as {@link #NextLong()}.
-         *
-         * @param bound the outer exclusive bound; can be positive or negative
-         * @return a random long between 0 (inclusive) and bound (exclusive)
-         */
+        /// <summary>
+        /// Exclusive on bound (which may be positive or negative), with an inner bound of 0.
+        /// If bound is negative this returns a negative long; if bound is positive this returns a positive long. The bound
+        /// can even be 0, which will cause this to return 0L every time.
+        /// <br/>
+        /// Credit goes to https://gist.github.com/cocowalla/6070a53445e872f2bb24304712a3e1d2 ,
+        /// who ported this StackOverflow answer by catid https://stackoverflow.com/a/51587262 .
+        /// It also always gets exactly one random long, so by default it advances the state as much
+        /// as <see cref="NextULong"/>.
+        /// </summary>
+        /// <param name="bound">the outer exclusive bound; can be positive or negative</param>
+        /// <returns>a random long between 0 (inclusive) and bound (exclusive)</returns>
         public long NextSignedLong(long bound) {
             long sign = bound >> 63;
             return (long)(NextULong((ulong)(sign == -1L ? -bound : bound))) + sign ^ sign; // cheaper "times the sign" when you already have the sign.
         }
 
-        /**
-         * Gets a uniform random double in the range [0.0,1.0)
-         *
-         * @return a random double at least equal to 0.0 and less than 1.0
-         */
-        public double NextDouble() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+        /// <summary>
+        /// Gets a uniform random double in the range [0.0,1.0)
+        /// </summary>
+        /// <returns>a random double at least equal to 0.0 and less than 1.0</returns>
+        public override double NextDouble() {
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
-
         }
 
-        /**
-         * Gets a uniform random double in the range [0.0,outer) given a positive parameter outer. If outer
-         * is negative, it will be the (exclusive) lower bound and 0.0 will be the (inclusive) upper bound.
-         *
-         * @param outer the exclusive outer bound, can be negative
-         * @return a random double between 0.0 (inclusive) and outer (exclusive)
-         */
+        /// <summary>
+        /// Gets a uniform random double in the range [0.0,outer) given a positive parameter outer. If outer
+        /// is negative, it will be the (exclusive) lower bound and 0.0 will be the (inclusive) upper bound.
+        /// </summary>
+        /// <param name="outer">the exclusive outer bound, can be negative</param>
+        /// <returns>a random double between 0.0 (inclusive) and outer (exclusive)</returns>
         public double NextDouble(double outer) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * outer;
         }
 
-        /**
-         * Gets a uniform random float in the range [0.0,1.0)
-         *
-         * @return a random float at least equal to 0.0 and less than 1.0
-         */
+        /// <summary>
+        /// Gets a uniform random float in the range [0.0,1.0)
+        /// </summary>
+        /// <returns>a random float at least equal to 0.0 and less than 1.0</returns>
         public float NextFloat() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor;
         }
 
         public float NextFloat(float outer) {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL);
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
             return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor * outer;
         }
 
-        /**
-         * Gets a random value, true or false.
-         * Calls NextLong() once.
-         *
-         * @return a random true or false value.
-         */
+        /// <summary>
+        /// Gets a random value, true or false.
+        /// Calls NextLong() once.
+        /// </summary>
+        /// <returns>a random true or false value.</returns>
         public bool NextBoolean() {
-            ulong s = (state.a += 0xC6BC279692B5C323UL);
-            return (s ^ s >> 31) * (state.b += 0x9E3779B97F4A7C16UL) < 0x8000000000000000UL;
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            return (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL) < 0x8000000000000000UL;
         }
 
-        /**
-         * Given a byte array as a parameter, this will fill the array with random bytes (modifying it
-         * in-place). Calls NextLong() {@code Math.ceil(bytes.length / 8.0)} times.
-         *
-         * @param bytes a byte array that will have its contents overwritten with random bytes.
-         */
-        public void NextBytes(byte[] bytes) {
+        /// <summary>
+        /// Given a byte array as a parameter, this will fill the array with random bytes (modifying it
+        /// in-place). Calls NextULong() {@code Math.ceil(bytes.length / 8.0)} times.
+        /// </summary>
+        /// <param name="bytes">a byte array that will have its contents overwritten with random bytes.</param>
+        public override void NextBytes(byte[] bytes) {
             if (bytes is null) {
                 return;
             }
@@ -259,40 +277,29 @@ namespace SquidLib.SquidMath {
                 for (ulong bits = NextULong(); n-- != 0; bits >>= 8) bytes[--i] = (byte)bits;
             }
         }
+        public override string ToString() => $"RNG with state (0x{StateA:X16}UL,0x{StateB:X16}UL)";
 
-        public void SetState(string seed) {
-            if (seed is null) {
-                seed = ""; // rely on following Parse to throw relevant exceptions
-            }
-            state.a = ulong.Parse(seed.Substring(0, 16), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-            state.b = ulong.Parse(seed.Substring(16, 32), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-        }
 
-        public string GetState() => $"{state.a:X16}{state.b:X16}";
-
-        public override string ToString() => $"RNG with state (0x{state.a:X16}UL,0x{state.b:X16}UL)";
-
-        /**
-         * Fast static randomizing method that takes its state as a parameter; state is expected to change between calls to
-         * this. It is recommended that you use {@code RNG.determine(++state)} or {@code RNG.determine(--state)}
-         * to produce a sequence of different numbers, and you may have slightly worse quality with increments or decrements
-         * other than 1. All longs are accepted by this method, and all longs can be produced; passing 0 to determine will
-         * produce 0, but any other such fixed points are not known.
-         * <br>
-         * You have a choice between determine() and randomize() in this class. {@code determine()} will behave well when
-         * the inputs are sequential, while {@code randomize()} is meant to have excellent quality regardless of patterns in
-         * input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
-         * unary hashes; determine() is a slightly stronger/slower version of 
-         * <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
-         * randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
-         * <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
-         * testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
-         * input but will be about 30% slower than {@code determine()}. Each method will produce all long outputs if given
-         * all possible longs as input.
-         * 
-         * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
-         * @return any long
-         */
+        /// <summary>
+        /// Fast static randomizing method that takes its state as a parameter; state is expected to change between calls to
+        /// this. It is recommended that you use <code>RNG.determine(++state)</code> or <code>RNG.determine(--state)</code>
+        /// to produce a sequence of different numbers, and you may have slightly worse quality with increments or decrements
+        /// other than 1. All longs are accepted by this method, and all longs can be produced; passing 0 to determine will
+        /// produce 0, but any other such fixed points are not known.
+        /// <br/>
+        /// You have a choice between determine() and randomize() in this class. <code>determine()</code> will behave well when
+        /// the inputs are sequential, while <code>randomize()</code> is meant to have excellent quality regardless of patterns in
+        /// input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
+        /// unary hashes; determine() is a slightly stronger/slower version of 
+        /// <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
+        /// randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
+        /// <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
+        /// testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
+        /// input but will be about 30% slower than <code>determine()</code>. Each method will produce all long outputs if given
+        /// all possible longs as input.
+        /// </summary>
+        /// <param name="state">any long; subsequent calls should change by an odd number, such as with <code>++state</code></param>
+        /// <returns>any long</returns>
         public static ulong Determine(ulong state) {
             state ^= state >> 27;
             state *= 0x3C79AC492BA7B653UL;
@@ -301,51 +308,49 @@ namespace SquidLib.SquidMath {
             state *= 0x1C69B3F74AC4AE35UL;
             return state ^ state >> 27;
         }
-
-        /**
-         * High-quality static randomizing method that takes its state as a parameter; state is expected to change between
-         * calls to this. It is suggested that you use {@code RNG.randomize(++state)} or
-         * {@code RNG.randomize(--state)} to produce a sequence of different numbers, but any increments are allowed
-         * (even-number increments won't be able to produce all outputs, but their quality will be fine for the numbers they
-         * can produce). All longs are accepted by this method, and all longs can be produced; unlike determine(), passing 0
-         * here does not return 0.
-         * <br>
-         * You have a choice between determine() and randomize() in this class. {@code determine()} is the same as
-         * {@link LinnormRNG#determine(long)} and will behave well when the inputs are sequential, while {@code randomize()}
-         * is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
-         * <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
-         * testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
-         * input but will be about 30% slower than {@code determine()}. Each method will produce all long outputs if given
-         * all possible longs as input.
-         * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
-         * @return any long
-         */
+        /// <summary>
+        /// High-quality static randomizing method that takes its state as a parameter; state is expected to change between
+        /// calls to this. It is suggested that you use <code>RNG.randomize(++state)</code> or
+        /// <code>RNG.randomize(--state)</code> to produce a sequence of different numbers, but any increments are allowed
+        /// (even-number increments won't be able to produce all outputs, but their quality will be fine for the numbers they
+        /// can produce). All longs are accepted by this method, and all longs can be produced; unlike determine(), passing 0
+        /// here does not return 0.
+        /// <br>
+        /// You have a choice between determine() and randomize() in this class. <code>determine()</code> is the same as
+        /// {@link LinnormRNG#determine(long)} and will behave well when the inputs are sequential, while <code>randomize()</code>
+        /// is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
+        /// <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
+        /// testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
+        /// input but will be about 30% slower than <code>determine()</code>. Each method will produce all long outputs if given
+        /// all possible longs as input.
+        /// </summary>
+        /// <param name="state">any long; subsequent calls should change by an odd number, such as with <code>++state</code></param>
+        /// <returns>any long</returns>
         public static ulong Randomize(ulong state) =>
             (state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28;
 
-        /**
-         * Fast static randomizing method that takes its state as a parameter and limits output to an int between 0
-         * (inclusive) and bound (exclusive); state is expected to change between calls to this. It is recommended that you
-         * use {@code RNG.determineBounded(++state, bound)} or {@code RNG.determineBounded(--state, bound)} to
-         * produce a sequence of different numbers. All longs are accepted
-         * by this method, but not all ints between 0 and bound are guaranteed to be produced with equal likelihood (for any
-         * odd-number values for bound, this isn't possible for most generators). The bound can be negative.
-         * <br>
-         * You have a choice between determine() and randomize() in this class. {@code determine()} will behave well when
-         * the inputs are sequential, while {@code randomize()} is meant to have excellent quality regardless of patterns in
-         * input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
-         * unary hashes; determine() is a slightly stronger/slower version of 
-         * <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
-         * randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
-         * <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
-         * testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
-         * input but will be about 30% slower than {@code determine()}. Each method will produce all long outputs if given
-         * all possible longs as input.
-         * 
-         * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
-         * @param bound the outer exclusive bound, as an int
-         * @return an int between 0 (inclusive) and bound (exclusive)
-         */
+        /// <summary>
+        /// Fast static randomizing method that takes its state as a parameter and limits output to an int between 0
+        /// (inclusive) and bound (exclusive); state is expected to change between calls to this. It is recommended that you
+        /// use <code>RNG.determineBounded(++state, bound)</code> or <code>RNG.determineBounded(--state, bound)</code> to
+        /// produce a sequence of different numbers. All longs are accepted
+        /// by this method, but not all ints between 0 and bound are guaranteed to be produced with equal likelihood (for any
+        /// odd-number values for bound, this isn't possible for most generators). The bound can be negative.
+        /// <br>
+        /// You have a choice between determine() and randomize() in this class. <code>determine()</code> will behave well when
+        /// the inputs are sequential, while <code>randomize()</code> is meant to have excellent quality regardless of patterns in
+        /// input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
+        /// unary hashes; determine() is a slightly stronger/slower version of 
+        /// <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
+        /// randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
+        /// <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
+        /// testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
+        /// input but will be about 30% slower than <code>determine()</code>. Each method will produce all long outputs if given
+        /// all possible longs as input.
+        /// </summary>
+        /// <param name="state">any long; subsequent calls should change by an odd number, such as with <code>++state</code></param>
+        /// <param name="bound">the outer exclusive bound, as an int</param>
+        /// <returns>an int between 0 (inclusive) and bound (exclusive)</returns>
         public static int DetermineBounded(ulong state, int bound) {
             state ^= state >> 27;
             state *= 0x3C79AC492BA7B653UL;
@@ -354,57 +359,54 @@ namespace SquidLib.SquidMath {
             state *= 0x1C69B3F74AC4AE35UL;
             return (int)(((ulong)bound * ((state ^ state >> 27) & 0xFFFFFFFFUL)) >> 32);
         }
-
-        /**
-         * High-quality static randomizing method that takes its state as a parameter and limits output to an int between 0
-         * (inclusive) and bound (exclusive); state is expected to change between calls to this. It is suggested that you
-         * use {@code RNG.randomizeBounded(++state)} or {@code RNG.randomize(--state)} to produce a sequence of
-         * different numbers, but any increments are allowed (even-number increments won't be able to produce all outputs,
-         * but their quality will be fine for the numbers they can produce). All longs are accepted by this method, but not
-         * all ints between 0 and bound are guaranteed to be produced with equal likelihood (for any odd-number values for
-         * bound, this isn't possible for most generators). The bound can be negative.
-         * <br>
-         * You have a choice between determine() and randomize() in this class. {@code determine()} will behave well when
-         * the inputs are sequential, while {@code randomize()} is meant to have excellent quality regardless of patterns in
-         * input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
-         * unary hashes; determine() is a slightly stronger/slower version of 
-         * <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
-         * randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
-         * <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
-         * testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
-         * input but will be about 30% slower than {@code determine()}. Each method will produce all long outputs if given
-         * all possible longs as input.
-         * 
-         * @param state any long; subsequent calls should change by an odd number, such as with {@code ++state}
-         * @param bound the outer exclusive bound, as an int
-         * @return an int between 0 (inclusive) and bound (exclusive)
-         */
-
+        /// <summary>
+        /// High-quality static randomizing method that takes its state as a parameter and limits output to an int between 0
+        /// (inclusive) and bound (exclusive); state is expected to change between calls to this. It is suggested that you
+        /// use <code>RNG.randomizeBounded(++state)</code> or <code>RNG.randomize(--state)</code> to produce a sequence of
+        /// different numbers, but any increments are allowed (even-number increments won't be able to produce all outputs,
+        /// but their quality will be fine for the numbers they can produce). All longs are accepted by this method, but not
+        /// all ints between 0 and bound are guaranteed to be produced with equal likelihood (for any odd-number values for
+        /// bound, this isn't possible for most generators). The bound can be negative.
+        /// <br>
+        /// You have a choice between determine() and randomize() in this class. <code>determine()</code> will behave well when
+        /// the inputs are sequential, while <code>randomize()</code> is meant to have excellent quality regardless of patterns in
+        /// input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
+        /// unary hashes; determine() is a slightly stronger/slower version of 
+        /// <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
+        /// randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
+        /// <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
+        /// testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
+        /// input but will be about 30% slower than <code>determine()</code>. Each method will produce all long outputs if given
+        /// all possible longs as input.
+        /// </summary>
+        /// <param name="state">any long; subsequent calls should change by an odd number, such as with <code>++state</code></param>
+        /// <param name="bound">the outer exclusive bound, as an int</param>
+        /// <returns>an int between 0 (inclusive) and bound (exclusive)</returns>
         public static int RandomizeBounded(ulong state, int bound) =>
             (int)(((ulong)bound * (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0xFFFFFFFFL)) >> 32);
-
-        /**
-         * Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
-         * return the same float. This is expected to be called with a changing variable, e.g.
-         * {@code determineFloat(++state)}, where the increment for state should generally be 1. The period is 2 to the 64
-         * if you increment or decrement by 1, but there are only 2 to the 30 possible floats between 0 and 1.
-         * <br>
-         * You have a choice between determine() and randomize() in this class. {@code determine()} will behave well when
-         * the inputs are sequential, while {@code randomize()} is meant to have excellent quality regardless of patterns in
-         * input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
-         * unary hashes; determine() is a slightly stronger/slower version of 
-         * <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
-         * randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
-         * <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
-         * testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
-         * input but will be about 30% slower than {@code determine()}. Each method will produce all long outputs if given
-         * all possible longs as input.
-         * 
-         * @param state a variable that should be different every time you want a different random result;
-         *              using {@code determineFloat(++state)} is recommended to go forwards or
-         *              {@code determineFloat(--state)} to generate numbers in reverse order
-         * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
-         */
+        /// <summary>
+        /// Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
+        /// return the same float. This is expected to be called with a changing variable, e.g.
+        /// <code>determineFloat(++state)</code>, where the increment for state should generally be 1. The period is 2 to the 64
+        /// if you increment or decrement by 1, but there are only 2 to the 30 possible floats between 0 and 1.
+        /// <br>
+        /// You have a choice between determine() and randomize() in this class. <code>determine()</code> will behave well when
+        /// the inputs are sequential, while <code>randomize()</code> is meant to have excellent quality regardless of patterns in
+        /// input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
+        /// unary hashes; determine() is a slightly stronger/slower version of 
+        /// <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
+        /// randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
+        /// <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
+        /// testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
+        /// input but will be about 30% slower than <code>determine()</code>. Each method will produce all long outputs if given
+        /// all possible longs as input.
+        /// </summary>
+        /// <param name="state">
+        /// a variable that should be different every time you want a different random result;
+        /// using <code>determineFloat(++state)</code> is recommended to go forwards or
+        /// <code>determineFloat(--state)</code> to generate numbers in reverse order
+        /// </param>
+        /// <returns>a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by <code>state</code></returns>
         public static float DetermineFloat(ulong state) {
             state ^= state >> 27;
             state *= 0x3C79AC492BA7B653UL;
@@ -413,55 +415,54 @@ namespace SquidLib.SquidMath {
             state *= 0x1C69B3F74AC4AE35UL;
             return (state >> 40) * floatDivisor;
         }
-
-        /**
-         * Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
-         * return the same float. This is expected to be called with a changing variable, e.g.
-         * {@code randomizeFloat(++state)}, where the increment for state can be any value and should usually be odd
-         * (even-number increments reduce the period). The period is 2 to the 64 if you increment or decrement by any odd
-         * number, but there are only 2 to the 30 possible floats between 0 and 1.
-         * <br>
-         * You have a choice between determine() and randomize() in this class. {@code determine()} will behave well when
-         * the inputs are sequential, while {@code randomize()} is meant to have excellent quality regardless of patterns in
-         * input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
-         * unary hashes; determine() is a slightly stronger/slower version of 
-         * <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
-         * randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
-         * <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
-         * testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
-         * input but will be about 30% slower than {@code determine()}. Each method will produce all long outputs if given
-         * all possible longs as input.
-         * 
-         * @param state a variable that should be different every time you want a different random result;
-         *              using {@code randomizeFloat(++state)} is recommended to go forwards or
-         *              {@code randomizeFloat(--state)} to generate numbers in reverse order
-         * @return a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by {@code state}
-         */
+        /// <summary>
+        /// Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
+        /// return the same float. This is expected to be called with a changing variable, e.g.
+        /// <code>randomizeFloat(++state)</code>, where the increment for state can be any value and should usually be odd
+        /// (even-number increments reduce the period). The period is 2 to the 64 if you increment or decrement by any odd
+        /// number, but there are only 2 to the 30 possible floats between 0 and 1.
+        /// <br>
+        /// You have a choice between determine() and randomize() in this class. <code>determine()</code> will behave well when
+        /// the inputs are sequential, while <code>randomize()</code> is meant to have excellent quality regardless of patterns in
+        /// input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
+        /// unary hashes; determine() is a slightly stronger/slower version of 
+        /// <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
+        /// randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
+        /// <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
+        /// testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
+        /// input but will be about 30% slower than <code>determine()</code>. Each method will produce all long outputs if given
+        /// all possible longs as input.
+        /// </summary>
+        /// <param name="state">a variable that should be different every time you want a different random result;
+        /// using <code>randomizeFloat(++state)</code> is recommended to go forwards or
+        /// <code>randomizeFloat(--state)</code> to generate numbers in reverse order
+        /// </param>
+        /// <returns>a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by <code>state</code></returns>
         public static float RandomizeFloat(ulong state) =>
             (((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L >> 40) * floatDivisor;
-
-        /**
-         * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
-         * will return the same float. This is expected to be called with a changing variable, e.g.
-         * {@code determineDouble(++state)}, where the increment for state should generally be 1. The period is 2 to the 64
-         * if you increment or decrement by 1, but there are only 2 to the 62 possible doubles between 0 and 1.
-         * <br>
-         * You have a choice between determine() and randomize() in this class. {@code determine()} will behave well when
-         * the inputs are sequential, while {@code randomize()} is meant to have excellent quality regardless of patterns in
-         * input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
-         * unary hashes; determine() is a slightly stronger/slower version of 
-         * <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
-         * randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
-         * <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
-         * testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
-         * input but will be about 30% slower than {@code determine()}. Each method will produce all long outputs if given
-         * all possible longs as input.
-         * 
-         * @param state a variable that should be different every time you want a different random result;
-         *              using {@code determineDouble(++state)} is recommended to go forwards or
-         *              {@code determineDouble(--state)} to generate numbers in reverse order
-         * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
-         */
+        /// <summary>
+        /// Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
+        /// will return the same float. This is expected to be called with a changing variable, e.g.
+        /// <code>determineDouble(++state)</code>, where the increment for state should generally be 1. The period is 2 to the 64
+        /// if you increment or decrement by 1, but there are only 2 to the 62 possible doubles between 0 and 1.
+        /// <br>
+        /// You have a choice between determine() and randomize() in this class. <code>determine()</code> will behave well when
+        /// the inputs are sequential, while <code>randomize()</code> is meant to have excellent quality regardless of patterns in
+        /// input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
+        /// unary hashes; determine() is a slightly stronger/slower version of 
+        /// <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
+        /// randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
+        /// <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
+        /// testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
+        /// input but will be about 30% slower than <code>determine()</code>. Each method will produce all long outputs if given
+        /// all possible longs as input.
+        /// </summary>
+        /// <param name="state">
+        /// a variable that should be different every time you want a different random result;
+        /// using <code>determineDouble(++state)</code> is recommended to go forwards or
+        /// <code>determineDouble(--state)</code> to generate numbers in reverse order
+        /// </param>
+        /// <returns>a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by <code>state</code></returns>
         public static double DetermineDouble(ulong state) {
             state ^= state >> 27;
             state *= 0x3C79AC492BA7B653UL;
@@ -470,33 +471,32 @@ namespace SquidLib.SquidMath {
             state *= 0x1C69B3F74AC4AE35UL;
             return ((state ^ state >> 27) & 0x1FFFFFFFFFFFFFL) * doubleDivisor;
         }
-
-        /**
-         * Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
-         * will return the same float. This is expected to be called with a changing variable, e.g.
-         * {@code randomizeDouble(++state)}, where the increment for state can be any number but should usually be odd
-         * (even-number increments reduce the period). The period is 2 to the 64 if you increment or decrement by 1, but 
-         * there are only 2 to the 62 possible doubles between 0 and 1.
-         * <br>
-         * You have a choice between determine() and randomize() in this class. {@code determine()} will behave well when
-         * the inputs are sequential, while {@code randomize()} is meant to have excellent quality regardless of patterns in
-         * input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
-         * unary hashes; determine() is a slightly stronger/slower version of 
-         * <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
-         * randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
-         * <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
-         * testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
-         * input but will be about 30% slower than {@code determine()}. Each method will produce all long outputs if given
-         * all possible longs as input.
-         * 
-         * @param state a variable that should be different every time you want a different random result;
-         *              using {@code randomizeDouble(++state)} is recommended to go forwards or
-         *              {@code randomizeDouble(--state)} to generate numbers in reverse order
-         * @return a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by {@code state}
-         */
+        /// <summary>
+        /// Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
+        /// will return the same float. This is expected to be called with a changing variable, e.g.
+        /// <code>randomizeDouble(++state)</code>, where the increment for state can be any number but should usually be odd
+        /// (even-number increments reduce the period). The period is 2 to the 64 if you increment or decrement by 1, but 
+        /// there are only 2 to the 62 possible doubles between 0 and 1.
+        /// <br>
+        /// You have a choice between determine() and randomize() in this class. <code>determine()</code> will behave well when
+        /// the inputs are sequential, while <code>randomize()</code> is meant to have excellent quality regardless of patterns in
+        /// input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
+        /// unary hashes; determine() is a slightly stronger/slower version of 
+        /// <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
+        /// randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
+        /// <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
+        /// testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in
+        /// input but will be about 30% slower than <code>determine()</code>. Each method will produce all long outputs if given
+        /// all possible longs as input.
+        /// </summary>
+        /// <param name="state">
+        /// a variable that should be different every time you want a different random result;
+        /// using <code>randomizeDouble(++state)</code> is recommended to go forwards or
+        /// <code>randomizeDouble(--state)</code> to generate numbers in reverse order
+        /// </param>
+        /// <returns>a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by <code>state</code></returns>
         public static double RandomizeDouble(ulong state) =>
            (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * doubleDivisor;
-
 
         public int NextInt(int min, int max) => min + NextSignedInt(max - min);
         public long NextLong(long min, long max) => min + NextSignedLong(max - min);
@@ -512,7 +512,7 @@ namespace SquidLib.SquidMath {
         public TKey RandomKey<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
             int size;
             if (dict is null || (size = dict.Count) <= 0)
-                return default;
+                throw new InvalidOperationException($"IndexedDictionary '{dict}' is not valid or is empty.");
             return dict[Key.At, NextSignedInt(size)];
         }
 
@@ -526,43 +526,54 @@ namespace SquidLib.SquidMath {
         public TValue RandomValue<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
             int size;
             if (dict is null || (size = dict.Count) <= 0)
-                return default;
+                throw new InvalidOperationException($"IndexedDictionary '{dict}' is not valid or is empty.");
             return dict[Value.At, NextSignedInt(size)];
         }
         /// <summary>
-        /// Retrieves a random element from the given non-empty IEnumerable.
-        /// This is fastest when working with arrays, generic IList implementations, and IndexedSet s.
-        /// It can also work with generic ICollection implementations, but it has to get an Enumerator and
-        /// traverse a random amount of times in that case. If you have an IndexedDictionary, you can use this
-        /// to get a random KeyValuePair from it, but it's more likely that using the RandomKey() method (and
-        /// maybe looking up a value with that key) or using the RandomValue() method is what you want.
+        /// Retrieves a random element from the given non-empty IList of T (or array of T).
+        /// This runs in constant time if the element accessor in <see cref="IList{T}"/> runs in constant time,
+        /// which is the case for <see cref="List{T}"/> and <see cref="Array"/> but not <see cref="LinkedList{T}"/>.
         /// </summary>
-        /// <typeparam name="T">The generic type of enumerable</typeparam>
-        /// <param name="enumerable">An IEnumerable that must be non-null and non-empty.</param>
-        /// <returns>A random T element from enumerable</returns>
-        public T RandomElement<T>(IEnumerable<T> enumerable) {
-            switch (enumerable) {
-                case T[] array when array.Length > 0:
-                    return array[NextSignedInt(array.Length)];
+        /// <typeparam name="T">The generic type of IList</typeparam>
+        /// <param name="list">An IList that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <returns>A random T element from list.</returns>
+        public T RandomElement<T>(IList<T> list) {
+            if (list != null && list.Count > 0)
+                return list[NextSignedInt(list.Count)];
+            throw new InvalidOperationException($"IList '{list}' is not valid or is empty.");
+        }
 
-                // This only works for IndexedSet.
-                // IndexedDictionary is an IEnumerable of KeyValuePair of TKey and TValue, but only an IOrdered of TKey.
-                case IOrdered<T> ordered when ordered.Ordering.Count > 0:
-                    return ordered.Ordering[NextSignedInt(ordered.Ordering.Count)];
-                case IList<T> list when list.Count > 0:
-                    return list[NextSignedInt(list.Count)];
-                // this gets used for IndexedDictionary and finds a KeyValuePair of TKey and TValue.
-                // Instead, you should probably use RandomKey() or RandomValue().
-                case ICollection<T> coll when coll.Count > 0:
-                    var e = coll.GetEnumerator();
-                    for (int target = NextSignedInt(coll.Count); target > 0; target--) {
-                        e.MoveNext();
-                    }
-                    return e.Current;
-                case null:
-                default:
-                    return default;
+        /// <summary>
+        /// Retrieves a random element from the given non-empty IOrdered of T (or array of T).
+        /// This typically should only be run on <see cref="IndexedSet{T}"/>; if you have an <see cref="IndexedDictionary{TKey, TValue}"/>,
+        /// then use <see cref="RandomKey{TKey, TValue}(IndexedDictionary{TKey, TValue})"/> and/or <see cref="RandomValue{TKey, TValue}(IndexedDictionary{TKey, TValue})"/>.
+        /// This should generally run in constant time.
+        /// </summary>
+        /// <typeparam name="T">The generic type of IOrdered</typeparam>
+        /// <param name="ordered">An IOrdered that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <returns>A random T element from ordered.</returns>
+        public T RandomElement<T>(IOrdered<T> ordered) {
+            if (ordered != null && ordered.Ordering != null && ordered.Ordering.Count > 0)
+                return ordered.Ordering[NextSignedInt(ordered.Ordering.Count)];
+            throw new InvalidOperationException($"IOrdered '{ordered}' is not valid or is empty.");
+        }
+
+        /// <summary>
+        /// Retrieves a random element from the given non-empty ICollection of T (an IList or array uses a different overload).
+        /// This runs at best in linear time, since it has to iterate through a random amount of coll before it has a result.
+        /// </summary>
+        /// <typeparam name="T">The generic type of ICollection</typeparam>
+        /// <param name="coll">An ICollection that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <returns>A random T element from coll.</returns>
+        public T RandomElement<T>(ICollection<T> coll) {
+            if (coll != null && coll.Count > 0) {
+                var e = coll.GetEnumerator();
+                for (int target = NextSignedInt(coll.Count); target > 0; target--) {
+                    e.MoveNext();
+                }
+                return e.Current;
             }
+            throw new InvalidOperationException($"ICollection '{coll}' is not valid or is empty.");
         }
 
         private static void Swap<T>(ref T a, ref T b) {
@@ -684,95 +695,111 @@ namespace SquidLib.SquidMath {
         }
 
         public int PreviousBits(int bits) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (int)((z ^ z >> 26 ^ z >> 6) >> 64 - bits);
 
         }
 
         public long PreviousLong() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (long)(z ^ z >> 26 ^ z >> 6);
         }
 
         public ulong PreviousULong() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return z ^ z >> 26 ^ z >> 6;
         }
 
         public int PreviousInt() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (int)(z ^ z >> 26 ^ z >> 6);
         }
 
         public uint PreviousUInt() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (uint)(z ^ z >> 26 ^ z >> 6);
         }
 
         public int PreviousInt(int bound) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (int)((Math.Max(0, bound) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
         }
 
         public uint PreviousUInt(uint bound) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return (uint)(bound * ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL) >> 32);
         }
 
         public long PreviousLong(long bound) => (long)PreviousULong((ulong)Math.Max(0L, bound));
 
         public ulong PreviousULong(ulong bound) {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
-            return MathExtras.MultiplyHigh(z ^ z >> 26 ^ z >> 6, bound);
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
+            ulong x = z ^ z >> 26 ^ z >> 6;
+            ulong x0 = (uint)x;
+            ulong x1 = x >> 32;
+
+            ulong y0 = (uint)bound;
+            ulong y1 = bound >> 32;
+
+            ulong p11 = x1 * y1;
+            ulong p01 = x0 * y1;
+            ulong p10 = x1 * y0;
+            ulong p00 = x0 * y0;
+
+            // 64-bit product + two 32-bit values
+            ulong middle = p10 + (p00 >> 32) + (uint)p01;
+
+            // 64-bit product + two 32-bit values
+            return p11 + (middle >> 32) + (p01 >> 32);
         }
 
         public bool PreviousBoolean() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return z < 0x8000000000000000UL;
         }
 
         public double PreviousDouble() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
         }
 
         public double PreviousDouble(double outer) => PreviousDouble() * outer;
 
         public float PreviousFloat() {
-            ulong s = state.a;
-            state.a -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * state.b;
-            state.b -= 0x9E3779B97F4A7C16UL;
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
             return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor;
         }
 
@@ -798,7 +825,7 @@ namespace SquidLib.SquidMath {
         public TKey PreviousRandomKey<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
             int size;
             if (dict is null || (size = dict.Count) <= 0)
-                return default;
+                throw new InvalidOperationException($"IndexedDictionary '{dict}' is not valid or is empty.");
             return dict[Key.At, PreviousSignedInt(size)];
         }
 
@@ -812,32 +839,55 @@ namespace SquidLib.SquidMath {
         public TValue PreviousRandomValue<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
             int size;
             if (dict is null || (size = dict.Count) <= 0)
-                return default;
+                throw new InvalidOperationException($"IndexedDictionary '{dict}' is not valid or is empty.");
             return dict[Value.At, PreviousSignedInt(size)];
         }
 
-        public T PreviousRandomElement<T>(IEnumerable<T> enumerable) {
-            switch (enumerable) {
-                case T[] array when array.Length > 0:
-                    return array[PreviousSignedInt(array.Length)];
-                // This only works for IndexedSet.
-                // IndexedDictionary is an IEnumerable of KeyValuePair of TKey and TValue, but only an IOrdered of TKey.
-                case IOrdered<T> ordered when ordered.Ordering.Count > 0:
-                    return ordered.Ordering[PreviousSignedInt(ordered.Ordering.Count)];
-                case IList<T> list when list.Count > 0:
-                    return list[PreviousSignedInt(list.Count)];
-                // this gets used for IndexedDictionary and finds a KeyValuePair of TKey and TValue.
-                // Instead, you should probably use PreviousRandomKey() or PreviousRandomValue().
-                case ICollection<T> coll when coll.Count > 0:
-                    var e = coll.GetEnumerator();
-                    for (int target = PreviousSignedInt(coll.Count); target > 0; target--) {
-                        e.MoveNext();
-                    }
-                    return e.Current;
-                case null:
-                default:
-                    return default;
+        /// <summary>
+        /// Retrieves the previously-chosen random element from the given non-empty IList of T (or array of T).
+        /// This runs in constant time if the element accessor in <see cref="IList{T}"/> runs in constant time,
+        /// which is the case for <see cref="List{T}"/> and <see cref="Array"/> but not <see cref="LinkedList{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The generic type of IList</typeparam>
+        /// <param name="list">An IList that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <returns>The previously-chosen random T element from list.</returns>
+        public T PreviousRandomElement<T>(IList<T> list) {
+            if (list != null && list.Count > 0)
+                return list[PreviousSignedInt(list.Count)];
+            throw new InvalidOperationException($"IList '{list}' is not valid or is empty.");
+        }
+
+        /// <summary>
+        /// Retrieves the previously-chosen random element from the given non-empty IOrdered of T (or array of T).
+        /// This typically should only be run on <see cref="IndexedSet{T}"/>; if you have an <see cref="IndexedDictionary{TKey, TValue}"/>,
+        /// then use <see cref="RandomKey{TKey, TValue}(IndexedDictionary{TKey, TValue})"/> and/or <see cref="RandomValue{TKey, TValue}(IndexedDictionary{TKey, TValue})"/>.
+        /// This should generally run in constant time.
+        /// </summary>
+        /// <typeparam name="T">The generic type of IOrdered</typeparam>
+        /// <param name="ordered">An IOrdered that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <returns>The previously-chosen random T element from ordered.</returns>
+        public T PreviousRandomElement<T>(IOrdered<T> ordered) {
+            if (ordered != null && ordered.Ordering != null && ordered.Ordering.Count > 0)
+                return ordered.Ordering[PreviousSignedInt(ordered.Ordering.Count)];
+            throw new InvalidOperationException($"IOrdered '{ordered}' is not valid or is empty.");
+        }
+
+        /// <summary>
+        /// Retrieves the previously-chosen random element from the given non-empty ICollection of T (an IList or array uses a different overload).
+        /// This runs at best in linear time, since it has to iterate through a random amount of coll before it has a result.
+        /// </summary>
+        /// <typeparam name="T">The generic type of ICollection</typeparam>
+        /// <param name="coll">An ICollection that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <returns>The previously-chosen random T element from coll.</returns>
+        public T PreviousRandomElement<T>(ICollection<T> coll) {
+            if (coll != null && coll.Count > 0) {
+                var e = coll.GetEnumerator();
+                for (int target = PreviousSignedInt(coll.Count); target > 0; target--) {
+                    e.MoveNext();
+                }
+                return e.Current;
             }
+            throw new InvalidOperationException($"ICollection '{coll}' is not valid or is empty.");
         }
 
         public T[] ReverseShuffle<T>(T[] elements) {
@@ -909,8 +959,37 @@ namespace SquidLib.SquidMath {
         /// and state.b is the stream, so stepping state.b back the above number of steps gives us its offset from state.a at all positions.
         /// I don't have a particular reason why you would want to use CurrentStream(), but one could easily come up; maybe it's important that
         /// two generators use independent streams?</remarks>
-        public ulong CurrentStream() => state.b - (state.a * 0x1743CE5C6E1B848BUL) * 0x9E3779B97F4A7C16UL;
+        public ulong CurrentStream() => StateB - (StateA * 0x1743CE5C6E1B848BUL) * 0x9E3779B97F4A7C16UL;
+        public override bool Equals(object obj) {
+            if (obj == null || GetType() != obj.GetType()) {
+                return false;
+            }
+            return StateA == ((RNG)obj).StateA && StateB == ((RNG)obj).StateB;
+        }
+        public override int GetHashCode() => (int)(StateA + stateB >> 32);
+        public override int Next() {
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
+            return (int)(z ^ z >> 26 ^ z >> 6) & 0x7FFFFFFF;
+        }
 
+        public override int Next(int maxValue) {
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
+            return (int)((Math.Max(0, maxValue) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
+        }
+
+        public override int Next(int minValue, int maxValue) {
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
+            return minValue + (int)((Math.Max(0, maxValue - minValue) * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
+        }
+
+        protected override double Sample() {
+            ulong s = (StateA += 0xC6BC279692B5C323UL);
+            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
+        }
     }
 
 }
