@@ -31,7 +31,7 @@ namespace RogueDelivery {
         public MultiTileRepresentation ToMultiTileRepresentation() => this;
     }
 
-    public class Mob : IInteractable {
+    public class Mob {
         public Coord Location { get; set; }
         public Representation Rep { get; set; }
 
@@ -47,22 +47,6 @@ namespace RogueDelivery {
             Rep = new Representation(other.Rep);
             Blocking = other.Blocking;
         }
-
-        public IEnumerable<Coord> Coords() => new List<Coord>() { Location };
-
-        public IEnumerable<Coord> Coords(Direction facing) => Coords();
-
-        public Rectangle OuterBounds() => new Rectangle(Location.X, Location.Y, 1, 1);
-
-        public Rectangle OuterBounds(Direction direction) => OuterBounds();
-
-        public bool Intersects(IInteractable other) => other is null ? false : other.Intersects(Location);
-
-        public bool Intersects(Coord intersector) => Location.Equals(intersector);
-
-        public bool Intersects(IEnumerable<Coord> intersectors) => intersectors.Any(c => Intersects(c));
-
-        public bool IntersectsBounds(Rectangle intersector) => intersector.Contains(Location.X, Location.Y);
 
         public static implicit operator BigMob(Mob m) {
             if (m is null) {
@@ -121,7 +105,7 @@ namespace RogueDelivery {
         }
     }
 
-    public class BigMob : IInteractable {
+    public class BigMob {
         public Color DefaultColor { get; set; }
         public Coord Location { get; set; }
         public Direction Facing { get; set; } = Direction.Up;
@@ -144,26 +128,6 @@ namespace RogueDelivery {
             }
             Blocking = other.Blocking;
         }
-
-        public IEnumerable<Coord> Coords() => Coords(Facing);
-
-        public IEnumerable<Coord> Coords(Direction facing) => Reps[facing].Tiles.Keys.Select(c => c + DrawingOffset());
-
-        public Rectangle OuterBounds() => Bounds[Facing];
-
-        public Rectangle OuterBounds(Direction direction) => Bounds[direction];
-
-        public bool Intersects(IInteractable other) =>
-            other is null ? false :
-            other.IntersectsBounds(Bounds[Facing]) && // do faster check first before long check
-            other.Intersects(Reps[Facing].Tiles.Keys);
-
-        public bool Intersects(Coord intersector) =>
-            Reps[Facing].OuterBounds.Contains(intersector.X - Location.X, intersector.Y - Location.Y);
-
-        public bool Intersects(IEnumerable<Coord> intersectors) => intersectors.Any(c => Intersects(c));
-
-        public bool IntersectsBounds(Rectangle intersector) => Bounds[Facing].IntersectsWith(intersector);
 
         /// <summary>
         /// Takes the input strings and converts them into a mapping for the object. Whitespaces are ignored and not included.

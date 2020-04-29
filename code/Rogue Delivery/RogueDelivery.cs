@@ -118,7 +118,7 @@ namespace RogueDelivery {
                 $"font: Iosevka.ttf, size=9x21, hinting=autohint"
                 );
             BltColor.LoadAurora();
-            Terminal.Color(rng.RandomElement(BltColor.AuroraNames));
+            Terminal.Color(rng.RandomElement<string>(BltColor.AuroraNames));
             Terminal.Refresh();
         }
 
@@ -194,13 +194,13 @@ namespace RogueDelivery {
             }
         }
 
-        private bool IsBlocked(IInteractable mover, Coord coord) => IsBlocked(mover, Direction.Up, coord);
+        private bool IsBlocked(BigMob mover, Coord coord) => IsBlocked(mover, Direction.Up, coord);
 
-        private bool IsBlocked(IInteractable mover, Direction facing, Direction direction) =>
+        private bool IsBlocked(BigMob mover, Direction facing, Direction direction) =>
             IsBlocked(mover, facing, mover.Location + direction.Coord());
 
-        private bool IsBlocked(IInteractable mover, Direction facing, Coord coord) =>
-            IsBlocked(mover.Coords(facing).Select(c => coord - mover.Location + c));
+        private bool IsBlocked(BigMob mover, Direction facing, Coord coord) =>
+            IsBlocked(mover.Reps[facing].Tiles.Keys.Select(c => coord - mover.Location + c));
 
         private bool IsBlocked(IEnumerable<Coord> targetCoords) =>
             targetCoords.Intersect(
