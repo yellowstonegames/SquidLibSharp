@@ -635,12 +635,40 @@ namespace SquidLib.SquidMath {
         /// This should generally run in constant time.
         /// </summary>
         /// <typeparam name="T">The generic type of IOrdered</typeparam>
-        /// <param name="ordered">An IOrdered that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <param name="ordered">An IOrdered that must be non-null and non-empty</param>
         /// <returns>A random T element from ordered.</returns>
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="ordered"/> is null</exception>
+        /// <exception cref="InvalidOperationException"> thrown when <paramref name="ordered"/> is empty</exception>
         public T RandomElement<T>(IOrdered<T> ordered) {
-            if (ordered != null && ordered.Ordering != null && ordered.Ordering.Count > 0)
-                return ordered.Ordering[NextSignedInt(ordered.Ordering.Count)];
-            throw new InvalidOperationException($"IOrdered '{ordered}' is not valid or is empty.");
+            if (ordered is null) {
+                throw new ArgumentNullException($"{nameof(ordered)}");
+            }
+            int size = ordered.Ordering.Count;
+            if (size <= 0) {
+                throw new InvalidOperationException($"IList '{ordered}' is empty.");
+            }
+            return ordered.Ordering[NextSignedInt(size)];
+        }
+
+        /// <summary>
+        /// Retrieves a random element from the given IOrdered of T (or array of T).
+        /// This typically should only be run on <see cref="IndexedSet{T}"/>; if you have an <see cref="IndexedDictionary{TKey, TValue}"/>,
+        /// then use <see cref="RandomKey{TKey, TValue}(IndexedDictionary{TKey, TValue})"/> and/or <see cref="RandomValue{TKey, TValue}(IndexedDictionary{TKey, TValue})"/>.
+        /// This should generally run in constant time.
+        /// </summary>
+        /// <typeparam name="T">The generic type of IOrdered</typeparam>
+        /// <param name="ordered">An IOrdered that must be non-null</param>
+        /// <returns>A random T element from ordered.</returns>
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="ordered"/> is null</exception>
+        public T RandomElementOrDefault<T>(IOrdered<T> ordered) {
+            if (ordered is null) {
+                throw new ArgumentNullException($"{nameof(ordered)}");
+            }
+            int size = ordered.Ordering.Count;
+            if (size <= 0) {
+                return default;
+            }
+            return ordered.Ordering[NextSignedInt(size)];
         }
 
         /// <summary>
@@ -648,17 +676,46 @@ namespace SquidLib.SquidMath {
         /// This runs at best in linear time, since it has to iterate through a random amount of coll before it has a result.
         /// </summary>
         /// <typeparam name="T">The generic type of ICollection</typeparam>
-        /// <param name="coll">An ICollection that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <param name="collection">An ICollection that must be non-null and non-empty.</param>
         /// <returns>A random T element from coll.</returns>
-        public T RandomElement<T>(ICollection<T> coll) {
-            if (coll != null && coll.Count > 0) {
-                var e = coll.GetEnumerator();
-                for (int target = NextSignedInt(coll.Count); target > 0; target--) {
-                    e.MoveNext();
-                }
-                return e.Current;
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="collection"/> is null</exception>
+        /// <exception cref="InvalidOperationException"> thrown when <paramref name="collection"/> is empty</exception>
+        public T RandomElement<T>(ICollection<T> collection) {
+            if (collection is null) {
+                throw new ArgumentNullException($"{nameof(collection)}");
             }
-            throw new InvalidOperationException($"ICollection '{coll}' is not valid or is empty.");
+            int size = collection.Count;
+            if (size <= 0) {
+                throw new InvalidOperationException($"IList '{collection}' is empty.");
+            }
+            var e = collection.GetEnumerator();
+            for (int target = NextSignedInt(collection.Count); target > 0; target--) {
+                e.MoveNext();
+            }
+            return e.Current;
+        }
+
+        /// <summary>
+        /// Retrieves a random element from the given ICollection of T (an IList or array uses a different overload).
+        /// This runs at best in linear time, since it has to iterate through a random amount of coll before it has a result.
+        /// </summary>
+        /// <typeparam name="T">The generic type of ICollection</typeparam>
+        /// <param name="collection">An ICollection that must be non-null and non-empty.</param>
+        /// <returns>A random T element from coll.</returns>
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="collection"/> is null</exception>
+        public T RandomElementOrDefault<T>(ICollection<T> collection) {
+            if (collection is null) {
+                throw new ArgumentNullException($"{nameof(collection)}");
+            }
+            int size = collection.Count;
+            if (size <= 0) {
+                return default;
+            }
+            var e = collection.GetEnumerator();
+            for (int target = NextSignedInt(collection.Count); target > 0; target--) {
+                e.MoveNext();
+            }
+            return e.Current;
         }
 
         private static void Swap<T>(ref T a, ref T b) {
