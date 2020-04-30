@@ -48,10 +48,7 @@ namespace SquidLib.SquidMath {
         /// Creates a new RNG using a static System.Random to generate two seed values.
         /// </summary>
         public RNG() :
-            this((ulong)(localRNG.NextDouble() * 0x10000000000000UL)
-                    ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL),
-                (ulong)(localRNG.NextDouble() * 0x10000000000000UL)
-                    ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL)) { }
+            this(MakeSeed(), MakeSeed()) { }
 
         public RNG(int seed) : this((ulong)seed, Randomize((ulong)seed)) { }
         
@@ -79,7 +76,9 @@ namespace SquidLib.SquidMath {
         /// copy, both will generate the same sequence of random numbers from the point the copy constructor was called.
         /// </summary>
         /// <param name="other">Another RNG that must not be null, and will be copied exactly.</param>
-        public RNG(RNG other) : this(other.StateA, other.StateB) { }
+        public RNG(RNG other) : this(other is null ? MakeSeed() : other.StateA, other is null ? MakeSeed() : other.StateB) { }
+
+        private static ulong MakeSeed() =>(ulong)(localRNG.NextDouble() * 0x10000000000000UL) ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL);
 
         public IRNG Copy() => new RNG(StateA, StateB);
 
@@ -308,6 +307,7 @@ namespace SquidLib.SquidMath {
             state *= 0x1C69B3F74AC4AE35UL;
             return state ^ state >> 27;
         }
+
         /// <summary>
         /// High-quality static randomizing method that takes its state as a parameter; state is expected to change between
         /// calls to this. It is suggested that you use <code>RNG.randomize(++state)</code> or
@@ -359,6 +359,7 @@ namespace SquidLib.SquidMath {
             state *= 0x1C69B3F74AC4AE35UL;
             return (int)(((ulong)bound * ((state ^ state >> 27) & 0xFFFFFFFFUL)) >> 32);
         }
+
         /// <summary>
         /// High-quality static randomizing method that takes its state as a parameter and limits output to an int between 0
         /// (inclusive) and bound (exclusive); state is expected to change between calls to this. It is suggested that you
@@ -384,6 +385,7 @@ namespace SquidLib.SquidMath {
         /// <returns>an int between 0 (inclusive) and bound (exclusive)</returns>
         public static int RandomizeBounded(ulong state, int bound) =>
             (int)(((ulong)bound * (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0xFFFFFFFFL)) >> 32);
+
         /// <summary>
         /// Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
         /// return the same float. This is expected to be called with a changing variable, e.g.
@@ -415,6 +417,7 @@ namespace SquidLib.SquidMath {
             state *= 0x1C69B3F74AC4AE35UL;
             return (state >> 40) * floatDivisor;
         }
+
         /// <summary>
         /// Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
         /// return the same float. This is expected to be called with a changing variable, e.g.
@@ -440,6 +443,7 @@ namespace SquidLib.SquidMath {
         /// <returns>a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by <code>state</code></returns>
         public static float RandomizeFloat(ulong state) =>
             (((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L >> 40) * floatDivisor;
+
         /// <summary>
         /// Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
         /// will return the same float. This is expected to be called with a changing variable, e.g.
@@ -471,6 +475,7 @@ namespace SquidLib.SquidMath {
             state *= 0x1C69B3F74AC4AE35UL;
             return ((state ^ state >> 27) & 0x1FFFFFFFFFFFFFL) * doubleDivisor;
         }
+
         /// <summary>
         /// Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
         /// will return the same float. This is expected to be called with a changing variable, e.g.
@@ -507,13 +512,39 @@ namespace SquidLib.SquidMath {
         /// </summary>
         /// <typeparam name="TKey">Key type of the IndexedDictionary</typeparam>
         /// <typeparam name="TValue">Value type of the IndexedDictionary</typeparam>
-        /// <param name="dict">a non-empty, non-null IndexedDictionary</param>
+        /// <param name="dictionary">a non-empty, non-null IndexedDictionary</param>
         /// <returns>a randomly-selected key from dict</returns>
-        public TKey RandomKey<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
-            int size;
-            if (dict is null || (size = dict.Count) <= 0)
-                throw new InvalidOperationException($"IndexedDictionary '{dict}' is not valid or is empty.");
-            return dict[Key.At, NextSignedInt(size)];
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="dictionary"/> is null</exception>
+        /// <exception cref="InvalidOperationException"> thrown when <paramref name="dictionary"/> is empty</exception>
+        public TKey RandomKey<TKey, TValue>(IndexedDictionary<TKey, TValue> dictionary) {
+            if (dictionary is null) {
+                throw new ArgumentNullException($"{nameof(dictionary)}");
+            }
+            int size = dictionary.Count;
+            if (size <= 0) {
+                throw new InvalidOperationException($"IndexedDictionary '{dictionary}' is empty.");
+            }
+            return dictionary[Key.At, NextSignedInt(size)];
+        }
+
+        /// <summary>
+        /// Retrieves a random key from the given IndexedDictionary. If the IndexedDictionary is empty
+        /// then the default value of <typeparamref name="TKey"/> is returned.
+        /// </summary>
+        /// <typeparam name="TKey">Key type of the IndexedDictionary</typeparam>
+        /// <typeparam name="TValue">Value type of the IndexedDictionary</typeparam>
+        /// <param name="dictionary">a non-empty, non-null IndexedDictionary</param>
+        /// <returns>a randomly-selected key from dict</returns>
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="dictionary"/> is null</exception>
+        public TKey RandomKeyOrDefault<TKey, TValue>(IndexedDictionary<TKey, TValue> dictionary) {
+            if (dictionary is null) {
+                throw new ArgumentNullException($"{nameof(dictionary)}");
+            }
+            int size = dictionary.Count;
+            if (size <= 0) {
+                return default;
+            }
+            return dictionary[Key.At, NextSignedInt(size)];
         }
 
         /// <summary>
@@ -521,26 +552,80 @@ namespace SquidLib.SquidMath {
         /// </summary>
         /// <typeparam name="TKey">Key type of the IndexedDictionary</typeparam>
         /// <typeparam name="TValue">Value type of the IndexedDictionary</typeparam>
-        /// <param name="dict">a non-empty, non-null IndexedDictionary</param>
+        /// <param name="dictionary">a non-empty, non-null IndexedDictionary</param>
         /// <returns>a randomly-selected value from dict</returns>
-        public TValue RandomValue<TKey, TValue>(IndexedDictionary<TKey, TValue> dict) {
-            int size;
-            if (dict is null || (size = dict.Count) <= 0)
-                throw new InvalidOperationException($"IndexedDictionary '{dict}' is not valid or is empty.");
-            return dict[Value.At, NextSignedInt(size)];
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="dictionary"/> is null</exception>
+        /// <exception cref="InvalidOperationException"> thrown when <paramref name="dictionary"/> is empty</exception>
+        public TValue RandomValue<TKey, TValue>(IndexedDictionary<TKey, TValue> dictionary) {
+            if (dictionary is null) {
+                throw new ArgumentNullException($"{nameof(dictionary)}");
+            }
+            int size = dictionary.Count;
+            if (size <= 0) {
+                throw new InvalidOperationException($"IndexedDictionary '{dictionary}' is empty.");
+            }
+            return dictionary[Value.At, NextSignedInt(size)];
         }
+
+        /// <summary>
+        /// Retrieves a random value from the given IndexedDictionary. If the IndexedDictionary is empty
+        /// then the default value for <typeparamref name="TValue"/> will be returned.
+        /// </summary>
+        /// <typeparam name="TKey">Key type of the IndexedDictionary</typeparam>
+        /// <typeparam name="TValue">Value type of the IndexedDictionary</typeparam>
+        /// <param name="dictionary">a non-empty, non-null IndexedDictionary</param>
+        /// <returns>a randomly-selected value from dict</returns>
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="dictionary"/> is null</exception>
+        public TValue RandomValueOrDefault<TKey, TValue>(IndexedDictionary<TKey, TValue> dictionary) {
+            if (dictionary is null) {
+                throw new ArgumentNullException($"{nameof(dictionary)}");
+            }
+            int size = dictionary.Count;
+            if (size <= 0) {
+                return default;
+            }
+            return dictionary[Value.At, NextSignedInt(size)];
+        }
+
         /// <summary>
         /// Retrieves a random element from the given non-empty IList of T (or array of T).
         /// This runs in constant time if the element accessor in <see cref="IList{T}"/> runs in constant time,
         /// which is the case for <see cref="List{T}"/> and <see cref="Array"/> but not <see cref="LinkedList{T}"/>.
         /// </summary>
         /// <typeparam name="T">The generic type of IList</typeparam>
-        /// <param name="list">An IList that must be non-null and non-empty; otherwise this returns default(T).</param>
+        /// <param name="list">An IList that must be non-null and non-empty.</param>
         /// <returns>A random T element from list.</returns>
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="list"/> is null</exception>
+        /// <exception cref="InvalidOperationException"> thrown when <paramref name="list"/> is empty</exception>
         public T RandomElement<T>(IList<T> list) {
-            if (list != null && list.Count > 0)
-                return list[NextSignedInt(list.Count)];
-            throw new InvalidOperationException($"IList '{list}' is not valid or is empty.");
+            if (list is null) {
+                throw new ArgumentNullException($"{nameof(list)}");
+            }
+            int size = list.Count;
+            if (size <= 0) {
+                throw new InvalidOperationException($"IList '{list}' is empty.");
+            }
+            return list[NextSignedInt(size)];
+        }
+
+        /// <summary>
+        /// Retrieves a random element from the given IList of T (or array of T).
+        /// This runs in constant time if the element accessor in <see cref="IList{T}"/> runs in constant time,
+        /// which is the case for <see cref="List{T}"/> and <see cref="Array"/> but not <see cref="LinkedList{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The generic type of IList</typeparam>
+        /// <param name="list">An IList that must be non-null</param>
+        /// <returns>A random T element from list or default if the list is empty</returns>
+        /// <exception cref="ArgumentNullException"> thrown when <paramref name="list"/> is null</exception>
+        public T RandomElementOrDefault<T>(IList<T> list) {
+            if (list is null) {
+                throw new ArgumentNullException($"{nameof(list)}");
+            }
+            int size = list.Count;
+            if (size <= 0) {
+                return default;
+            }
+            return list[NextSignedInt(size)];
         }
 
         /// <summary>
