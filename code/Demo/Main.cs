@@ -2,15 +2,55 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+
 using BearLib;
+
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
 
 namespace Demo {
-    public class DungeonDemo {
+    public static class DemoChooser {
+        public static void Main() {
+            List<(string text, Action action)> demos = new List<(string text, Action action)> {
+                ("Dungeon", DungeonDemo.Main),
+                ("Letter", LetterDemo.Main),
+                ("Logo", LogoDemo.Main),
+                ("Noise", NoiseDemo.Main)
+            };
+
+            Console.WriteLine("Welcome to the SquidLibSharp Demos!");
+            Console.WriteLine("Please choose a demo:");
+            ShowOptions(demos);
+            int exitChoice = demos.Count + 1;
+
+            int input;
+            while (!int.TryParse(Console.ReadLine().Trim(), out input) || input < 1 || input > exitChoice) {
+                Console.WriteLine($"Input not recognized, please try again.");
+                ShowOptions(demos);
+            }
+
+            if (input != exitChoice) {
+                Console.WriteLine();
+                Console.WriteLine("Press ESC to exit demo.");
+                demos[input - 1].action.Invoke();
+            }
+        }
+
+        private static void ShowOptions(List<(string text, Action action)> demos) {
+            for (int i = 0; i < demos.Count; i++) {
+                Console.WriteLine($"{i + 1} - {demos[i].text}");
+            }
+            int exitChoice = demos.Count + 1;
+            Console.WriteLine($"{exitChoice} - Quit");
+            Console.Write($"Choose 1-{exitChoice}: ");
+            Console.Out.Flush();
+        }
+    }
+
+    public static class DungeonDemo {
         private static bool keepRunning = true;
 
-        static void Main() {
+        public static void Main() {
             RNG rng = new RNG();
 
             Terminal.Open();
@@ -25,7 +65,7 @@ namespace Demo {
             generator.SetRoomType(DungeonRoom.WalledRoundRoom, 5.0);
             //generator.SetRoomType(DungeonRoom.Cave, 5.0);
             Grid<char> grid = generator.Generate();
-            Console.WriteLine(grid.Show());
+            //Console.WriteLine(grid.Show());
             grid = LineKit.HashesToLines(grid, true);
             DateTime current = DateTime.Now, start = DateTime.Now;
             int frames = 1;
@@ -72,11 +112,12 @@ namespace Demo {
             }
         }
     }
-    public class LetterDemo {
+
+    public static class LetterDemo {
         private static bool keepRunning = true;
 
         // currently, you can view a rippling water area in ASCII, and can press Escape to close.
-        static void Main() {
+        public static void Main() {
             RNG rng = new RNG();
 
             Terminal.Open();
@@ -143,7 +184,8 @@ namespace Demo {
             }
         }
     }
-    public class LogoDemo {
+
+    public static class LogoDemo {
         private static bool keepRunning = true;
 
         public static uint GetHSV(float hue, float saturation, float value) {
@@ -181,7 +223,7 @@ namespace Demo {
 
 
         // currently, you can view a logo in Unicode, and can press Escape to close.
-        static void Main() {
+        public static void Main() {
             Terminal.Open();
             string[] big = new string[]{
                 "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::",
@@ -269,10 +311,11 @@ namespace Demo {
             Terminal.Close();
         }
     }
-    public class NoiseDemo {
+
+    public static class NoiseDemo {
         private static bool keepRunning = true;
 
-        static void Main() {
+        public static void Main() {
 
             double time = 0.0;
             Terminal.Open();
