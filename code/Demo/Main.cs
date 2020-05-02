@@ -15,7 +15,8 @@ namespace Demo {
                 ("Dungeon", DungeonDemo.Main),
                 ("Letter", LetterDemo.Main),
                 ("Logo", LogoDemo.Main),
-                ("Noise", NoiseDemo.Main)
+                ("Noise", NoiseDemo.Main),
+                ("Polynomino", Polynomino.Main)
             };
 
             Console.WriteLine("Welcome to the SquidLibSharp Demos!");
@@ -56,7 +57,7 @@ namespace Demo {
             Terminal.Open();
             //Terminal.Set("log: level=trace");
             int width = 120, height = 40;
-            Terminal.Set($"window: title='SquidLibSharp Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
+            Terminal.Set($"window: title='SquidLibSharp Dungeon Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
             ColorHelper.BltColor.LoadAurora();
             Terminal.Refresh();
             int input = 0;
@@ -93,21 +94,8 @@ namespace Demo {
                         frames = 0;
                     }
                     current = DateTime.Now;
-                    //Terminal.Color(Terminal.ColorFromName(rng.RandomElement(SColor.AuroraNames)));
-                    //Terminal.Put(rng.NextInt(width), rng.NextInt(height), ArrayTools.LetterAt(input));
                     Terminal.Refresh();
                 }
-                //switch (Terminal.Read()) {
-                //    case Terminal.TK_ESCAPE:
-                //    case Terminal.TK_CLOSE:
-                //        keepRunning = false;
-                //        break;
-                //    case int val:
-                //        Terminal.Color(Terminal.ColorFromName(rng.RandomElement(SColor.AuroraNames)));
-                //        Terminal.Put(rng.NextInt(width), rng.NextInt(height), ArrayTools.LetterAt(rng.NextInt()));
-                //        Terminal.Refresh();
-                //        break;
-                //}
 
             }
         }
@@ -123,7 +111,7 @@ namespace Demo {
             Terminal.Open();
             //Terminal.Set("log: level=trace");
             int width = 90, height = 30;
-            Terminal.Set($"window: title='SquidLibSharp Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
+            Terminal.Set($"window: title='SquidLibSharp Letter Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
             ColorHelper.BltColor.LoadAurora();
             Terminal.Refresh();
             int input = 0;
