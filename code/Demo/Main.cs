@@ -198,7 +198,7 @@ namespace Demo {
             int size = Math.Min(width, height) - 2;
             Color color = Color.White;
             SquidLib.SquidGrid.Region painting = new SquidLib.SquidGrid.Region();
-            List<List<Coord>> strokes = new List<List<Coord>>();
+            Queue<List<Coord>> strokes = new Queue<List<Coord>>();
             Direction[] directions = (Direction[])Enum.GetValues(typeof(Direction));
             Elias los = new Elias();
 
@@ -215,7 +215,7 @@ namespace Demo {
                         do {
                             color = Terminal.ColorFromName(rng.RandomElement(ColorHelper.BltColor.Names));
                         } while (color.R < 90 && color.G < 90 && color.B < 90); // try to avoid colors that are too dark
-                        strokes = new List<List<Coord>>();
+                        strokes = new Queue<List<Coord>>();
 
                         int points = rng.NextInt(3, 7);
                         double pointDistance = size / points;
@@ -236,14 +236,13 @@ namespace Demo {
                                     continue;
                                 }
 
-                                strokes.Add(new List<Coord>(line));
+                                strokes.Enqueue(new List<Coord>(line));
                             }
                         }
 
                         Terminal.Refresh();
-                        
-                        // TODO - look at why this doesn't seem to actually shuffle the list of lists
-                        //rng.Shuffle(strokes); // make the draw order not just upper left to lower right
+
+                        strokes = new Queue<List<Coord>>(rng.Shuffle(strokes));
                         drawingStrokes = true;
                         start = DateTime.UtcNow.AddMilliseconds(-strokeDelay - 1); // cause the first stroke to draw right away
                     }
@@ -253,8 +252,7 @@ namespace Demo {
                             drawingStrokes = false;
                             continue;
                         }
-                        List<Coord> stroke = rng.RandomElement(strokes); //strokes.First();
-                        strokes.Remove(stroke);
+                        List<Coord> stroke = strokes.Dequeue();
 
                         Color blendColor = rng.RandomElement(mixers);
 
