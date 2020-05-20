@@ -207,8 +207,8 @@ namespace SquidLib.SquidGrid {
         public Region Expand(int distance) {
             working.ResetTo(this);
             foreach (Coord point in working.Ordering) {
-                for (int x = Math.Max(0, point.X - distance), xd = Math.Min(Width - 1, point.X + distance); x < xd; x++) {
-                    for (int y = Math.Max(0, point.Y - distance), yd = Math.Min(Height - 1, point.Y + distance); y < yd; y++) {
+                for (int x = Math.Max(0, point.X - distance), xd = Math.Min(Width - 1, point.X + distance); x <= xd; x++) {
+                    for (int y = Math.Max(0, point.Y - distance), yd = Math.Min(Height - 1, point.Y + distance); y <= yd; y++) {
                         if (Math.Abs(point.X - x) + Math.Abs(point.Y - y) <= distance)
                             Add(Coord.Get(x, y));
                     }
@@ -219,8 +219,8 @@ namespace SquidLib.SquidGrid {
         public Region Expand8Way(int distance) {
             working.ResetTo(this);
             foreach (Coord point in working.Ordering) {
-                for (int x = Math.Max(0, point.X - distance), xd = Math.Min(Width - 1, point.X + distance); x < xd; x++) {
-                    for (int y = Math.Max(0, point.Y - distance), yd = Math.Min(Height - 1, point.Y + distance); y < yd; y++) {
+                for (int x = Math.Max(0, point.X - distance), xd = Math.Min(Width - 1, point.X + distance); x <= xd; x++) {
+                    for (int y = Math.Max(0, point.Y - distance), yd = Math.Min(Height - 1, point.Y + distance); y <= yd; y++) {
                         Add(Coord.Get(x, y));
                     }
                 }

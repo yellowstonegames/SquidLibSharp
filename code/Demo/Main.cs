@@ -195,10 +195,10 @@ namespace Demo {
             DateTime start = DateTime.UtcNow.Subtract(TimeSpan.FromMilliseconds(finishedDelay));
             bool drawingStrokes = false;
 
-            int size = Math.Min(width, height) - 2;
+            int size = Math.Min(width, height) - 4;
             Color color = Color.White;
             SquidLib.SquidGrid.Region painting = new SquidLib.SquidGrid.Region();
-            Queue<List<Coord>> strokes = new Queue<List<Coord>>();
+            List<List<Coord>> strokes = new List<List<Coord>>();
             Direction[] directions = (Direction[])Enum.GetValues(typeof(Direction));
             Elias los = new Elias();
 
@@ -215,34 +215,35 @@ namespace Demo {
                         do {
                             color = Terminal.ColorFromName(rng.RandomElement(ColorHelper.BltColor.Names));
                         } while (color.R < 90 && color.G < 90 && color.B < 90); // try to avoid colors that are too dark
-                        strokes = new Queue<List<Coord>>();
+                        strokes.Clear();
 
-                        int points = rng.NextInt(3, 7);
-                        double pointDistance = size / points;
+                        int points = 3;// rng.NextInt(3, 7);
+                        double pointDistance = size / (double)points;
                         for (int x = 0; x < points; x++) {
                             for (int y = 0; y < points; y++) {
-                                Direction dir = rng.RandomElement(directions); // need to include NONE value to preserve original "skipping" behavior
-                                if (dir == Direction.None) {
-                                    continue;
-                                }
-                                List<Coord> line = los.Line(
-                                    x * pointDistance,
-                                    y * pointDistance,
-                                    (x + dir.DeltaX()) * pointDistance,
-                                    (y + dir.DeltaY()) * pointDistance);
+                                for (int tries = Math.Min(rng.NextInt(1, 3), rng.NextInt(1, 3)); tries >= 0; tries--) {
+                                    Direction dir = rng.RandomElement(directions); // need to include NONE value to preserve original "skipping" behavior
+                                    if (dir == Direction.None) {
+                                        continue;
+                                    }
+                                    List<Coord> line = los.Line(
+                                        x * pointDistance,
+                                        y * pointDistance,
+                                        x * pointDistance + dir.DeltaX() * (pointDistance),
+                                        y * pointDistance + dir.DeltaY() * (pointDistance));
 
-                                // don't want no short short lines
-                                if (line.Count < 2) {
-                                    continue;
-                                }
+                                    // don't want no short short lines
+                                    if (line.Count < 2) {
+                                        continue;
+                                    }
 
-                                strokes.Enqueue(new List<Coord>(line));
+                                    strokes.Add(new List<Coord>(line));
+                                }
                             }
                         }
-
                         Terminal.Refresh();
 
-                        strokes = new Queue<List<Coord>>(rng.Shuffle(strokes));
+                        rng.ShuffleInPlace(strokes);
                         drawingStrokes = true;
                         start = DateTime.UtcNow.AddMilliseconds(-strokeDelay - 1); // cause the first stroke to draw right away
                     }
@@ -252,17 +253,18 @@ namespace Demo {
                             drawingStrokes = false;
                             continue;
                         }
-                        List<Coord> stroke = strokes.Dequeue();
+                        List<Coord> stroke = strokes[0];
+                        strokes.RemoveAt(0);
 
                         Color blendColor = rng.RandomElement(mixers);
 
                         Terminal.Color(Blend(color, blendColor, rng.NextDouble(0.4)));
 
-                        painting = new SquidLib.SquidGrid.Region(size + 2, size + 2);
-                        painting.AddAll(stroke.Select(p => Coord.Get(p.X+1, p.Y+1))); // pad so there's room for widening the strokes
-                        painting.Expand8Way(1);
+                        painting = new SquidLib.SquidGrid.Region(size + 4, size + 4);
+                        painting.AddAll(stroke.Select(p => p.Add(2, 2))); // pad so there's room for widening the strokes
+                        painting.Expand8Way(1).Expand(1);
 
-                        painting.ToList().ForEach(p => Terminal.Put(p.X + 1, p.Y + 1, '#'));
+                        painting.Ordering.ForEach(p => Terminal.Put(p.X + 1, p.Y + 1, '#'));
                         Terminal.Refresh();
                     }
                 }
