@@ -16,7 +16,8 @@ namespace Demo {
                 ("Letter", LetterDemo.Main),
                 ("Logo", LogoDemo.Main),
                 ("Noise", NoiseDemo.Main),
-                ("Polynomino", Polynomino.Main)
+                ("Polynomino", Polynomino.Main),
+                ("Glyph", GlyphDemo.Main)
             };
 
             Console.WriteLine("Welcome to the SquidLibSharp Demos!");
@@ -173,6 +174,112 @@ namespace Demo {
         }
     }
 
+    public static class GlyphDemo {
+        private static bool keepRunning = true;
+        private static RNG rng = new RNG();
+
+        private static Color[] mixers = new Color[] { Color.White, Color.Black, Color.AliceBlue, Color.DarkSlateGray, Color.Gray };
+
+        public static void Main() {
+
+            Terminal.Open();
+            //Terminal.Set("log: level=trace");
+            int width = 120, height = 40;
+            Terminal.Set($"window: title='SquidLibSharp Glyph Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
+            ColorHelper.BltColor.LoadAurora();
+            Terminal.Refresh();
+            int input = 0;
+
+            int finishedDelay = 1000;
+            int strokeDelay = 30;
+            DateTime start = DateTime.UtcNow.Subtract(TimeSpan.FromMilliseconds(finishedDelay));
+            bool drawingStrokes = false;
+
+            int size = Math.Min(width, height) - 2;
+            Color color = Color.White;
+            SquidLib.SquidGrid.Region painting = new SquidLib.SquidGrid.Region();
+            List<List<Coord>> strokes = new List<List<Coord>>();
+            Direction[] directions = (Direction[])Enum.GetValues(typeof(Direction));
+            Elias los = new Elias();
+
+            while (keepRunning) {
+                input = Terminal.Peek();
+                if (input == Terminal.TK_Q || input == Terminal.TK_ESCAPE || input == Terminal.TK_CLOSE) {
+                    keepRunning = false;
+                } else {
+                    if (Terminal.HasInput()) {
+                        input = Terminal.Read();
+                    }
+                    if (!drawingStrokes && start.AddMilliseconds(finishedDelay) < DateTime.UtcNow) {
+                        Terminal.Clear();
+                        color = Terminal.ColorFromName(rng.RandomElement(ColorHelper.BltColor.AuroraNames));
+                        strokes = new List<List<Coord>>();
+
+                        int points = rng.NextInt(3, 9);
+                        double pointDistance = size / points;
+                        for (int x = 0; x < points; x++) {
+                            for (int y = 0; y < points; y++) {
+                                Direction dir = rng.RandomElement(directions); // need to include NONE value to preserve original "skipping" behavior
+                                if (dir == Direction.None) {
+                                    continue;
+                                }
+                                List<Coord> line = los.Line(
+                                    x * pointDistance,
+                                    y * pointDistance,
+                                    (x + dir.DeltaX()) * pointDistance,
+                                    (y + dir.DeltaY()) * pointDistance);
+
+                                // don't want no short short lines
+                                if (line.Count < 2) {
+                                    continue;
+                                }
+
+                                strokes.Add(new List<Coord>(line));
+                            }
+                        }
+
+                        Terminal.Refresh();
+                        rng.Shuffle(strokes); // make the draw order not just upper left to lower right
+                        drawingStrokes = true;
+                        start = DateTime.UtcNow.AddMilliseconds(-strokeDelay - 1); // cause the first stroke to draw right away
+                    }
+                    if (drawingStrokes && start.AddMilliseconds(strokeDelay) < DateTime.UtcNow) {
+                        start = DateTime.UtcNow;
+                        if (strokes.Count < 1) {
+                            drawingStrokes = false;
+                            continue;
+                        }
+                        List<Coord> stroke = strokes.First();
+                        strokes.Remove(stroke);
+
+                        Color blendColor = rng.RandomElement(mixers);
+
+                        Terminal.Color(Blend(color, blendColor, rng.NextDouble(0.3)));
+
+                        painting = new SquidLib.SquidGrid.Region(size, size);
+                        painting.AddAll(stroke);
+                        painting.Expand8Way(1);
+
+                        painting.ToList().ForEach(p => Terminal.Put(p.X + 1, p.Y + 1, '#'));
+                        Terminal.Refresh();
+                    }
+                }
+            }
+        }
+
+        private static int Blend(int a, int b, double coef) {
+            double cf = Math.Max(Math.Min(coef, 1), 0);
+            return (int)(a + (b - a) * cf);
+        }
+
+        public static Color Blend(Color color1, Color color2, double coef) {
+            return Color.FromArgb(Blend(color1.A, color2.A, coef),
+                    Blend(color1.R, color2.R, coef),
+                    Blend(color1.G, color2.G, coef),
+                    Blend(color1.B, color2.B, coef));
+        }
+    }
+
     public static class LogoDemo {
         private static bool keepRunning = true;
 
@@ -280,7 +387,7 @@ namespace Demo {
                                 Terminal.Gray(BlueNoise.Get(x, y));
                                 Terminal.BkColor("coal_black");
                                 Terminal.Put(x, y, '.');
-//                                }
+                                //                                }
                             } else {
                                 Terminal.Color(GetHSV(lightHue + (float)noise.GetNoise(x, y) * 0.05f, lightSat + (float)noise.GetNoise(x, -y) * 0.2f, lightBright));
                                 Terminal.BkColor(GetHSV(deepHue + (float)noise.GetNoise(x, y) * 0.05f, deepSat + (float)noise.GetNoise(x, -y) * 0.15f, deepBright + (float)noise.GetNoise(-x, y) * 0.15f));
