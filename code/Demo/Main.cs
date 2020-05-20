@@ -184,14 +184,14 @@ namespace Demo {
 
             Terminal.Open();
             //Terminal.Set("log: level=trace");
-            int width = 120, height = 40;
-            Terminal.Set($"window: title='SquidLibSharp Glyph Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
-            ColorHelper.BltColor.LoadAurora();
+            int width = 60, height = 60;
+            Terminal.Set($"window: title='SquidLibSharp Glyph Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=6x14, hinting=autohint");
+            ColorHelper.BltColor.LoadSColor();
             Terminal.Refresh();
             int input = 0;
 
             int finishedDelay = 1000;
-            int strokeDelay = 30;
+            int strokeDelay = 80;
             DateTime start = DateTime.UtcNow.Subtract(TimeSpan.FromMilliseconds(finishedDelay));
             bool drawingStrokes = false;
 
@@ -212,10 +212,12 @@ namespace Demo {
                     }
                     if (!drawingStrokes && start.AddMilliseconds(finishedDelay) < DateTime.UtcNow) {
                         Terminal.Clear();
-                        color = Terminal.ColorFromName(rng.RandomElement(ColorHelper.BltColor.AuroraNames));
+                        do {
+                            color = Terminal.ColorFromName(rng.RandomElement(ColorHelper.BltColor.Names));
+                        } while (color.R < 90 && color.G < 90 && color.B < 90); // try to avoid colors that are too dark
                         strokes = new List<List<Coord>>();
 
-                        int points = rng.NextInt(3, 9);
+                        int points = rng.NextInt(3, 7);
                         double pointDistance = size / points;
                         for (int x = 0; x < points; x++) {
                             for (int y = 0; y < points; y++) {
@@ -239,7 +241,9 @@ namespace Demo {
                         }
 
                         Terminal.Refresh();
-                        rng.Shuffle(strokes); // make the draw order not just upper left to lower right
+                        
+                        // TODO - look at why this doesn't seem to actually shuffle the list of lists
+                        //rng.Shuffle(strokes); // make the draw order not just upper left to lower right
                         drawingStrokes = true;
                         start = DateTime.UtcNow.AddMilliseconds(-strokeDelay - 1); // cause the first stroke to draw right away
                     }
@@ -249,15 +253,15 @@ namespace Demo {
                             drawingStrokes = false;
                             continue;
                         }
-                        List<Coord> stroke = strokes.First();
+                        List<Coord> stroke = rng.RandomElement(strokes); //strokes.First();
                         strokes.Remove(stroke);
 
                         Color blendColor = rng.RandomElement(mixers);
 
-                        Terminal.Color(Blend(color, blendColor, rng.NextDouble(0.3)));
+                        Terminal.Color(Blend(color, blendColor, rng.NextDouble(0.4)));
 
-                        painting = new SquidLib.SquidGrid.Region(size, size);
-                        painting.AddAll(stroke);
+                        painting = new SquidLib.SquidGrid.Region(size + 2, size + 2);
+                        painting.AddAll(stroke.Select(p => Coord.Get(p.X+1, p.Y+1))); // pad so there's room for widening the strokes
                         painting.Expand8Way(1);
 
                         painting.ToList().ForEach(p => Terminal.Put(p.X + 1, p.Y + 1, '#'));
