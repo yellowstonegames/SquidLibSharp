@@ -36,27 +36,10 @@ namespace SquidLib.SquidMath {
          * @param starty
          * @param endx
          * @param endy
-         * @return
-         */
-        public List<Coord> Line(double startx, double starty, double endx, double endy) {
-            path.Clear();
-            width = (int)(Math.Max(startx, endx) + 1);
-            height = (int)(Math.Max(starty, endy) + 1);
-            map = new Grid<double>(width, height);
-            RunLine(startx, starty, endx, endy);
-            return path;
-        }
-        /**
-         * Gets the line between the two points.
-         *
-         * @param startx
-         * @param starty
-         * @param endx
-         * @param endy
          * @param brightnessThreshold between 0.0 (default) and 1.0; only Points with higher brightness will be included
          * @return
          */
-        public List<Coord> Line(double startx, double starty, double endx, double endy, double brightnessThreshold) {
+        public List<Coord> Line(double startx, double starty, double endx, double endy, double brightnessThreshold = 0.0) {
             threshold = brightnessThreshold;
             path.Clear();
             width = (int)(Math.Max(startx, endx) + 1);
@@ -66,9 +49,7 @@ namespace SquidLib.SquidMath {
             return path;
         }
 
-        public List<Coord> Line(Coord start, Coord end) => Line(start.X, start.Y, end.X, end.Y);
-
-        public List<Coord> Line(Coord start, Coord end, double brightnessThreshold) => Line(start.X, start.Y, end.X, end.Y, brightnessThreshold);
+        public List<Coord> Line(Coord start, Coord end, double brightnessThreshold = 0.0) => Line(start.X, start.Y, end.X, end.Y, brightnessThreshold);
 
         public List<Coord> GetLastPath() => path;
 
