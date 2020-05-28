@@ -382,7 +382,7 @@ namespace RogueDelivery {
                     Terminal.Put(x, y, c);
                     break;
                 case OutputType.SadConsole:
-                    SadConsole.Global.CurrentScreen.SetGlyph(x, y, c);
+                    SadConsole.Global.CurrentScreen.SetGlyph(x, y, (c > SadConsole.Global.CurrentScreen.Font.MaxGlyphIndex ? 4 : c));
                     break;
             }
         }
