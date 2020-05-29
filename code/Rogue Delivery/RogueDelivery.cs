@@ -20,6 +20,7 @@ using SquidLib.SquidMath;
 using SadConsole.Input;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.AccessControl;
+using System.Text;
 
 namespace RogueDelivery {
     class RogueDelivery {
@@ -382,7 +383,9 @@ namespace RogueDelivery {
                     Terminal.Put(x, y, c);
                     break;
                 case OutputType.SadConsole:
-                    SadConsole.Global.CurrentScreen.SetGlyph(x, y, (c > SadConsole.Global.CurrentScreen.Font.MaxGlyphIndex ? 4 : c));
+                    byte[] converting = BitConverter.GetBytes(c);
+                    byte cp437char = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding(437), converting)[0]; // target only has a byte size character
+                    SadConsole.Global.CurrentScreen.SetGlyph(x, y, cp437char);
                     break;
             }
         }
