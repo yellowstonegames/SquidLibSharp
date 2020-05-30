@@ -1,26 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 
 using BearLib;
 using ColorHelper;
 
 using Microsoft.Xna.Framework;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
-
-using SadConsole;
 using Console = SadConsole.Console;
 using SadConsole.Components;
 
-using SquidLib;
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
 using SadConsole.Input;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.AccessControl;
-using System.Text;
 
 namespace RogueDelivery {
     class RogueDelivery {
