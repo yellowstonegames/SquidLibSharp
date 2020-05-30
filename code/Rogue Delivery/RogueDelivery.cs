@@ -224,6 +224,17 @@ namespace RogueDelivery {
                 } else if (info.IsKeyPressed(Keys.Down)) {
                     master.MovePlayer(Direction.Down, info.IsKeyDown(Keys.LeftShift) || info.IsKeyDown(Keys.RightShift));
                     handled = true;
+                } else if (info.IsKeyPressed(Keys.Space)) {
+                    switch (master.controlType) {
+                        case ControlType.DrivingWagon:
+                            master.controlType = ControlType.OnFoot;
+                            master.bigMobs.Add(master.wagon);
+                            break;
+                        case ControlType.OnFoot:
+                            master.controlType = ControlType.DrivingWagon;
+                            master.bigMobs.Remove(master.wagon);
+                            break;
+                    }
                 }
             }
         }
@@ -379,7 +390,7 @@ namespace RogueDelivery {
                 case OutputType.SadConsole:
                     byte[] converting = BitConverter.GetBytes(c);
                     byte cp437char = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding(437), converting)[0]; // target only has a byte size character
-                    SadConsole.Global.CurrentScreen.SetGlyph(x, y, cp437char);
+                    SadConsole.Global.CurrentScreen.SetGlyph(x, y, cp437char, SadConsole.Global.CurrentScreen.DefaultForeground);
                     break;
             }
         }
