@@ -4,24 +4,23 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-using BearLib;
 using ColorHelper;
 
 using Microsoft.Xna.Framework;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
+
 using Console = SadConsole.Console;
 using SadConsole.Components;
+using SadConsole.Input;
 
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
-using SadConsole.Input;
+using SquidLib;
 
 namespace RogueDelivery {
     class RogueDelivery {
         private enum ControlType { OnFoot, DrivingWagon }
-        private enum OutputType { BearLibTerminal, SadConsole }
 
-        private bool keepRunning = true;
         private RNG rng;
 
         private int windowWidth = 120,
@@ -29,15 +28,10 @@ namespace RogueDelivery {
             logHeight = 3,
             statusHeight = 1;
         private int width, height; // for the map area
-        private string[] log = new string[] {
-            "Welcome to Rogue Delivery!",
-            "Arrow keys to move, space to jump in and out of wagon.",
-            "Hold shift when moving to slide instead of turn."
-        };
+        private string[] log;
 
         private Dictionary<Coord, char> borders = new Dictionary<Coord, char>();
 
-        private OutputType outputType;
         private ControlType controlType = ControlType.OnFoot;
         private Mob player;
         private Physical playerPhysical;
@@ -47,9 +41,14 @@ namespace RogueDelivery {
         private List<Mob> littleMobs = new List<Mob>();
 
         static void Main() {
-            var rd = new RogueDelivery(OutputType.SadConsole); // start up the primary system
-            rd.InitObjects();
+            var rd = new RogueDelivery(); // start up the primary system
             rd.Start();
+        }
+
+        private RogueDelivery() {
+            rng = new RNG(DateTime.Today.ToString(CultureInfo.InvariantCulture)); // Different seed every day, but the same seed on that day, for testing.
+            width = windowWidth - 2;
+            height = windowHeight - logHeight - statusHeight - 4;
         }
 
         private void InitObjects() {
@@ -92,13 +91,6 @@ namespace RogueDelivery {
             player.Location = Coord.Get(wagon.Location.X - 4, wagon.Location.Y); ;
         }
 
-        private RogueDelivery(OutputType outputType) {
-            this.outputType = outputType;
-            rng = new RNG(DateTime.Today.ToString(CultureInfo.InvariantCulture)); // Different seed every day, but the same seed on that day, for testing.
-            width = windowWidth - 2;
-            height = windowHeight - logHeight - statusHeight - 4;
-        }
-
         private void InitDisplay() {
             // init display style
             for (int x = 1; x < windowWidth - 1; x++) {
@@ -120,87 +112,33 @@ namespace RogueDelivery {
             borders[Coord.Get(windowWidth - 1, windowHeight - 1 - statusHeight - 1)] = '┤';
             borders[Coord.Get(windowWidth - 1, windowHeight - 1 - statusHeight - 1 - logHeight - 1)] = '┤';
 
-            // Setup terminal
-            switch (outputType) {
-                case OutputType.BearLibTerminal:
-                    Terminal.Open();
-                    Terminal.Set(
-                        $"window: title='Rogue Delivery', size={windowWidth}x{windowHeight};" +
-                        $"output: vsync=true;" +
-                        $"font: Iosevka.ttf, size=9x21, hinting=autohint"
-                        );
-                    BltColor.LoadAurora();
-                    Terminal.Color(rng.RandomElement<string>(BltColor.AuroraNames));
-                    Terminal.Refresh();
-                    break;
-                case OutputType.SadConsole:
-                    SadConsole.Game.Create(windowWidth, windowHeight);
-                    SadConsole.Game.OnInitialize = () => {
-                        var console = new Console(windowWidth, windowHeight);
-                        console.IsFocused = true;
-                        console.Cursor.IsEnabled = false;
-                        console.Components.Add(new SadKeyboardController(this));
-
-                        SadConsole.Global.CurrentScreen = console;
-                    };
-                    SadConsole.Game.OnUpdate = (gameTime) => DrawMap();
-                    break;
+            log = new string[logHeight];
+            for (int i = 0; i < log.Length; i++) {
+                log[i] = "";
             }
+
+            // Setup terminal
+            SadConsole.Game.Create(windowWidth, windowHeight);
+            SadConsole.Game.OnInitialize = () => {
+                var console = new Console(windowWidth, windowHeight);
+                console.IsFocused = true;
+                console.Cursor.IsEnabled = false;
+                console.Components.Add(new SadKeyboardController(this));
+
+                SadConsole.Global.CurrentScreen = console;
+                DrawMap();
+
+                Message("Welcome to Rogue Delivery!");
+                Message("Arrow keys to move, space to jump in and out of wagon.");
+                Message("Hold shift when moving to slide instead of turn.");
+            };
         }
 
         private void Start() {
+            InitObjects();
             InitDisplay();
-
-            switch (outputType) {
-                case OutputType.BearLibTerminal:
-                    DrawMap();
-                    Terminal.Refresh();
-
-                    while (keepRunning) {
-                        if (Terminal.HasInput()) {
-                            int read = Terminal.Read();
-                            switch (read) {
-                                case Terminal.TK_ESCAPE:
-                                case Terminal.TK_CLOSE:
-                                    keepRunning = false;
-                                    break;
-                                case Terminal.TK_LEFT:
-                                    MovePlayer(Direction.Left, Terminal.Check(Terminal.TK_SHIFT));
-                                    break;
-                                case Terminal.TK_UP:
-                                    MovePlayer(Direction.Up, Terminal.Check(Terminal.TK_SHIFT));
-                                    break;
-                                case Terminal.TK_DOWN:
-                                    MovePlayer(Direction.Down, Terminal.Check(Terminal.TK_SHIFT));
-                                    break;
-                                case Terminal.TK_RIGHT:
-                                    MovePlayer(Direction.Right, Terminal.Check(Terminal.TK_SHIFT));
-                                    break;
-                                case Terminal.TK_SPACE when controlType == ControlType.DrivingWagon:
-                                    controlType = ControlType.OnFoot;
-                                    bigMobs.Add(wagon);
-                                    break;
-                                case Terminal.TK_SPACE when controlType == ControlType.OnFoot:
-                                    controlType = ControlType.DrivingWagon;
-                                    bigMobs.Remove(wagon);
-                                    break;
-                                default:
-                                    // ignore unknown commands
-                                    Terminal.Color(System.Drawing.Color.White);
-                                    Message($"Pressed {(char)Terminal.State(Terminal.TK_WCHAR)}");
-                                    break;
-                            }
-                            DrawMap();
-                            Terminal.Refresh();
-                        }
-                    }
-                    Terminal.Close();
-                    break;
-                case OutputType.SadConsole:
-                    SadConsole.Game.Instance.Run();
-                    SadConsole.Game.Instance.Dispose();
-                    break;
-            }
+            SadConsole.Game.Instance.Run();
+            SadConsole.Game.Instance.Dispose();
         }
 
         private class SadKeyboardController : KeyboardConsoleComponent {
@@ -235,6 +173,11 @@ namespace RogueDelivery {
                             master.bigMobs.Remove(master.wagon);
                             break;
                     }
+                    handled = true;
+                }
+
+                if (handled) {
+                    master.DrawMap();
                 }
             }
         }
@@ -286,14 +229,7 @@ namespace RogueDelivery {
                 .Any();
 
         private void ClearArea(int x, int y, int clearWidth, int clearHeight) {
-            switch (outputType) {
-                case OutputType.BearLibTerminal:
-                    Terminal.ClearArea(x, y, clearWidth, clearHeight);
-                    break;
-                case OutputType.SadConsole:
-                    SadConsole.Global.CurrentScreen.Clear(new Microsoft.Xna.Framework.Rectangle(x, y, clearWidth, clearHeight));
-                    break;
-            }
+            SadConsole.Global.CurrentScreen.Clear(new Rectangle(x, y, clearWidth, clearHeight));
         }
 
         private void DrawMap() {
@@ -344,25 +280,11 @@ namespace RogueDelivery {
         }
 
         private System.Drawing.Color GetRandomColor() {
-            switch (outputType) {
-                case OutputType.BearLibTerminal:
-                    return Terminal.ColorFromName(rng.RandomElement(BltColor.AuroraNames));
-                case OutputType.SadConsole:
-                    return System.Drawing.Color.FromArgb((int)Microsoft.Xna.Framework.Color.White.GetRandomColor(rng).ToInteger());
-                default:
-                    return System.Drawing.Color.Turquoise;
-            }
+            return System.Drawing.Color.FromArgb((int)Color.White.GetRandomColor(rng).ToInteger());
         }
 
         private void SetColor(System.Drawing.Color color) {
-            switch (outputType) {
-                case OutputType.BearLibTerminal:
-                    Terminal.Color(color);
-                    break;
-                case OutputType.SadConsole:
-                    SadConsole.Global.CurrentScreen.DefaultForeground = new Microsoft.Xna.Framework.Color((uint)color.ToArgb());
-                    break;
-            }
+            SadConsole.Global.CurrentScreen.DefaultForeground = new Color((uint)color.ToArgb());
         }
 
         private void PaintBorder() {
@@ -375,37 +297,23 @@ namespace RogueDelivery {
             for (int i = 1; i < log.Length; i++) {
                 log[i - 1] = log[i];
             }
-            log[log.Length] = message;
-            ClearArea(1, height + 3, width, logHeight);
+            log[log.Length - 1] = message;
+            ClearArea(1, height + 2, width, logHeight);
             for (int i = 0; i < log.Length; i++) {
-                Put(1, height + 3 + i, log[i]);
+                Put(1, height + 2 + i, log[i]);
             }
         }
 
         private void Put(int x, int y, char c) {
-            switch (outputType) {
-                case OutputType.BearLibTerminal:
-                    Terminal.Put(x, y, c);
-                    break;
-                case OutputType.SadConsole:
-                    byte[] converting = BitConverter.GetBytes(c);
-                    byte cp437char = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding(437), converting)[0]; // target only has a byte size character
-                    SadConsole.Global.CurrentScreen.SetGlyph(x, y, cp437char, SadConsole.Global.CurrentScreen.DefaultForeground);
-                    break;
-            }
+            byte[] converting = BitConverter.GetBytes(c);
+            byte cp437char = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding(437), converting)[0]; // target only has a byte size character
+            SadConsole.Global.CurrentScreen.SetGlyph(x, y, cp437char, SadConsole.Global.CurrentScreen.DefaultForeground);
         }
 
         private void Put(Coord coord, char c) => Put(coord.X, coord.Y, c);
 
         private int Put(int x, int y, string s) {
-            switch (outputType) {
-                case OutputType.BearLibTerminal:
-                    Terminal.Print(x, y, s);
-                    break;
-                case OutputType.SadConsole:
-                    SadConsole.Global.CurrentScreen.Print(x, y, s);
-                    break;
-            }
+            SadConsole.Global.CurrentScreen.Print(x, y, s, SadConsole.Global.CurrentScreen.DefaultForeground);
             return x + s.Length;
         }
 
