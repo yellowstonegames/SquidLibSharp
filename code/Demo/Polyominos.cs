@@ -16,7 +16,7 @@ namespace Demo {
     public class Polynomino {
         private static int width = 120,
             height = 40,
-            millisecondDelay = 100;
+            millisecondDelay = 10;
         private RNG rng = new RNG();
 
         private Dictionary<int, List<string>> polynominoes = default;
