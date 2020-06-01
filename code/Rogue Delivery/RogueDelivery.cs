@@ -4,8 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-using ColorHelper;
-
 using Microsoft.Xna.Framework;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
