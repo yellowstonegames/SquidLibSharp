@@ -1,72 +1,99 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using BearLib;
+
+using Microsoft.Xna.Framework;
+using Keys = Microsoft.Xna.Framework.Input.Keys;
+
+using Console = SadConsole.Console;
+using SadConsole.Components;
+using SadConsole.Input;
 
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
 
 namespace Demo {
     public class Polynomino {
-        private Dictionary<int, List<Grid<char>>> polynominos = new Dictionary<int, List<Grid<char>>>();
-        private bool keepRunning = true;
+        private static int width = 120,
+            height = 40,
+            millisecondDelay = 100;
         private RNG rng = new RNG();
+
+        private Dictionary<int, List<string>> polynominoes = default;
+        private Color foreground = default;
+        private Console console = default;
+        private DateTime start = default;
+
+        private int currentRank = 1;
+        private int currentPolyIndex = 0;
+        private int workingX = 1, workingY = 1, maxY = 1;
 
         public static void Main() => _ = new Polynomino();
 
         private Polynomino() {
-            Terminal.Open();
+            SadConsole.Game.Create(width, height);
+            SadConsole.Game.OnInitialize = () => {
+                polynominoes = PolynominoBuilder.BuildPolynominoes(10);
 
-            int width = 120, height = 40;
-            Terminal.Set($"window: title='SquidLibSharp Polyomino Demo', size={width}x{height}; output: vsync=false; font: Iosevka.ttf, size=9x21, hinting=autohint");
-            ColorHelper.BltColor.LoadAurora();
-            Terminal.Refresh();
+                console = new Console(width, height);
+                console.IsFocused = true;
+                console.Cursor.IsEnabled = false;
 
-            Dictionary<int, List<string>> polynominoes = PolynominoBuilder.BuildPolynominoes(10);
+                SadConsole.Global.CurrentScreen = console;
 
-            int currentRank = 1;
-            int currentPolyIndex = 0;
+                start = DateTime.UtcNow.Subtract(TimeSpan.FromMilliseconds(millisecondDelay));
+            };
 
-            int millisecondDelay = 500;
-            DateTime start = DateTime.UtcNow.Subtract(TimeSpan.FromMilliseconds(millisecondDelay));
-
-            int input = 0;
-            while (keepRunning) {
-                input = Terminal.Peek();
-                if (input == Terminal.TK_Q || input == Terminal.TK_ESCAPE || input == Terminal.TK_CLOSE) {
-                    keepRunning = false;
-                } else {
-                    if (Terminal.HasInput()) {
-                        input = Terminal.Read();
-                    }
-                    if (start.AddMilliseconds(millisecondDelay) < DateTime.UtcNow) {
-                        currentPolyIndex++;
-                        if (currentPolyIndex >= polynominoes[currentRank].Count) {
-                            currentRank++;
-                            if (currentRank > polynominoes.Count) {
-                                currentRank = 1;
-                            }
-                            currentPolyIndex = 0;
+            SadConsole.Game.OnUpdate = (gameTime) => {
+                if (start.AddMilliseconds(millisecondDelay) < DateTime.UtcNow) {
+                    currentPolyIndex++;
+                    if (currentPolyIndex >= polynominoes[currentRank].Count) {
+                        currentRank++;
+                        if (currentRank > polynominoes.Count) {
+                            currentRank = 1;
+                            console.Clear();
+                            workingX = 1;
+                            workingY = 1;
                         }
-                        Terminal.Clear();
-                        Terminal.Color(Terminal.ColorFromName(rng.RandomElement(ColorHelper.BltColor.AuroraNames)));
-                        string polyString = polynominoes[currentRank][currentPolyIndex];
-                        int x = 1, y = 1;
-                        foreach (char c in polyString) {
-                            if (c == '\n') {
-                                y++;
-                                x = 1;
-                            } else {
-                                Terminal.Put(x, y, c);
-                                x++;
-                            }
-                        }
-                        Terminal.Refresh();
-                        start = DateTime.UtcNow;
+                        currentPolyIndex = 0;
                     }
+
+                    foreground = Color.White.GetRandomColor(rng);
+
+                    string polyString = polynominoes[currentRank][currentPolyIndex];
+                    string[] outputs = polyString.Split('\n');
+
+                    // figure out if new row start is needed
+                    int spaceLeft = width - 2 - workingX;
+                    int outputsLength = outputs.Max(s => s.Length);
+                    if (spaceLeft < outputsLength) {
+                        workingX = 1;
+                        workingY = maxY + 1;
+                    }
+
+                    // See if a new wipe needs to happen
+                    if (workingY + outputs.Length >= height - 1) {
+                        console.Clear();
+                        workingX = 1;
+                        workingY = 1;
+                        maxY = 1;
+                    }
+
+                    maxY = Math.Max(maxY, workingY + outputs.Length);
+
+                    int y = workingY;
+                    foreach (string line in outputs) {
+                        console.Print(workingX, y, line, foreground);
+                        y++;
+                    }
+                    workingX += outputsLength + 1;
+
+                    start = DateTime.UtcNow;
                 }
-            }
+            };
+
+            SadConsole.Game.Instance.Run();
+            SadConsole.Game.Instance.Dispose();
         }
     }
 
