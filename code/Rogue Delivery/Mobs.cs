@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+
+using Microsoft.Xna.Framework;
 
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
@@ -97,10 +97,10 @@ namespace RogueDelivery {
         /// <param name="color"></param>
         public void Put(int x, int y, char glyph, Color color) {
             Tiles[Coord.Get(x, y)] = new Representation { Glyph = glyph, Color = color };
-            
+
             // Check for if the bounds needs to be adjusted
             if (!OuterBounds.Contains(x, y)) {
-                OuterBounds.Intersect(new Rectangle(x, y, 1, 1));// not great that it makes a new rect to throw away, but may not be a problem since new MTR creation should be rare
+                OuterBounds = new Rectangle(Math.Min(x, OuterBounds.X), Math.Min(y, OuterBounds.Y), Math.Abs(x - OuterBounds.X), Math.Abs(y - OuterBounds.Y));
             }
         }
     }

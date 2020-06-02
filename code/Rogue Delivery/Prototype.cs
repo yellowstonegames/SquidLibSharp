@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+﻿using Microsoft.Xna.Framework;
+
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
 

@@ -20,6 +20,7 @@ namespace RogueDelivery {
         private enum ControlType { OnFoot, DrivingWagon }
 
         private RNG rng;
+        private Console console;
 
         private int windowWidth = 120,
             windowHeight = 40,
@@ -50,7 +51,7 @@ namespace RogueDelivery {
         }
 
         private void InitObjects() {
-            player = new Mob { Rep = new Representation { Glyph = '@', Color = System.Drawing.Color.Aquamarine } };
+            player = new Mob { Rep = new Representation { Glyph = '@', Color = Color.Aquamarine } };
             playerPhysical = new Physical() {
                 Name = "Rogue",
                 Class = "Delivery Driver",
@@ -118,7 +119,7 @@ namespace RogueDelivery {
             // Setup terminal
             SadConsole.Game.Create(windowWidth, windowHeight);
             SadConsole.Game.OnInitialize = () => {
-                var console = new Console(windowWidth, windowHeight);
+                console = new Console(windowWidth, windowHeight);
                 console.IsFocused = true;
                 console.Cursor.IsEnabled = false;
                 console.Components.Add(new SadKeyboardController(this));
@@ -227,7 +228,7 @@ namespace RogueDelivery {
                 .Any();
 
         private void ClearArea(int x, int y, int clearWidth, int clearHeight) {
-            SadConsole.Global.CurrentScreen.Clear(new Rectangle(x, y, clearWidth, clearHeight));
+            console.Clear(new Rectangle(x, y, clearWidth, clearHeight));
         }
 
         private void DrawMap() {
@@ -252,37 +253,33 @@ namespace RogueDelivery {
                     break;
             }
 
-            SetColor(GetRandomColor());
+            console.DefaultForeground = GetRandomColor();
             PaintBorder();
 
             // Status section
             int startY = windowHeight - statusHeight - 1;
-            SetColor(player.Rep.Color);
+            console.DefaultForeground = player.Rep.Color;
             int startX = Put(2, startY, playerPhysical.Name);
-            SetColor(System.Drawing.Color.White);
+            console.DefaultForeground = Color.White;
             startX = Put(startX + 1, startY, "The");
-            SetColor(System.Drawing.Color.LightCoral);
+            console.DefaultForeground = Color.LightCoral;
             startX = Put(startX + 1, startY, playerPhysical.Class);
-            SetColor(System.Drawing.Color.White);
+            console.DefaultForeground = Color.White;
             startX = Put(startX + 1, startY, "--");
-            SetColor(System.Drawing.Color.Silver);
+            console.DefaultForeground = Color.Silver;
             startX = Put(startX + 1, startY, "Strength: " + playerPhysical.Strength);
-            SetColor(System.Drawing.Color.HotPink);
+            console.DefaultForeground = Color.HotPink;
             startX = Put(startX + 2, startY, "Luck: " + playerPhysical.Luck);
-            SetColor(System.Drawing.Color.MediumPurple);
+            console.DefaultForeground = Color.MediumPurple;
             startX = Put(startX + 2, startY, "Wiles: " + playerPhysical.Wiles);
-            SetColor(System.Drawing.Color.RosyBrown);
+            console.DefaultForeground = Color.RosyBrown;
             startX = Put(startX + 2, startY, "XP: " + playerPhysical.XP);
-            SetColor(System.Drawing.Color.SeaGreen);
+            console.DefaultForeground = Color.SeaGreen;
             startX = Put(startX + 2, startY, "Health: " + playerPhysical.Health);
         }
 
-        private System.Drawing.Color GetRandomColor() {
-            return System.Drawing.Color.FromArgb((int)Color.White.GetRandomColor(rng).ToInteger());
-        }
-
-        private void SetColor(System.Drawing.Color color) {
-            SadConsole.Global.CurrentScreen.DefaultForeground = new Color((uint)color.ToArgb());
+        private Color GetRandomColor() {
+            return Color.White.GetRandomColor(rng);
         }
 
         private void PaintBorder() {
@@ -305,25 +302,25 @@ namespace RogueDelivery {
         private void Put(int x, int y, char c) {
             byte[] converting = BitConverter.GetBytes(c);
             byte cp437char = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding(437), converting)[0]; // target only has a byte size character
-            SadConsole.Global.CurrentScreen.SetGlyph(x, y, cp437char, SadConsole.Global.CurrentScreen.DefaultForeground);
+            console.SetGlyph(x, y, cp437char, console.DefaultForeground);
         }
 
         private void Put(Coord coord, char c) => Put(coord.X, coord.Y, c);
 
         private int Put(int x, int y, string s) {
-            SadConsole.Global.CurrentScreen.Print(x, y, s, SadConsole.Global.CurrentScreen.DefaultForeground);
+            console.Print(x, y, s, console.DefaultForeground);
             return x + s.Length;
         }
 
         private void PutOnMap(Mob mob) {
-            SetColor(mob.Rep.Color);
+            console.DefaultForeground = mob.Rep.Color;
             PutOnMap(mob.Location, mob.Rep.Glyph);
         }
 
         private void PutOnMap(BigMob bigMob) {
             Coord drawingOffset = bigMob.DrawingOffset();
             foreach (var (coord, rep) in bigMob.Reps[bigMob.Facing].Tiles) {
-                SetColor(rep.Color);
+                console.DefaultForeground = rep.Color;
                 PutOnMap(drawingOffset + coord, rep.Glyph);
             }
         }

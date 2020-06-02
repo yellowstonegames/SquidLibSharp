@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-using SquidLib;
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
 
