@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SquidLib", "SquidLib\SquidL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "Demo\Demo.csproj", "{57EBE4CB-93E0-47FF-8FA0-52A729709783}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rogue Delivery", "Rogue Delivery\Rogue Delivery.csproj", "{DDF55858-2A59-42DA-A393-1339CDCF1104}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueDelivery", "Rogue Delivery\RogueDelivery.csproj", "{DDF55858-2A59-42DA-A393-1339CDCF1104}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BearLibTerminalIntegration", "BearLibTerminalIntegration\BearLibTerminalIntegration.csproj", "{2F780FCD-2582-45CD-B045-94CB0726D88C}"
 	ProjectSection(ProjectDependencies) = postProject
