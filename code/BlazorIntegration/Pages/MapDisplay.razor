@@ -1,0 +1,19 @@
+﻿@page "/mapDisplay"
+@using Blazor.Extensions; 
+@using Blazor.Extensions.Canvas.Canvas2D;
+
+<BECanvas Width="300" Height="400" @ref="mapDisplay"></BECanvas>
+
+@code {
+    Canvas2DContext mapContext;
+
+    BECanvasComponent mapDisplay;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        mapContext = await mapDisplay.CreateCanvas2DAsync();
+        await mapContext.SetFillStyleAsync("green");
+        await mapContext.FillRectAsync(10, 100, 100, 100);
+        await mapContext.SetFontAsync("48px serif");
+        await mapContext.StrokeTextAsync("Mwuahahahahaha!", 10, 100);
+    }
+}
