@@ -17,24 +17,27 @@ namespace Demo {
                 ("Logo", LogoDemo.Main),
                 ("Noise", NoiseDemo.Main),
                 ("Polynomino", Polynomino.Main),
-                ("Glyph", GlyphDemo.Main)
+                ("Glyph", GlyphDemo.Main),
+                ("Quit", () => System.Environment.Exit(0))
             };
 
             Console.WriteLine("Welcome to the SquidLibSharp Demos!");
-            Console.WriteLine("Please choose a demo:");
-            ShowOptions(demos);
-            int exitChoice = demos.Count + 1;
-
-            int input;
-            while (!int.TryParse(Console.ReadLine().Trim(), out input) || input < 1 || input > exitChoice) {
-                Console.WriteLine($"Input not recognized, please try again.");
+            while (true) {
+                Console.WriteLine("Please choose a demo:");
                 ShowOptions(demos);
-            }
+                int exitChoice = demos.Count+1;
 
-            if (input != exitChoice) {
-                Console.WriteLine();
-                Console.WriteLine("Press ESC to exit demo.");
-                demos[input - 1].action.Invoke();
+                int input;
+                while (!int.TryParse(Console.ReadLine().Trim(), out input) || input < 1 || input > exitChoice) {
+                    Console.WriteLine($"Input not recognized, please try again.");
+                    ShowOptions(demos);
+                }
+
+                if (input != exitChoice) {
+                    Console.WriteLine();
+                    Console.WriteLine("Press ESC to exit demo.");
+                    demos[input - 1].action.Invoke();
+                }
             }
         }
 
@@ -42,17 +45,15 @@ namespace Demo {
             for (int i = 0; i < demos.Count; i++) {
                 Console.WriteLine($"{i + 1} - {demos[i].text}");
             }
-            int exitChoice = demos.Count + 1;
-            Console.WriteLine($"{exitChoice} - Quit");
-            Console.Write($"Choose 1-{exitChoice}: ");
+            Console.Write($"Choose 1-{demos.Count}: ");
             Console.Out.Flush();
         }
     }
 
     public static class DungeonDemo {
-        private static bool keepRunning = true;
 
         public static void Main() {
+            bool keepRunning = true;
             RNG rng = new RNG();
 
             Terminal.Open();
@@ -62,14 +63,23 @@ namespace Demo {
             ColorHelper.BltColor.LoadAurora();
             Terminal.Refresh();
             int input = 0;
-            WanderingRoomGenerator generator = new WanderingRoomGenerator(width, height, rng);
-            generator.SetRoomType(DungeonRoom.WalledBoxRoom, 7.0);
-            generator.SetRoomType(DungeonRoom.WalledRoundRoom, 5.0);
-            //generator.SetRoomType(DungeonRoom.Cave, 5.0);
-            Grid<char> grid = generator.Generate();
-            //Console.WriteLine(grid.Show());
-            grid = LineKit.HashesToLines(grid, true);
+            Grid<char> grid;
             DateTime current = DateTime.Now, start = DateTime.Now;
+            if ((start.Ticks & 64) == 0)
+            {
+                WanderingRoomGenerator generator = new WanderingRoomGenerator(width, height, rng);
+                generator.SetRoomType(DungeonRoom.WalledBoxRoom, 7.0);
+                generator.SetRoomType(DungeonRoom.WalledRoundRoom, 5.0);
+                //generator.SetRoomType(DungeonRoom.Cave, 5.0);
+                grid = generator.Generate();
+            }
+            else
+            {
+                ConnectingGenerator generator = new ConnectingGenerator(width, height, 1, 1, rng, 2);
+                grid = generator.Generate();
+            }
+            Console.WriteLine(grid.Show());
+            grid = LineKit.HashesToLines(grid, true);
             int frames = 1;
             while (keepRunning) {
                 input = Terminal.Peek();
@@ -99,14 +109,14 @@ namespace Demo {
                 }
 
             }
+            Terminal.Close();
         }
     }
 
     public static class LetterDemo {
-        private static bool keepRunning = true;
-
         // currently, you can view a rippling water area in ASCII, and can press Escape to close.
         public static void Main() {
+            bool keepRunning = true;
             RNG rng = new RNG();
 
             Terminal.Open();
@@ -171,17 +181,17 @@ namespace Demo {
                 //}
 
             }
+            Terminal.Close();
         }
     }
 
     public static class GlyphDemo {
-        private static bool keepRunning = true;
         private static RNG rng = new RNG();
 
         private static Color[] mixers = new Color[] { Color.White, Color.Black, Color.AliceBlue, Color.DarkSlateGray, Color.Gray };
 
         public static void Main() {
-
+            bool keepRunning = true;
             Terminal.Open();
             //Terminal.Set("log: level=trace");
             int width = 60, height = 60;
@@ -269,6 +279,7 @@ namespace Demo {
                     }
                 }
             }
+            Terminal.Close();
         }
 
         private static int Blend(int a, int b, double coef) {
@@ -285,8 +296,6 @@ namespace Demo {
     }
 
     public static class LogoDemo {
-        private static bool keepRunning = true;
-
         public static uint GetHSV(float hue, float saturation, float value) {
             if (value <= 0.0039f) {
                 return 0xFF000000u;
@@ -323,6 +332,7 @@ namespace Demo {
 
         // currently, you can view a logo in Unicode, and can press Escape to close.
         public static void Main() {
+            bool keepRunning = true;
             Terminal.Open();
             string[] big = new string[]{
                 "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::",
@@ -412,10 +422,8 @@ namespace Demo {
     }
 
     public static class NoiseDemo {
-        private static bool keepRunning = true;
-
         public static void Main() {
-
+            bool keepRunning = true;
             double time = 0.0;
             Terminal.Open();
             int width = 256, height = 256;
@@ -455,6 +463,7 @@ namespace Demo {
                     Terminal.Refresh();
                 }
             }
+            Terminal.Close();
         }
     }
 }

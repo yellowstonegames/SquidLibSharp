@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using SquidLib.SquidMath;
 
 namespace SquidLib.SquidGrid {
-    class ConnectingGenerator {
-        public int width;
-        public int height;
-        public int roomWidth;
-        public int roomHeight;
-        public int wallThickness;
-        public Grid<char> dungeon;
-        public Grid<CellCategory> environment;
-        public Region region;
+    public class ConnectingGenerator {
+        public int Width;
+        public int Height;
+        public int RoomWidth;
+        public int RoomHeight;
+        public int WallThickness;
+        public Grid<char> Dungeon;
+        public Grid<CellCategory> Environment;
+        public Region Region;
         private Region tempRegion;
-        public IRNG rng;
+        public IRNG Rng;
 
         /**
          * Calls {@link #ConnectingGenerator(int, int, int, int, IRNG, int)} with width 80, height 80, roomWidth 8,
@@ -52,16 +52,16 @@ namespace SquidLib.SquidGrid {
          *                      shouldn't be much more than roomWidth or roomHeight
          */
         public ConnectingGenerator(int width, int height, int roomWidth, int roomHeight, IRNG random, int wallThickness) {
-            this.width = Math.Max(1, width);
-            this.height = Math.Max(1, height);
-            region = new Region(this.width, this.height);
-            tempRegion = new Region(this.width, this.height);
-            this.roomWidth = Math.Max(1, roomWidth);
-            this.roomHeight = Math.Max(1, roomHeight);
-            this.wallThickness = Math.Max(1, wallThickness);
-            dungeon = new Grid<char>(this.width, this.height, '#', '#');
-            environment = new Grid<CellCategory>(this.width, this.height, CellCategory.Untouched, CellCategory.Untouched);
-            rng = random;
+            this.Width = Math.Max(1, width);
+            this.Height = Math.Max(1, height);
+            Region = new Region(this.Width, this.Height);
+            tempRegion = new Region(this.Width, this.Height);
+            this.RoomWidth = Math.Max(1, roomWidth);
+            this.RoomHeight = Math.Max(1, roomHeight);
+            this.WallThickness = Math.Max(1, wallThickness);
+            Dungeon = new Grid<char>(this.Width, this.Height, '#', '#');
+            Environment = new Grid<CellCategory>(this.Width, this.Height, CellCategory.Untouched, CellCategory.Untouched);
+            Rng = random;
         }
         /**
          * Generates a dungeon or other map as a 2D char array. Uses the convention of '#' representing a wall and '.'
@@ -71,18 +71,18 @@ namespace SquidLib.SquidGrid {
          * @return a 2D char array representing a room-based map, using standard conventions for walls/floors
          */
     public Grid<char> Generate() {
-            int gridWidth = (width + wallThickness - 2) / (roomWidth + wallThickness), gridHeight = (height + wallThickness - 2) / (roomHeight + wallThickness), gridMax = gridWidth * gridHeight;
+            int gridWidth = (Width + WallThickness - 2) / (RoomWidth + WallThickness), gridHeight = (Height + WallThickness - 2) / (RoomHeight + WallThickness), gridMax = gridWidth * gridHeight;
             if (gridWidth <= 0 || gridHeight <= 0)
-                return dungeon;
-            dungeon.DefaultFill = '#';
-            environment.DefaultFill = CellCategory.Untouched;
-            if (region.Width != width || region.Height != height) {
-                region = new Region(this.width, this.height);
-                tempRegion = new Region(this.width, this.height);
+                return Dungeon;
+            Dungeon.DefaultFill = '#';
+            Environment.DefaultFill = CellCategory.Untouched;
+            if (Region.Width != Width || Region.Height != Height) {
+                Region = new Region(this.Width, this.Height);
+                tempRegion = new Region(this.Width, this.Height);
             }
             IndexedDictionary<uint, int> links = new IndexedDictionary<uint, int>(gridMax), surface = new IndexedDictionary<uint, int>(gridMax);
             List<int> choices = new List<int>(4);
-            int dx = rng.NextInt(gridWidth), dy = rng.NextInt(gridHeight);
+            int dx = Rng.NextInt(gridWidth), dy = Rng.NextInt(gridHeight);
             uint d = (uint)dy << 16 | (uint)dx;
             links[d] = 0;
             surface[d] = 0;
@@ -96,7 +96,7 @@ namespace SquidLib.SquidGrid {
                     surface.Remove(d);
                     break;
                 }
-                int choice = rng.RandomElement(choices);
+                int choice = Rng.RandomElement(choices);
                 if (links.ContainsKey(d))
                     links[d] = links[d] | choice;
                 if (choices.Count == 1)
@@ -127,7 +127,7 @@ namespace SquidLib.SquidGrid {
                 dy = (int)(d >> 16);
             }
             while (links.Count < gridMax) {
-                d = rng.RandomKey(surface);
+                d = Rng.RandomKey(surface);
                 dx = (int)(d & 0xFFFF);
                 dy = (int)(d >> 16);
                 for (int i = 0; i < 5 && links.Count < gridMax && surface.Count > 0; i++) {
@@ -140,7 +140,7 @@ namespace SquidLib.SquidGrid {
                         surface.Remove(d);
                         break;
                     }
-                    int choice = rng.RandomElement(choices);
+                    int choice = Rng.RandomElement(choices);
                     if (links.ContainsKey(d))
                         links[d] = links[d] | choice;
                     if (choices.Count == 1)
@@ -177,27 +177,27 @@ namespace SquidLib.SquidGrid {
                 dy = (int)(d >> 16);
                 int conn = links[Value.At, i];
 
-                region.InsertRectangle(1 + dx * (roomWidth + wallThickness), 1 + dy * (roomHeight + wallThickness), roomWidth, roomHeight);
+                Region.InsertRectangle(1 + dx * (RoomWidth + WallThickness), 1 + dy * (RoomHeight + WallThickness), RoomWidth, RoomHeight);
                 if ((conn & 1) != 0)
-                    region.InsertRectangle(1 + dx * (roomWidth + wallThickness) + roomWidth, 1 + dy * (roomHeight + wallThickness), wallThickness, roomHeight);
+                    Region.InsertRectangle(1 + dx * (RoomWidth + WallThickness) + RoomWidth, 1 + dy * (RoomHeight + WallThickness), WallThickness, RoomHeight);
                 if ((conn & 2) != 0)
-                    region.InsertRectangle(1 + dx * (roomWidth + wallThickness), 1 + dy * (roomHeight + wallThickness) + roomHeight, roomWidth, wallThickness);
+                    Region.InsertRectangle(1 + dx * (RoomWidth + WallThickness), 1 + dy * (RoomHeight + WallThickness) + RoomHeight, RoomWidth, WallThickness);
                 if ((conn & 4) != 0)
-                    region.InsertRectangle(1 + dx * (roomWidth + wallThickness) - wallThickness, 1 + dy * (roomHeight + wallThickness), wallThickness, roomHeight);
+                    Region.InsertRectangle(1 + dx * (RoomWidth + WallThickness) - WallThickness, 1 + dy * (RoomHeight + WallThickness), WallThickness, RoomHeight);
                 if ((conn & 8) != 0)
-                    region.InsertRectangle(1 + dx * (roomWidth + wallThickness), 1 + dy * (roomHeight + wallThickness) - wallThickness, roomWidth, wallThickness);
+                    Region.InsertRectangle(1 + dx * (RoomWidth + WallThickness), 1 + dy * (RoomHeight + WallThickness) - WallThickness, RoomWidth, WallThickness);
             }
-            foreach(Coord c in region) {
-                dungeon[c.X, c.Y] = '.';
-                environment[c.X, c.Y] = CellCategory.RoomFloor;
+            foreach(Coord c in Region) {
+                Dungeon[c.X, c.Y] = '.';
+                Environment[c.X, c.Y] = CellCategory.RoomFloor;
             }
             tempRegion.Clear();
-            tempRegion.AddAll(region);
+            tempRegion.AddAll(Region);
             tempRegion.Fringe8Way(1);
             foreach (Coord c in tempRegion) {
-                environment[c.X, c.Y] = CellCategory.RoomWall;
+                Environment[c.X, c.Y] = CellCategory.RoomWall;
             }
-            return dungeon;
+            return Dungeon;
         }
 
     }

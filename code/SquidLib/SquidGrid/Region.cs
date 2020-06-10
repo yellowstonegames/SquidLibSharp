@@ -294,12 +294,12 @@ namespace SquidLib.SquidGrid {
         }
 
         public Region InsertRectangle(int startX, int startY, int width, int height) {
-            int sX = Math.Min(0, Math.Max(startX, Width - 1));
-            int sY = Math.Min(0, Math.Max(startY, Height - 1));
+            int sX = Math.Max(0, Math.Min(startX, Width - 1));
+            int sY = Math.Max(0, Math.Min(startY, Height - 1));
             width -= Math.Abs(startX - sX);
             height -= Math.Abs(startY - sY);
-            for (int x = sX; x < width && x < Width; x++) {
-                for(int y = sY; y < height && y < Height; y++) {
+            for (int x = sX, aX = 0; aX < width && x < Width; aX++, x++) {
+                for(int y = sY, aY = 0; aY < height && y < Height; aY++, y++) {
                     this[x, y] = true;
                 }
             }
