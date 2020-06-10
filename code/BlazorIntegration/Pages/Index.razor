@@ -1,7 +1,37 @@
 ﻿@page "/"
+@using SquidLib.SquidGrid
+@using SquidLib.SquidMath
 
-<h1>Hello, world!</h1>
+<div>
+    <h1>Roguelike Blazor Demo</h1>
 
-Welcome to your new app.
+    <div>
+        <button @onclick="Randomize">Randomize</button>
+    </div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    <div>
+        <MapDisplay @ref="map" />
+    </div>
+</div>
+
+@code {
+    private MapDisplay map;
+
+    private RNG rng = new RNG();
+    private WanderingRoomGenerator gen;
+
+    protected override  void OnAfterRender(bool firstRender) {
+        map.OnLoad(() => Randomize());
+    }
+
+    protected async Task Randomize() {
+        gen = new WanderingRoomGenerator(map.GridWidth(), map.GridHeight(), rng);
+        Grid<char> dungeon = gen.Generate();
+        await map.Clear();
+        for (int x = 0; x < dungeon.Width; x++) {
+            for (int y = 0; y < dungeon.Height; y++) {
+                await map.Put(x, y, dungeon[x, y].ToString());
+            }
+        }
+    }
+}
