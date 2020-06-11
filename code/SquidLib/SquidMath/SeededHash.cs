@@ -520,22 +520,36 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
                 return h;
             }
         }
+        /*
         public static ulong PhiHashSeeded64(ulong seed, string data) {
             if (data == null) return 0;
             unchecked {
                 //ulong h = 0xC6BC279692B5C323UL;
                 ulong h1 = 0x4BFD899B8EB6C433UL;
-                ulong h2 = 0x92B5C323U;
+                ulong h2 = 0xC6BC279692B5C323UL;// 0x92B5C323U;
                 ulong c;
                 for (int i = 0; i < data.Length; i++) {
                     c = data[i] ^ seed;
-                    h1 = (h1 ^ c) * 0x9E3779B9B68B5351UL;
+                    h1 = (h1 + c) * 0x9E3779B9B68B5351UL;
                     //h1 = (h1 ^ h1 >> 32 ^ c) * 0x9E3779B9B68B5351UL;
                     h2 = (h2 ^ c) * 0x7F4A7C15U;
                 }
-                return h1 << 32 | (h2 & 0xFFFFFFFFUL);
+                return (h1 << 32 | h1 >> 32) ^ (h2);
+            }
+        }*/
+        
+        //0xCC62FCEB9202FAADUL
+        public static ulong PhiHashSeeded64(ulong seed, string data) {
+            if (data == null) return 0;
+            unchecked {
+                ulong h = 0xC6BC279692B5C323UL ^ (seed << 3);
+                ulong r = seed + (ulong)data.Length;
+                for (int i = 0; i < data.Length; i++) {
+                    r = (r ^ data[i]) * (h += 0x9E3779B97F4A7C16UL);
+                }
+                return r;
             }
         }
-
+        
     }
 }

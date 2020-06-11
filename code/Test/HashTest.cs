@@ -138,8 +138,10 @@ namespace Test
                 hashes.Clear();
                 //ulong seed = RNG.Randomize((ulong)i);
                 ulong seed = rng.NextULong();
+//                Console.WriteLine("Using seed: {0:X}", seed);
                 foreach (string s in split) {
                     h = (int)(SeededHash.PhiHashSeeded64(seed, s));
+                    //h = (int)SeededHash.Predefined[i].Hash64(s);
                     if (hashes.ContainsKey(h)) {
                         hashes[h].Add(s);
                         //Console.WriteLine($"Collisions on {string.Join(",", hashes[h])}");
@@ -149,7 +151,7 @@ namespace Test
                         };
                     }
                 }
-                Console.WriteLine($"Testing PhiHashSeeded64({seed}); difference of {split.Length - hashes.Count}");
+                Console.WriteLine("Testing PhiHashSeeded64({0:X16}); difference of {1}", seed, split.Length - hashes.Count);
                 sum += split.Length - hashes.Count;
             }
             Console.WriteLine($"All {SeededHash.Predefined.Length} hash seeds hit a total of {sum} collisions.");
@@ -356,8 +358,8 @@ All 192 hash functors hit a total of 972 collisions.
 Averaged 5.0625 collisions.
 
         Also testing on PhiHashSeeded64:
-All 192 hash seeds hit a total of 969 collisions.
-Averaged 5.046875 collisions.
-                    */
+All 192 hash seeds hit a total of 964 collisions.
+Averaged 5.02083333333333 collisions.
+*/
     }
 }
