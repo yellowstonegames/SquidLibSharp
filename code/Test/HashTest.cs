@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
+
 using SquidLib.SquidMath;
 
-namespace Test
-{
-    public class HashTest
-    {
+namespace Test {
+    public class HashTest {
         public void TestEnglishWordCollisions() {
             string[] split = Properties.Resources.WORD_LIST.Split('\n');
             Dictionary<int, List<string>> hashes = new Dictionary<int, List<string>>(split.Length);
@@ -138,7 +137,7 @@ namespace Test
                 hashes.Clear();
                 //ulong seed = RNG.Randomize((ulong)i);
                 ulong seed = rng.NextULong();
-//                Console.WriteLine("Using seed: {0:X}", seed);
+                //                Console.WriteLine("Using seed: {0:X}", seed);
                 foreach (string s in split) {
                     h = (int)(SeededHash.PhiHashSeeded64(seed, s));
                     //h = (int)SeededHash.Predefined[i].Hash64(s);
@@ -157,7 +156,7 @@ namespace Test
             Console.WriteLine($"All {SeededHash.Predefined.Length} hash seeds hit a total of {sum} collisions.");
             Console.WriteLine($"Averaged {(double)sum / SeededHash.Predefined.Length} collisions.");
         }
-        static void Main(string[] args) {
+        static void Main(string[] _) {
             HashTest test = new HashTest();
             test.TestEnglishWordCollisions();
         }

@@ -227,9 +227,7 @@ namespace RogueDelivery {
                         .Select(c => c + bm.DrawingOffset()))))
                 .Any();
 
-        private void ClearArea(int x, int y, int clearWidth, int clearHeight) {
-            console.Clear(new Rectangle(x, y, clearWidth, clearHeight));
-        }
+        private void ClearArea(int x, int y, int clearWidth, int clearHeight) => console.Clear(new Rectangle(x, y, clearWidth, clearHeight));
 
         private void DrawMap() {
             ClearArea(1, 1, width, height);
@@ -278,9 +276,7 @@ namespace RogueDelivery {
             startX = Put(startX + 2, startY, "Health: " + playerPhysical.Health);
         }
 
-        private Color GetRandomColor() {
-            return Color.White.GetRandomColor(rng);
-        }
+        private Color GetRandomColor() => Color.White.GetRandomColor(rng);
 
         private void PaintBorder() {
             foreach (var kvp in borders) {

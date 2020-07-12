@@ -11,7 +11,7 @@ namespace RogueDelivery {
     /**
      * Created by Tommy Ettinger on 9/28/2017.
      */
-    public static class Utilities {
+    public static class Utils {
 
         public static readonly long Seed = 0xBEEFEEDADBA77L;
         public static readonly RNG Rng = new RNG(Seed);

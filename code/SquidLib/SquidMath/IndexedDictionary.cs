@@ -121,7 +121,7 @@ namespace SquidLib.SquidMath {
         public Dictionary<TKey, TValue> Dict { get; private set; }
         public List<TKey> Ordering { get; private set; }
 
-        private Object _syncRoot;
+        private Object syncRoot;
 
         public ICollection<TKey> Keys => Ordering;
 
@@ -150,10 +150,10 @@ namespace SquidLib.SquidMath {
 
         public object SyncRoot {
             get {
-                if (_syncRoot == null) {
-                    System.Threading.Interlocked.CompareExchange<Object>(ref _syncRoot, new Object(), null);
+                if (syncRoot == null) {
+                    System.Threading.Interlocked.CompareExchange<Object>(ref syncRoot, new Object(), null);
                 }
-                return _syncRoot;
+                return syncRoot;
             }
         }
 
@@ -232,8 +232,8 @@ namespace SquidLib.SquidMath {
         }
 
         internal sealed class ValueCollection : ICollection<TValue>, ICollection, IReadOnlyCollection<TValue> {
-            private readonly List<TKey> _items;
-            private readonly Dictionary<TKey, TValue> _dictionary;
+            private readonly List<TKey> items;
+            private readonly Dictionary<TKey, TValue> dictionary;
 
             public ValueCollection(Dictionary<TKey, TValue> dictionary, List<TKey> items) {
                 if (dictionary == null) {
@@ -242,12 +242,12 @@ namespace SquidLib.SquidMath {
                 if (items == null) {
                     throw new ArgumentNullException(nameof(items));
                 }
-                _dictionary = dictionary;
-                _items = items;
+                this.dictionary = dictionary;
+                this.items = items;
             }
 
             public Enumerator GetEnumerator()
-                => new Enumerator(_dictionary, _items);
+                => new Enumerator(dictionary, items);
 
             public void CopyTo(TValue[] array, int index) {
                 if (array == null) {
@@ -258,17 +258,17 @@ namespace SquidLib.SquidMath {
                     throw new IndexOutOfRangeException("The index is not within the range for the array.");
                 }
 
-                int count = _items.Count;
+                int count = items.Count;
                 if (array.Length - index < count) {
                     throw new ArgumentException("The given array is too small for the copied IndexedDictionary.");
                 }
 
                 for (int i = 0; i < count; i++) {
-                    array[index++] = _dictionary[_items[i]];
+                    array[index++] = dictionary[items[i]];
                 }
             }
 
-            public int Count => _dictionary.Count;
+            public int Count => dictionary.Count;
 
             bool ICollection<TValue>.IsReadOnly => true;
 
@@ -281,13 +281,13 @@ namespace SquidLib.SquidMath {
                 => throw new NotSupportedException("An IndexedDictionary cannot be modified via its values collection.");
 
             bool ICollection<TValue>.Contains(TValue item)
-                => _dictionary.ContainsValue(item);
+                => dictionary.ContainsValue(item);
 
             IEnumerator<TValue> IEnumerable<TValue>.GetEnumerator()
-                => new Enumerator(_dictionary, _items);
+                => new Enumerator(dictionary, items);
 
             IEnumerator IEnumerable.GetEnumerator()
-                => new Enumerator(_dictionary, _items);
+                => new Enumerator(dictionary, items);
 
             void ICollection.CopyTo(Array array, int index) {
                 if (array == null) throw new ArgumentNullException(nameof(array));
@@ -296,21 +296,20 @@ namespace SquidLib.SquidMath {
                     throw new ArgumentException("The array must not have a lower bound other than 0.");
                 if ((uint)index > (uint)array.Length)
                     throw new IndexOutOfRangeException("The index is not within the range for the array.");
-                if (array.Length - index < _dictionary.Count)
+                if (array.Length - index < dictionary.Count)
                     throw new ArgumentException("The given array is too small for the copied IndexedDictionary.");
 
                 if (array is TValue[] values) {
                     CopyTo(values, index);
                 } else {
-                    object[] objects = array as object[];
-                    if (objects == null) {
+                    if (!(array is object[] objects)) {
                         throw new ArgumentException("The given array has an invalid type.");
                     }
 
-                    int count = _items.Count;
+                    int count = items.Count;
                     try {
                         for (int i = 0; i < count; i++) {
-                            objects[index++] = _dictionary[_items[i]];
+                            objects[index++] = dictionary[items[i]];
                         }
                     } catch (ArrayTypeMismatchException) {
                         throw new ArgumentException("The given array has an invalid type.");
@@ -320,17 +319,17 @@ namespace SquidLib.SquidMath {
 
             bool ICollection.IsSynchronized => false;
 
-            object ICollection.SyncRoot => ((ICollection)_dictionary).SyncRoot;
+            object ICollection.SyncRoot => ((ICollection)dictionary).SyncRoot;
 
             public struct Enumerator : IEnumerator<TValue>, IEnumerator {
-                private readonly Dictionary<TKey, TValue> _dictionary;
-                private readonly List<TKey> _items;
-                private int _index;
+                private readonly Dictionary<TKey, TValue> dictionary;
+                private readonly List<TKey> items;
+                private int index;
 
                 internal Enumerator(Dictionary<TKey, TValue> dictionary, List<TKey> items) {
-                    _dictionary = dictionary;
-                    _items = items;
-                    _index = 0;
+                    this.dictionary = dictionary;
+                    this.items = items;
+                    index = 0;
                     Current = default;
                 }
 
@@ -338,11 +337,11 @@ namespace SquidLib.SquidMath {
                 }
 
                 public bool MoveNext() {
-                    if (_index < _items.Count) {
-                        Current = _dictionary[_items[_index++]];
+                    if (index < items.Count) {
+                        Current = dictionary[items[index++]];
                         return true;
                     }
-                    _index = _items.Count;
+                    index = items.Count;
                     Current = default;
                     return false;
                 }
@@ -351,7 +350,7 @@ namespace SquidLib.SquidMath {
 
                 object IEnumerator.Current {
                     get {
-                        if (_index <= 0 || (_index == _items.Count)) {
+                        if (index <= 0 || (index == items.Count)) {
                             throw new InvalidOperationException("Cannot get current item if the Enumerator hasn't started or has ended.");
                         }
 
@@ -360,7 +359,7 @@ namespace SquidLib.SquidMath {
                 }
 
                 void IEnumerator.Reset() {
-                    _index = 0;
+                    index = 0;
                     Current = default;
                 }
             }
@@ -370,14 +369,14 @@ namespace SquidLib.SquidMath {
 
         public static bool operator !=(IndexedDictionary<TKey, TValue> left, IndexedDictionary<TKey, TValue> right) => !(left == right);
         public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>, IEnumerator {
-            private readonly Dictionary<TKey, TValue> _dictionary;
-            private readonly List<TKey> _items;
-            private int _index;
+            private readonly Dictionary<TKey, TValue> dictionary;
+            private readonly List<TKey> items;
+            private int index;
 
             internal Enumerator(Dictionary<TKey, TValue> dictionary, List<TKey> items) {
-                _dictionary = dictionary;
-                _items = items;
-                _index = 0;
+                this.dictionary = dictionary;
+                this.items = items;
+                index = 0;
                 Current = default;
             }
 
@@ -385,11 +384,11 @@ namespace SquidLib.SquidMath {
             }
 
             public bool MoveNext() {
-                if (_index < _items.Count) {
-                    Current = new KeyValuePair<TKey, TValue>(_items[_index], _dictionary[_items[_index++]]);
+                if (index < items.Count) {
+                    Current = new KeyValuePair<TKey, TValue>(items[index], dictionary[items[index++]]);
                     return true;
                 }
-                _index = _items.Count;
+                index = items.Count;
                 Current = default;
                 return false;
             }
@@ -398,7 +397,7 @@ namespace SquidLib.SquidMath {
 
             object IEnumerator.Current {
                 get {
-                    if (_index <= 0 || (_index == _items.Count)) {
+                    if (index <= 0 || (index == items.Count)) {
                         throw new InvalidOperationException("Cannot get current item if the Enumerator hasn't started or has ended.");
                     }
 
@@ -407,7 +406,7 @@ namespace SquidLib.SquidMath {
             }
 
             void IEnumerator.Reset() {
-                _index = 0;
+                index = 0;
                 Current = default;
             }
         }

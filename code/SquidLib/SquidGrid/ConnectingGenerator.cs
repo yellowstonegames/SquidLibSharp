@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using SquidLib.SquidMath;
 
 namespace SquidLib.SquidGrid {
@@ -11,7 +12,7 @@ namespace SquidLib.SquidGrid {
         public int WallThickness { get; set; }
         public Grid<char> Dungeon { get; set; }
         public Grid<CellCategory> Environment { get; set; }
-        public Region Region { get; set; }
+        public Region Region { get; private set; }
         private Region tempRegion;
         public IRNG Rng { get; set; }
 
@@ -70,7 +71,7 @@ namespace SquidLib.SquidGrid {
          * 
          * @return a 2D char array representing a room-based map, using standard conventions for walls/floors
          */
-    public Grid<char> Generate() {
+        public Grid<char> Generate() {
             int gridWidth = (Width + WallThickness - 2) / (RoomWidth + WallThickness), gridHeight = (Height + WallThickness - 2) / (RoomHeight + WallThickness), gridMax = gridWidth * gridHeight;
             if (gridWidth <= 0 || gridHeight <= 0)
                 return Dungeon;
@@ -187,7 +188,7 @@ namespace SquidLib.SquidGrid {
                 if ((conn & 8) != 0)
                     Region.InsertRectangle(1 + dx * (RoomWidth + WallThickness), 1 + dy * (RoomHeight + WallThickness) - WallThickness, RoomWidth, WallThickness);
             }
-            foreach(Coord c in Region) {
+            foreach (Coord c in Region) {
                 Dungeon[c.X, c.Y] = '.';
                 Environment[c.X, c.Y] = CellCategory.RoomFloor;
             }

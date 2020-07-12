@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using SquidLib.SquidMath;
 
 namespace SquidLib.SquidGrid {
@@ -102,44 +103,44 @@ namespace SquidLib.SquidGrid {
                 Dungeon.TrySet(m.X, m.Y, '.');
             }
         }
-        private void markEnvironmentRoom(int x, int y) {
+        private void MarkEnvironmentRoom(int x, int y) {
             Environment[x, y] = CellCategory.RoomFloor;
         }
-        private void markEnvironmentCave(int x, int y) {
+        private void MarkEnvironmentCave(int x, int y) {
             if (Environment[x, y] != CellCategory.RoomFloor) Environment[x, y] = CellCategory.CaveFloor;
         }
-        private void markEnvironmentCorridor(int x, int y) {
+        private void MarkEnvironmentCorridor(int x, int y) {
             if (Environment[x, y] != CellCategory.RoomFloor && Environment[x, y] != CellCategory.CaveFloor) Environment[x, y] = CellCategory.CaveFloor;
         }
-        private bool mark(Coord position) {
+        private bool Mark(Coord position) {
             if (walled.Contains(position))
                 return true;
             marked[position.X, position.Y] = true;
             return false;
         }
-        private bool mark(int x, int y) {
+        private bool Mark(int x, int y) {
             if (walled[x, y])
                 return true;
             marked[x, y] = true;
             return false;
         }
 
-        private void markPiercing(Coord position) {
+        private void MarkPiercing(Coord position) {
             marked[position.X, position.Y] = true;
         }
 
-        private void markPiercingCave(Coord position) {
+        private void MarkPiercingCave(Coord position) {
             marked[position.X, position.Y] = true;
-            markEnvironmentCave(position.X, position.Y);
+            MarkEnvironmentCave(position.X, position.Y);
         }
 
-        private void markRectangle(Coord pos, int halfWidth, int halfHeight) {
+        private void MarkRectangle(Coord pos, int halfWidth, int halfHeight) {
             halfWidth = Math.Max(1, (int)(0.5 + halfWidth * roomWidth));
             halfHeight = Math.Max(1, (int)(0.5 + halfHeight * roomHeight));
             for (int i = pos.X - halfWidth; i <= pos.X + halfWidth; i++) {
                 for (int j = pos.Y - halfHeight; j <= pos.Y + halfHeight; j++) {
-                    if (!mark(i, j))
-                        markEnvironmentRoom(i, j);
+                    if (!Mark(i, j))
+                        MarkEnvironmentRoom(i, j);
                 }
             }
         }
@@ -153,13 +154,13 @@ namespace SquidLib.SquidGrid {
          * @param halfHeight the distance from the center to extend vertically
          * @return null if no points in the rectangle were blocked by walls, otherwise a Coord blocked by a wall
          */
-        private void markRectangleWalled(Coord pos, int halfWidth, int halfHeight) {
+        private void MarkRectangleWalled(Coord pos, int halfWidth, int halfHeight) {
             halfWidth = Math.Max(1, (int)(0.5 + halfWidth * roomWidth));
             halfHeight = Math.Max(1, (int)(0.5 + halfHeight * roomHeight));
             for (int i = pos.X - halfWidth; i <= pos.X + halfWidth; i++) {
                 for (int j = pos.Y - halfHeight; j <= pos.Y + halfHeight; j++) {
                     marked[i, j] = true;
-                    markEnvironmentRoom(i, j);
+                    MarkEnvironmentRoom(i, j);
                 }
             }
             for (int i = Math.Max(0, pos.X - halfWidth - 1); i <= Math.Min(Environment.Width - 1, pos.X + halfWidth + 1); i++) {
@@ -176,14 +177,14 @@ namespace SquidLib.SquidGrid {
          * @param radius radius to extend in all directions from center
          * @return null if no points in the circle were blocked by walls, otherwise a Coord blocked by a wall
          */
-        private void markCircle(Coord pos, int radius) {
+        private void MarkCircle(Coord pos, int radius) {
             int high;
             radius = Math.Max(1, (int)(0.5 + radius * Math.Min(roomWidth, roomHeight)));
             for (int dx = -radius; dx <= radius; ++dx) {
                 high = (int)(Math.Sqrt(radius * radius - dx * dx));
                 for (int dy = -high; dy <= high; ++dy) {
-                    if (!mark(pos.X + dx, pos.Y + dy))
-                        markEnvironmentRoom(pos.X + dx, pos.Y + dy);
+                    if (!Mark(pos.X + dx, pos.Y + dy))
+                        MarkEnvironmentRoom(pos.X + dx, pos.Y + dy);
                 }
             }
         }
@@ -195,14 +196,14 @@ namespace SquidLib.SquidGrid {
          * @param radius radius to extend in all directions from center
          * @return null if no points in the circle were blocked by walls, otherwise a Coord blocked by a wall
          */
-        private void markCircleWalled(Coord pos, int radius) {
+        private void MarkCircleWalled(Coord pos, int radius) {
             int high;
             radius = Math.Max(1, (int)(0.5 + radius * Math.Min(roomWidth, roomHeight)));
             for (int dx = -radius; dx <= radius; ++dx) {
                 high = (int)(Math.Sqrt(radius * radius - dx * dx));
                 for (int dy = -high; dy <= high; ++dy) {
                     marked[pos.X + dx, pos.Y + dy] = true;
-                    markEnvironmentRoom(pos.X + dx, pos.Y + dy);
+                    MarkEnvironmentRoom(pos.X + dx, pos.Y + dy);
                 }
             }
             for (int dx = -radius; dx <= radius; ++dx) {
@@ -219,7 +220,7 @@ namespace SquidLib.SquidGrid {
                     walled[dx2 - 1, dy2] = true;
                     walled[dx2, dy2 + 1] = true;
                     walled[dx2 + 1, dy2 + 1] = true;
-                    walled[dx2 - 1, dy2 + 1] =  true;
+                    walled[dx2 - 1, dy2 + 1] = true;
 
                 }
             }
@@ -305,25 +306,25 @@ namespace SquidLib.SquidGrid {
                         double weight = 0.75;
                         do {
                             bool centerBlocked;
-                            if (!mark(start)) {
-                                markEnvironmentCave(start.X, start.Y);
+                            if (!Mark(start)) {
+                                MarkEnvironmentCave(start.X, start.Y);
                                 centerBlocked = true;
                             } else centerBlocked = false;
                             if (!marked.Add(start.Add(1, 0)))
-                                markEnvironmentCave(start.X + 1, start.Y);
+                                MarkEnvironmentCave(start.X + 1, start.Y);
                             if (!marked.Add(start.Add(-1, 0)))
-                                markEnvironmentCave(start.X - 1, start.Y);
+                                MarkEnvironmentCave(start.X - 1, start.Y);
                             if (!marked.Add(start.Add(0, 1)))
-                                markEnvironmentCave(start.X, start.Y + 1);
+                                MarkEnvironmentCave(start.X, start.Y + 1);
                             if (!marked.Add(start.Add(0, -1)))
-                                markEnvironmentCave(start.X, start.Y - 1);
+                                MarkEnvironmentCave(start.X, start.Y - 1);
 
                             if (!centerBlocked) {
-                                markPiercingCave(start);
-                                markPiercingCave(start.ChangeX(1));
-                                markPiercingCave(start.ChangeX(-1));
-                                markPiercingCave(start.ChangeY(1));
-                                markPiercingCave(start.ChangeY(-1));
+                                MarkPiercingCave(start);
+                                MarkPiercingCave(start.ChangeX(1));
+                                MarkPiercingCave(start.ChangeX(-1));
+                                MarkPiercingCave(start.ChangeY(1));
+                                MarkPiercingCave(start.ChangeY(-1));
                                 weight = 0.95;
                             }
                             dir = stepWobbly(start, end, weight);
@@ -331,86 +332,86 @@ namespace SquidLib.SquidGrid {
                         } while (dir != Direction.None);
                         break;
                     case DungeonRoom.BoxRoom:
-                        markRectangle(end, Random.NextInt(1, 5), Random.NextInt(1, 5));
-                        markRectangle(start, Random.NextInt(1, 4), Random.NextInt(1, 4));
+                        MarkRectangle(end, Random.NextInt(1, 5), Random.NextInt(1, 5));
+                        MarkRectangle(start, Random.NextInt(1, 4), Random.NextInt(1, 4));
                         Store();
                         dir = DirectionExtensions.GetOctalDirection(end.X - start.X, end.Y - start.Y);
                         if (dir.IsDiagonal())
                             dir = Random.NextBoolean() ? DirectionExtensions.GetCardinalDirection(dir.DeltaX(), 0)
                                     : DirectionExtensions.GetCardinalDirection(0, -dir.DeltaY());
                         while (start.X != end.X && start.Y != end.Y) {
-                            markPiercing(start);
-                            markEnvironmentCorridor(start.X, start.Y);
+                            MarkPiercing(start);
+                            MarkEnvironmentCorridor(start.X, start.Y);
                             start += dir.Coord();
                         }
-                        markRectangle(start, 1, 1);
+                        MarkRectangle(start, 1, 1);
                         dir = DirectionExtensions.GetCardinalDirection(end.X - start.X, -(end.Y - start.Y));
                         while (!(start.X == end.X && start.Y == end.Y)) {
-                            markPiercing(start);
-                            markEnvironmentCorridor(start.X, start.Y);
+                            MarkPiercing(start);
+                            MarkEnvironmentCorridor(start.X, start.Y);
                             start += dir.Coord();
                         }
                         break;
                     case DungeonRoom.WalledBoxRoom:
-                        markRectangleWalled(end, Random.NextInt(1, 5), Random.NextInt(1, 5));
-                        markRectangleWalled(start, Random.NextInt(1, 4), Random.NextInt(1, 4));
+                        MarkRectangleWalled(end, Random.NextInt(1, 5), Random.NextInt(1, 5));
+                        MarkRectangleWalled(start, Random.NextInt(1, 4), Random.NextInt(1, 4));
                         Store();
                         dir = DirectionExtensions.GetOctalDirection(end.X - start.X, end.Y - start.Y);
                         if (DirectionExtensions.IsDiagonal(dir))
                             dir = Random.NextBoolean() ? DirectionExtensions.GetCardinalDirection(dir.DeltaX(), 0)
                                     : DirectionExtensions.GetCardinalDirection(0, -dir.DeltaY());
                         while (start.X != end.X && start.Y != end.Y) {
-                            markPiercing(start);
-                            markEnvironmentCorridor(start.X, start.Y);
+                            MarkPiercing(start);
+                            MarkEnvironmentCorridor(start.X, start.Y);
                             start += dir.Coord();
                         }
-                        markRectangleWalled(start, 1, 1);
+                        MarkRectangleWalled(start, 1, 1);
                         dir = DirectionExtensions.GetCardinalDirection(end.X - start.X, -(end.Y - start.Y));
                         while (!(start.X == end.X && start.Y == end.Y)) {
-                            markPiercing(start);
-                            markEnvironmentCorridor(start.X, start.Y);
+                            MarkPiercing(start);
+                            MarkEnvironmentCorridor(start.X, start.Y);
                             start += dir.Coord();
                         }
                         break;
                     case DungeonRoom.RoundRoom:
-                        markCircle(end, Random.NextInt(2, 6));
-                        markCircle(start, Random.NextInt(2, 6));
+                        MarkCircle(end, Random.NextInt(2, 6));
+                        MarkCircle(start, Random.NextInt(2, 6));
                         Store();
                         dir = DirectionExtensions.GetOctalDirection(end.X - start.X, end.Y - start.Y);
                         if (DirectionExtensions.IsDiagonal(dir))
                             dir = Random.NextBoolean() ? DirectionExtensions.GetCardinalDirection(dir.DeltaX(), 0)
                                     : DirectionExtensions.GetCardinalDirection(0, -dir.DeltaY());
                         while (start.X != end.X && start.Y != end.Y) {
-                            markPiercing(start);
-                            markEnvironmentCorridor(start.X, start.Y);
+                            MarkPiercing(start);
+                            MarkEnvironmentCorridor(start.X, start.Y);
                             start += dir.Coord();
                         }
-                        markCircle(start, 2);
+                        MarkCircle(start, 2);
                         dir = DirectionExtensions.GetCardinalDirection(end.X - start.X, -(end.Y - start.Y));
                         while (!(start.X == end.X && start.Y == end.Y)) {
-                            markPiercing(start);
-                            markEnvironmentCorridor(start.X, start.Y);
+                            MarkPiercing(start);
+                            MarkEnvironmentCorridor(start.X, start.Y);
                             start += dir.Coord();
                         }
                         break;
                     case DungeonRoom.WalledRoundRoom:
-                        markCircleWalled(end, Random.NextInt(2, 6));
-                        markCircleWalled(start, Random.NextInt(2, 6));
+                        MarkCircleWalled(end, Random.NextInt(2, 6));
+                        MarkCircleWalled(start, Random.NextInt(2, 6));
                         Store();
                         dir = DirectionExtensions.GetOctalDirection(end.X - start.X, end.Y - start.Y);
                         if (DirectionExtensions.IsDiagonal(dir))
                             dir = Random.NextBoolean() ? DirectionExtensions.GetCardinalDirection(dir.DeltaX(), 0)
                                     : DirectionExtensions.GetCardinalDirection(0, -dir.DeltaY());
                         while (start.X != end.X && start.Y != end.Y) {
-                            markPiercing(start);
-                            markEnvironmentCorridor(start.X, start.Y);
+                            MarkPiercing(start);
+                            MarkEnvironmentCorridor(start.X, start.Y);
                             start += dir.Coord();
                         }
-                        markCircleWalled(start, 2);
+                        MarkCircleWalled(start, 2);
                         dir = DirectionExtensions.GetCardinalDirection(end.X - start.X, -(end.Y - start.Y));
                         while (!(start.X == end.X && start.Y == end.Y)) {
-                            markPiercing(start);
-                            markEnvironmentCorridor(start.X, start.Y);
+                            MarkPiercing(start);
+                            MarkEnvironmentCorridor(start.X, start.Y);
                             start += dir.Coord();
                         }
                         break;

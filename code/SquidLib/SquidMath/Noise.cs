@@ -358,7 +358,7 @@
             G2 = 0.21132486540518711774542560974902,
             F3 = 1.0 / 3.0,
             G3 = 0.5 / 3.0;
-        private static double gradCoord3D(long seed, int x, int y, int z, double xd, double yd, double zd) {
+        private static double GradCoord3D(long seed, int x, int y, int z, double xd, double yd, double zd) {
             uint hash = CoreMath.Hash32(x, y, z, seed) * 3;
             return xd * Grad3d[hash] + yd * Grad3d[hash + 1] + zd * Grad3d[hash + 2];
         }
@@ -499,22 +499,22 @@
             double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
             if (t0 > 0) {
                 t0 *= t0;
-                n += t0 * t0 * gradCoord3D(seed, i, j, k, x0, y0, z0);
+                n += t0 * t0 * GradCoord3D(seed, i, j, k, x0, y0, z0);
             }
             double t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
             if (t1 > 0) {
                 t1 *= t1;
-                n += t1 * t1 * gradCoord3D(seed, i + i1, j + j1, k + k1, x1, y1, z1);
+                n += t1 * t1 * GradCoord3D(seed, i + i1, j + j1, k + k1, x1, y1, z1);
             }
             double t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
             if (t2 > 0) {
                 t2 *= t2;
-                n += t2 * t2 * gradCoord3D(seed, i + i2, j + j2, k + k2, x2, y2, z2);
+                n += t2 * t2 * GradCoord3D(seed, i + i2, j + j2, k + k2, x2, y2, z2);
             }
             double t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
             if (t3 > 0) {
                 t3 *= t3;
-                n += t3 * t3 * gradCoord3D(seed, i + 1, j + 1, k + 1, x3, y3, z3);
+                n += t3 * t3 * GradCoord3D(seed, i + 1, j + 1, k + 1, x3, y3, z3);
             }
             // Add contributions from each corner to get the noise value.
             // The result is scaled to stay just inside [-1,1]

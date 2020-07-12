@@ -146,24 +146,24 @@ namespace SquidLib.SquidMath {
         public void SetGradientPerturbAmp(double gradientPerturbAmp) => this.gradientPerturbAmp = gradientPerturbAmp;
 
         private struct Float2 {
-            public readonly double x, y;
+            public readonly double X, Y;
             public Float2(double x, double y) {
-                this.x = x;
-                this.y = y;
+                X = x;
+                Y = y;
             }
         }
 
         private struct Float3 {
-            public readonly double x, y, z;
+            public readonly double X, Y, Z;
             public Float3(float x, float y, float z) {
-                this.x = x;
-                this.y = y;
-                this.z = z;
+                X = x;
+                Y = y;
+                Z = z;
             }
             public Float3(double x, double y, double z) {
-                this.x = x;
-                this.y = y;
-                this.z = z;
+                X = x;
+                Y = y;
+                Z = z;
             }
         }
 
@@ -663,7 +663,7 @@ namespace SquidLib.SquidMath {
         [MethodImpl(FN_INLINE)]
         private static double GradCoord3D(long seed, int x, int y, int z, double xd, double yd, double zd) {
             Float3 g = GRAD_3D[Hash32(x, y, z, seed)];
-            return xd * g.x + yd * g.y + zd * g.z;
+            return xd * g.X + yd * g.Y + zd * g.Z;
         }
 
         [MethodImpl(FN_INLINE)]
@@ -1946,9 +1946,9 @@ namespace SquidLib.SquidMath {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
                                 Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                double vecX = xi - x + vec.x * cellularJitter;
-                                double vecY = yi - y + vec.y * cellularJitter;
-                                double vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.X * cellularJitter;
+                                double vecY = yi - y + vec.Y * cellularJitter;
+                                double vecZ = zi - z + vec.Z * cellularJitter;
 
                                 double newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
@@ -1968,9 +1968,9 @@ namespace SquidLib.SquidMath {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
                                 Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                double vecX = xi - x + vec.x * cellularJitter;
-                                double vecY = yi - y + vec.y * cellularJitter;
-                                double vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.X * cellularJitter;
+                                double vecY = yi - y + vec.Y * cellularJitter;
+                                double vecZ = zi - z + vec.Z * cellularJitter;
 
                                 double newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
 
@@ -1990,9 +1990,9 @@ namespace SquidLib.SquidMath {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
                                 Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                double vecX = xi - x + vec.x * cellularJitter;
-                                double vecY = yi - y + vec.y * cellularJitter;
-                                double vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.X * cellularJitter;
+                                double vecY = yi - y + vec.Y * cellularJitter;
+                                double vecZ = zi - z + vec.Z * cellularJitter;
 
                                 double newDistance = (Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
@@ -2014,7 +2014,7 @@ namespace SquidLib.SquidMath {
 
                 case CellularReturnType.NoiseLookup:
                     Float3 vec = CELL_3D[Hash256(xc, yc, zc, seed)];
-                    return cellularNoiseLookup.GetNoise(xc + vec.x * cellularJitter, yc + vec.y * cellularJitter, zc + vec.z * cellularJitter);
+                    return cellularNoiseLookup.GetNoise(xc + vec.X * cellularJitter, yc + vec.Y * cellularJitter, zc + vec.Z * cellularJitter);
 
                 case CellularReturnType.Distance:
                     return distance;
@@ -2037,9 +2037,9 @@ namespace SquidLib.SquidMath {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
                                 Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                double vecX = xi - x + vec.x * cellularJitter;
-                                double vecY = yi - y + vec.y * cellularJitter;
-                                double vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.X * cellularJitter;
+                                double vecY = yi - y + vec.Y * cellularJitter;
+                                double vecZ = zi - z + vec.Z * cellularJitter;
 
                                 double newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
@@ -2056,9 +2056,9 @@ namespace SquidLib.SquidMath {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
                                 Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                double vecX = xi - x + vec.x * cellularJitter;
-                                double vecY = yi - y + vec.y * cellularJitter;
-                                double vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.X * cellularJitter;
+                                double vecY = yi - y + vec.Y * cellularJitter;
+                                double vecZ = zi - z + vec.Z * cellularJitter;
 
                                 double newDistance = Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ);
 
@@ -2075,9 +2075,9 @@ namespace SquidLib.SquidMath {
                             for (int zi = zr - 1; zi <= zr + 1; zi++) {
                                 Float3 vec = CELL_3D[Hash256(xi, yi, zi, seed)];
 
-                                double vecX = xi - x + vec.x * cellularJitter;
-                                double vecY = yi - y + vec.y * cellularJitter;
-                                double vecZ = zi - z + vec.z * cellularJitter;
+                                double vecX = xi - x + vec.X * cellularJitter;
+                                double vecY = yi - y + vec.Y * cellularJitter;
+                                double vecZ = zi - z + vec.Z * cellularJitter;
 
                                 double newDistance = (Math.Abs(vecX) + Math.Abs(vecY) + Math.Abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
@@ -2136,8 +2136,8 @@ namespace SquidLib.SquidMath {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            double vecX = xi - x + vec.x * cellularJitter;
-                            double vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.X * cellularJitter;
+                            double vecY = yi - y + vec.Y * cellularJitter;
 
                             double newDistance = vecX * vecX + vecY * vecY;
 
@@ -2154,8 +2154,8 @@ namespace SquidLib.SquidMath {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            double vecX = xi - x + vec.x * cellularJitter;
-                            double vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.X * cellularJitter;
+                            double vecY = yi - y + vec.Y * cellularJitter;
 
                             double newDistance = (Math.Abs(vecX) + Math.Abs(vecY));
 
@@ -2172,8 +2172,8 @@ namespace SquidLib.SquidMath {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            double vecX = xi - x + vec.x * cellularJitter;
-                            double vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.X * cellularJitter;
+                            double vecY = yi - y + vec.Y * cellularJitter;
 
                             double newDistance = (Math.Abs(vecX) + Math.Abs(vecY)) + (vecX * vecX + vecY * vecY);
 
@@ -2193,7 +2193,7 @@ namespace SquidLib.SquidMath {
 
                 case CellularReturnType.NoiseLookup:
                     Float2 vec = CELL_2D[Hash256(xc, yc, seed)];
-                    return cellularNoiseLookup.GetNoise(xc + vec.x * cellularJitter, yc + vec.y * cellularJitter);
+                    return cellularNoiseLookup.GetNoise(xc + vec.X * cellularJitter, yc + vec.Y * cellularJitter);
 
                 case CellularReturnType.Distance:
                     return distance;
@@ -2215,8 +2215,8 @@ namespace SquidLib.SquidMath {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            double vecX = xi - x + vec.x * cellularJitter;
-                            double vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.X * cellularJitter;
+                            double vecY = yi - y + vec.Y * cellularJitter;
 
                             double newDistance = vecX * vecX + vecY * vecY;
 
@@ -2231,8 +2231,8 @@ namespace SquidLib.SquidMath {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            double vecX = xi - x + vec.x * cellularJitter;
-                            double vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.X * cellularJitter;
+                            double vecY = yi - y + vec.Y * cellularJitter;
 
                             double newDistance = Math.Abs(vecX) + Math.Abs(vecY);
 
@@ -2247,8 +2247,8 @@ namespace SquidLib.SquidMath {
                         for (int yi = yr - 1; yi <= yr + 1; yi++) {
                             Float2 vec = CELL_2D[Hash256(xi, yi, seed)];
 
-                            double vecX = xi - x + vec.x * cellularJitter;
-                            double vecY = yi - y + vec.y * cellularJitter;
+                            double vecX = xi - x + vec.X * cellularJitter;
+                            double vecY = yi - y + vec.Y * cellularJitter;
 
                             double newDistance = (Math.Abs(vecX) + Math.Abs(vecY)) + (vecX * vecX + vecY * vecY);
 
@@ -2327,16 +2327,16 @@ namespace SquidLib.SquidMath {
             Float3 vec0 = CELL_3D[Hash256(x0, y0, z0, seed)];
             Float3 vec1 = CELL_3D[Hash256(x1, y0, z0, seed)];
 
-            double lx0x = Lerp(vec0.x, vec1.x, xs);
-            double ly0x = Lerp(vec0.y, vec1.y, xs);
-            double lz0x = Lerp(vec0.z, vec1.z, xs);
+            double lx0x = Lerp(vec0.X, vec1.X, xs);
+            double ly0x = Lerp(vec0.Y, vec1.Y, xs);
+            double lz0x = Lerp(vec0.Z, vec1.Z, xs);
 
             vec0 = CELL_3D[Hash256(x0, y1, z0, seed)];
             vec1 = CELL_3D[Hash256(x1, y1, z0, seed)];
 
-            double lx1x = Lerp(vec0.x, vec1.x, xs);
-            double ly1x = Lerp(vec0.y, vec1.y, xs);
-            double lz1x = Lerp(vec0.z, vec1.z, xs);
+            double lx1x = Lerp(vec0.X, vec1.X, xs);
+            double ly1x = Lerp(vec0.Y, vec1.Y, xs);
+            double lz1x = Lerp(vec0.Z, vec1.Z, xs);
 
             double lx0y = Lerp(lx0x, lx1x, ys);
             double ly0y = Lerp(ly0x, ly1x, ys);
@@ -2345,16 +2345,16 @@ namespace SquidLib.SquidMath {
             vec0 = CELL_3D[Hash256(x0, y0, z1, seed)];
             vec1 = CELL_3D[Hash256(x1, y0, z1, seed)];
 
-            lx0x = Lerp(vec0.x, vec1.x, xs);
-            ly0x = Lerp(vec0.y, vec1.y, xs);
-            lz0x = Lerp(vec0.z, vec1.z, xs);
+            lx0x = Lerp(vec0.X, vec1.X, xs);
+            ly0x = Lerp(vec0.Y, vec1.Y, xs);
+            lz0x = Lerp(vec0.Z, vec1.Z, xs);
 
             vec0 = CELL_3D[Hash256(x0, y1, z1, seed)];
             vec1 = CELL_3D[Hash256(x1, y1, z1, seed)];
 
-            lx1x = Lerp(vec0.x, vec1.x, xs);
-            ly1x = Lerp(vec0.y, vec1.y, xs);
-            lz1x = Lerp(vec0.z, vec1.z, xs);
+            lx1x = Lerp(vec0.X, vec1.X, xs);
+            ly1x = Lerp(vec0.Y, vec1.Y, xs);
+            lz1x = Lerp(vec0.Z, vec1.Z, xs);
 
             x += Lerp(lx0y, Lerp(lx0x, lx1x, ys), zs) * perturbAmp;
             y += Lerp(ly0y, Lerp(ly0x, ly1x, ys), zs) * perturbAmp;
@@ -2406,14 +2406,14 @@ namespace SquidLib.SquidMath {
             Float2 vec0 = CELL_2D[Hash256(x0, y0, seed)];
             Float2 vec1 = CELL_2D[Hash256(x1, y0, seed)];
 
-            double lx0x = Lerp(vec0.x, vec1.x, xs);
-            double ly0x = Lerp(vec0.y, vec1.y, xs);
+            double lx0x = Lerp(vec0.X, vec1.X, xs);
+            double ly0x = Lerp(vec0.Y, vec1.Y, xs);
 
             vec0 = CELL_2D[Hash256(x0, y1, seed)];
             vec1 = CELL_2D[Hash256(x1, y1, seed)];
 
-            double lx1x = Lerp(vec0.x, vec1.x, xs);
-            double ly1x = Lerp(vec0.y, vec1.y, xs);
+            double lx1x = Lerp(vec0.X, vec1.X, xs);
+            double ly1x = Lerp(vec0.Y, vec1.Y, xs);
 
             x += Lerp(lx0x, lx1x, ys) * perturbAmp;
             y += Lerp(ly0x, ly1x, ys) * perturbAmp;

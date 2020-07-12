@@ -30,7 +30,7 @@ namespace SquidLib.SquidMath {
          * @param b a ulong that should probably only hold an int's worth of data
          * @return a sort-of randomized output dependent on both inputs
          */
-        public static ulong mum(ulong a, ulong b) {
+        public static ulong Mum(ulong a, ulong b) {
             ulong n = a * b;
             return n - (n >> 32);
         }
@@ -297,15 +297,15 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
-                seed = mum(
-                        mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
-                        mum(data[i - 1] ^ b3, data[i] ^ b4));
+                seed = Mum(
+                        Mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
+                        Mum(data[i - 1] ^ b3, data[i] ^ b4));
             }
             switch (len & 3) {
-                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
-                case 1: seed = mum(seed ^ b3, b4 ^ data[len - 1]); break;
-                case 2: seed = mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
-                case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
+                case 0: seed = Mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = Mum(seed ^ b3, b4 ^ data[len - 1]); break;
+                case 2: seed = Mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
+                case 3: seed = Mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
             }
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
             return seed - (seed >> 31) + (seed << 33);
@@ -320,15 +320,15 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
-                seed = mum(
-                        mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
-                        mum(data[i - 1] ^ b3, data[i] ^ b4));
+                seed = Mum(
+                        Mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
+                        Mum(data[i - 1] ^ b3, data[i] ^ b4));
             }
             switch (len & 3) {
-                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
-                case 1: seed = mum(seed ^ b3, b4 ^ data[len - 1]); break;
-                case 2: seed = mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
-                case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
+                case 0: seed = Mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = Mum(seed ^ b3, b4 ^ data[len - 1]); break;
+                case 2: seed = Mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
+                case 3: seed = Mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
             }
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
             return seed - (seed >> 31) + (seed << 33);
@@ -339,15 +339,15 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
-                seed = mum(
-                        mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
-                        mum(data[i - 1] ^ b3, data[i] ^ b4));
+                seed = Mum(
+                        Mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
+                        Mum(data[i - 1] ^ b3, data[i] ^ b4));
             }
             switch (len & 3) {
-                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
-                case 1: seed = mum(seed ^ b3, b4 ^ data[len - 1]); break;
-                case 2: seed = mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
-                case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
+                case 0: seed = Mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = Mum(seed ^ b3, b4 ^ data[len - 1]); break;
+                case 2: seed = Mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
+                case 3: seed = Mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
             }
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
             return seed - (seed >> 31) + (seed << 33);
@@ -358,15 +358,15 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
-                seed = mum(
-                        mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
-                        mum(data[i - 1] ^ b3, data[i] ^ b4));
+                seed = Mum(
+                        Mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
+                        Mum(data[i - 1] ^ b3, data[i] ^ b4));
             }
             switch (len & 3) {
-                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
-                case 1: seed = mum(seed ^ b3, b4 ^ data[len - 1]); break;
-                case 2: seed = mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
-                case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
+                case 0: seed = Mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = Mum(seed ^ b3, b4 ^ data[len - 1]); break;
+                case 2: seed = Mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
+                case 3: seed = Mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
             }
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
             return seed - (seed >> 31) + (seed << 33);
@@ -381,15 +381,15 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
-                seed = mum(
-                        mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
-                        mum(data[i - 1] ^ b3, data[i] ^ b4));
+                seed = Mum(
+                        Mum(data[i - 3] ^ b1, data[i - 2] ^ b2) + seed,
+                        Mum(data[i - 1] ^ b3, data[i] ^ b4));
             }
             switch (len & 3) {
-                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
-                case 1: seed = mum(seed ^ b3, b4 ^ data[len - 1]); break;
-                case 2: seed = mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
-                case 3: seed = mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
+                case 0: seed = Mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = Mum(seed ^ b3, b4 ^ data[len - 1]); break;
+                case 2: seed = Mum(seed ^ data[len - 2], b3 ^ data[len - 1]); break;
+                case 3: seed = Mum(seed ^ data[len - 3] ^ (ulong)data[len - 2] << 16, b1 ^ data[len - 1]); break;
             }
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
             return seed - (seed >> 31) + (seed << 33);
@@ -432,15 +432,15 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
             if (data is null) return seed;
             int len = data.Length;
             for (int i = 3; i < len; i += 4) {
-                seed = mum(
-                        mum(FloatToULong(data[i - 3]) ^ b1, FloatToULong(data[i - 2]) ^ b2) + seed,
-                        mum(FloatToULong(data[i - 1]) ^ b3, FloatToULong(data[i]) ^ b4));
+                seed = Mum(
+                        Mum(FloatToULong(data[i - 3]) ^ b1, FloatToULong(data[i - 2]) ^ b2) + seed,
+                        Mum(FloatToULong(data[i - 1]) ^ b3, FloatToULong(data[i]) ^ b4));
             }
             switch (len & 3) {
-                case 0: seed = mum(b1 ^ seed, b4 + seed); break;
-                case 1: seed = mum(seed ^ b3, b4 ^ FloatToULong(data[len - 1])); break;
-                case 2: seed = mum(seed ^ FloatToULong(data[len - 2]), b3 ^ FloatToULong(data[len - 1])); break;
-                case 3: seed = mum(seed ^ FloatToULong(data[len - 3]) ^ FloatToULong(data[len - 2]) << 16, b1 ^ FloatToULong(data[len - 1])); break;
+                case 0: seed = Mum(b1 ^ seed, b4 + seed); break;
+                case 1: seed = Mum(seed ^ b3, b4 ^ FloatToULong(data[len - 1])); break;
+                case 2: seed = Mum(seed ^ FloatToULong(data[len - 2]), b3 ^ FloatToULong(data[len - 1])); break;
+                case 3: seed = Mum(seed ^ FloatToULong(data[len - 3]) ^ FloatToULong(data[len - 2]) << 16, b1 ^ FloatToULong(data[len - 1])); break;
             }
             seed = (seed ^ seed << 16) * ((ulong)len ^ b0);
             return seed - (seed >> 31) + (seed << 33);
@@ -454,7 +454,7 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
                 a ^= DoubleToULong(data[i - 3]) * b1; a = (a << 23 | a >> 41) * b3;
                 b ^= DoubleToULong(data[i - 2]) * b2; b = (b << 25 | b >> 39) * b4;
                 c ^= DoubleToULong(data[i - 1]) * b3; c = (c << 29 | c >> 35) * b5;
-                d ^= DoubleToULong(data[i    ]) * b4; d = (d << 31 | d >> 33) * b1;
+                d ^= DoubleToULong(data[i]) * b4; d = (d << 31 | d >> 33) * b1;
                 seed += a + b + c + d;
             }
             seed += b5;
@@ -537,7 +537,7 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
                 return (h1 << 32 | h1 >> 32) ^ (h2);
             }
         }*/
-        
+
         //0xCC62FCEB9202FAADUL
         public static ulong PhiHashSeeded64(ulong seed, string data) {
             if (data == null) return 0;
@@ -550,6 +550,6 @@ DecarabiaDecarabia, SeereSeere, DantalionDantalion, AndromaliusAndromalius
                 return r;
             }
         }
-        
+
     }
 }
