@@ -7,21 +7,20 @@ namespace SquidLib.SquidMath {
     /// Only for use with indexers in IndexedDictionary to show you want to access a key.
     /// There is only one enum constant here, At.
     /// </summary>
-    public enum Key {
-        At
-    }
+    public enum Key { At }
+
     /// <summary>
     /// Only for use with indexers in IndexedDictionary to show you want to access a value.
     /// There is only one enum constant here, At.
     /// </summary>
-    public enum Value {
-        At
-    }
+    public enum Value { At }
+
     /// <summary>
     /// An IDictionary that also allows access to its keys and values in insertion-order, allowing random access.
     /// </summary>
     /// <typeparam name="TKey">Key type</typeparam>
     /// <typeparam name="TValue">Value type</typeparam>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "Suffic of Dictionary is more correct and indicates that it's a Collection")]
     public class IndexedDictionary<TKey, TValue> : ICollection<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>, ICollection, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, IOrdered<TKey>, IEquatable<IndexedDictionary<TKey, TValue>> {
 
         /// <summary>

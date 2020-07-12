@@ -4,16 +4,16 @@ using SquidLib.SquidMath;
 
 namespace SquidLib.SquidGrid {
     public class ConnectingGenerator {
-        public int Width;
-        public int Height;
-        public int RoomWidth;
-        public int RoomHeight;
-        public int WallThickness;
-        public Grid<char> Dungeon;
-        public Grid<CellCategory> Environment;
-        public Region Region;
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int RoomWidth { get; set; }
+        public int RoomHeight { get; set; }
+        public int WallThickness { get; set; }
+        public Grid<char> Dungeon { get; set; }
+        public Grid<CellCategory> Environment { get; set; }
+        public Region Region { get; set; }
         private Region tempRegion;
-        public IRNG Rng;
+        public IRNG Rng { get; set; }
 
         /**
          * Calls {@link #ConnectingGenerator(int, int, int, int, IRNG, int)} with width 80, height 80, roomWidth 8,

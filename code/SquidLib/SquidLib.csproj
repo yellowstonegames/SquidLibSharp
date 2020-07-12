@@ -5,11 +5,22 @@
     <AssemblyName>SquidLib</AssemblyName>
     <RootNamespace>SquidLib</RootNamespace>
     <ApplicationIcon>tentacle.ico</ApplicationIcon>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Version>0.0.1</Version>
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU;x64</Platforms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Company>Yellowstone Games</Company>
+    <Authors>SquidLib Devs</Authors>
+    <Description>A roguelike library for .NET</Description>
+    <Copyright>Copyright © 2020</Copyright>
+    <PackageProjectUrl>https://github.com/yellowstonegames/SquidLibSharp</PackageProjectUrl>
+    <PackageIcon>Tentacle-128.png</PackageIcon>
+    <RepositoryUrl>https://github.com/yellowstonegames/SquidLibSharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>roguelike</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +43,13 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\assets\Tentacle-128.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
