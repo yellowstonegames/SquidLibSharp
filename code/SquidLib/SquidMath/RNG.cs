@@ -135,29 +135,23 @@ namespace SquidLib.SquidMath {
         /// <summary>
         /// Exclusive on the outer bound.  The inner bound is 0.
         /// The bound can be negative, which makes this produce either a negative int or 0.
-        /// This should perform like NextUInt(uint), that is, a little faster than NextInt(int).
-        /// Keep in mind, NextSignedLong(long) does not perform as well as NextULong(ulong).
         /// </summary>
-        /// <param name="bound">bound the upper bound; should be positive</param>
+        /// <param name="bound">the outer bound; may be negative</param>
         /// <returns>a random int between 0 (inclusive) and bound (exclusive)</returns>
         public int NextSignedInt(int bound) {
-            ulong s = (StateA += 0xC6BC279692B5C323UL);
-            ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
-            return (int)((bound * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
+            int sign = bound >> 31;
+            return (int)(NextUInt((uint)(bound + sign ^ sign))) + sign ^ sign; // cheaper "times the sign" when you already have the sign.
         }
 
         /// <summary>
         /// Gets what the previous call to NextSignedInt(int) would have produced, given the same
         /// state, and rolls back the state further so the next call to this will go earlier.
         /// </summary>
-        /// <param name="bound"></param>
-        /// <returns></returns>
+        /// <param name="bound">the outer bound; may be negative</param>
+        /// <returns>a random int between 0 (inclusive) and bound (exclusive)</returns>
         public int PreviousSignedInt(int bound) {
-            ulong s = StateA;
-            StateA -= 0xC6BC279692B5C323UL;
-            ulong z = (s ^ s >> 31) * StateB;
-            StateB -= 0x9E3779B97F4A7C16UL;
-            return (int)((bound * (long)((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFFFUL)) >> 32);
+            int sign = bound >> 31;
+            return (int)(PreviousUInt((uint)(bound + sign ^ sign))) + sign ^ sign; // cheaper "times the sign" when you already have the sign.
         }
 
         public ulong NextULong(ulong bound) {
@@ -210,7 +204,7 @@ namespace SquidLib.SquidMath {
         /// <returns>a random long between 0 (inclusive) and bound (exclusive)</returns>
         public long NextSignedLong(long bound) {
             long sign = bound >> 63;
-            return (long)(NextULong((ulong)(sign == -1L ? -bound : bound))) + sign ^ sign; // cheaper "times the sign" when you already have the sign.
+            return (long)(NextULong((ulong)(bound + sign ^ sign))) + sign ^ sign; // cheaper "times the sign" when you already have the sign.
         }
 
         /// <summary>
@@ -959,9 +953,9 @@ namespace SquidLib.SquidMath {
 
         public long PreviousSignedLong(long bound) {
             long sign = bound >> 63;
-            return (long)(PreviousULong((ulong)(sign == -1L ? -bound : bound))) + sign ^ sign; // cheaper "times the sign" when you already have the sign.
+            return (long)(PreviousULong((ulong)(bound + sign ^ sign))) + sign ^ sign; // cheaper "times the sign" when you already have the sign.
         }
-
+        
         public int PreviousInt(int min, int max) => min + PreviousInt(max - min);
 
         public long PreviousLong(long min, long max) => min + PreviousLong(max - min);
