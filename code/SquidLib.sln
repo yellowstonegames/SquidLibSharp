@@ -20,8 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TkDemo", "NoiseDemo\TkDemo.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorIntegration", "BlazorIntegration\BlazorIntegration.csproj", "{44673652-5382-448D-81C9-94DB2CF28460}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SquidLibTests", "SquidLibTests\SquidLibTests.csproj", "{7A94F3C6-3FDA-4794-BBF4-336B84357103}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,7 +28,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Rogue Delivery Debug|Any CPU = Rogue Delivery Debug|Any CPU
 		Rogue Delivery Release|Any CPU = Rogue Delivery Release|Any CPU
-		Test|Any CPU = Test|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{36CAD530-7978-4065-B1A5-378C933CE3EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -45,8 +42,6 @@ Global
 		{36CAD530-7978-4065-B1A5-378C933CE3EA}.Rogue Delivery Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36CAD530-7978-4065-B1A5-378C933CE3EA}.Rogue Delivery Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36CAD530-7978-4065-B1A5-378C933CE3EA}.Rogue Delivery Release|Any CPU.Build.0 = Release|Any CPU
-		{36CAD530-7978-4065-B1A5-378C933CE3EA}.Test|Any CPU.ActiveCfg = Debug|Any CPU
-		{36CAD530-7978-4065-B1A5-378C933CE3EA}.Test|Any CPU.Build.0 = Debug|Any CPU
 		{57EBE4CB-93E0-47FF-8FA0-52A729709783}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{57EBE4CB-93E0-47FF-8FA0-52A729709783}.Demo Debug|Any CPU.ActiveCfg = Debug|x64
 		{57EBE4CB-93E0-47FF-8FA0-52A729709783}.Demo Debug|Any CPU.Build.0 = Debug|x64
@@ -55,7 +50,6 @@ Global
 		{57EBE4CB-93E0-47FF-8FA0-52A729709783}.Release|Any CPU.ActiveCfg = Release|x64
 		{57EBE4CB-93E0-47FF-8FA0-52A729709783}.Rogue Delivery Debug|Any CPU.ActiveCfg = Debug|x64
 		{57EBE4CB-93E0-47FF-8FA0-52A729709783}.Rogue Delivery Release|Any CPU.ActiveCfg = Release|x64
-		{57EBE4CB-93E0-47FF-8FA0-52A729709783}.Test|Any CPU.ActiveCfg = Debug|x64
 		{DDF55858-2A59-42DA-A393-1339CDCF1104}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DDF55858-2A59-42DA-A393-1339CDCF1104}.Demo Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DDF55858-2A59-42DA-A393-1339CDCF1104}.Demo Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -64,7 +58,6 @@ Global
 		{DDF55858-2A59-42DA-A393-1339CDCF1104}.Rogue Delivery Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDF55858-2A59-42DA-A393-1339CDCF1104}.Rogue Delivery Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDF55858-2A59-42DA-A393-1339CDCF1104}.Rogue Delivery Release|Any CPU.Build.0 = Release|Any CPU
-		{DDF55858-2A59-42DA-A393-1339CDCF1104}.Test|Any CPU.ActiveCfg = Debug|Any CPU
 		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Demo Debug|Any CPU.ActiveCfg = Debug|x64
 		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Demo Debug|Any CPU.Build.0 = Debug|x64
@@ -73,7 +66,6 @@ Global
 		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Release|Any CPU.ActiveCfg = Release|x64
 		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Rogue Delivery Debug|Any CPU.ActiveCfg = Debug|x64
 		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Rogue Delivery Release|Any CPU.ActiveCfg = Release|x64
-		{2F780FCD-2582-45CD-B045-94CB0726D88C}.Test|Any CPU.ActiveCfg = Debug|x64
 		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Debug|Any CPU.ActiveCfg = Debug|x64
 		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Demo Debug|Any CPU.Build.0 = Debug|x64
@@ -82,7 +74,6 @@ Global
 		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Release|Any CPU.ActiveCfg = Release|x64
 		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Debug|Any CPU.ActiveCfg = Debug|x64
 		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Rogue Delivery Release|Any CPU.ActiveCfg = Release|x64
-		{E01832D1-6D30-43F2-A8A0-88C8C11007C5}.Test|Any CPU.ActiveCfg = Debug|x64
 		{B26E35CD-4C20-4C28-A7DB-FA63542AD4D0}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{B26E35CD-4C20-4C28-A7DB-FA63542AD4D0}.Demo Debug|Any CPU.ActiveCfg = Debug|x64
 		{B26E35CD-4C20-4C28-A7DB-FA63542AD4D0}.Demo Debug|Any CPU.Build.0 = Debug|x64
@@ -91,22 +82,12 @@ Global
 		{B26E35CD-4C20-4C28-A7DB-FA63542AD4D0}.Release|Any CPU.ActiveCfg = Release|x64
 		{B26E35CD-4C20-4C28-A7DB-FA63542AD4D0}.Rogue Delivery Debug|Any CPU.ActiveCfg = Debug|x64
 		{B26E35CD-4C20-4C28-A7DB-FA63542AD4D0}.Rogue Delivery Release|Any CPU.ActiveCfg = Release|x64
-		{B26E35CD-4C20-4C28-A7DB-FA63542AD4D0}.Test|Any CPU.ActiveCfg = Debug|x64
 		{44673652-5382-448D-81C9-94DB2CF28460}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{44673652-5382-448D-81C9-94DB2CF28460}.Demo Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{44673652-5382-448D-81C9-94DB2CF28460}.Demo Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44673652-5382-448D-81C9-94DB2CF28460}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44673652-5382-448D-81C9-94DB2CF28460}.Rogue Delivery Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{44673652-5382-448D-81C9-94DB2CF28460}.Rogue Delivery Release|Any CPU.ActiveCfg = Release|Any CPU
-		{44673652-5382-448D-81C9-94DB2CF28460}.Test|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A94F3C6-3FDA-4794-BBF4-336B84357103}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A94F3C6-3FDA-4794-BBF4-336B84357103}.Demo Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A94F3C6-3FDA-4794-BBF4-336B84357103}.Demo Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7A94F3C6-3FDA-4794-BBF4-336B84357103}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7A94F3C6-3FDA-4794-BBF4-336B84357103}.Rogue Delivery Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A94F3C6-3FDA-4794-BBF4-336B84357103}.Rogue Delivery Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7A94F3C6-3FDA-4794-BBF4-336B84357103}.Test|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A94F3C6-3FDA-4794-BBF4-336B84357103}.Test|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
