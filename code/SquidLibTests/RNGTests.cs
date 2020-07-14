@@ -49,7 +49,7 @@ namespace SquidLibTests {
                     int value = rng.NextInt();
                     Assert.AreEqual(value, rng.PreviousInt());
                     Assert.AreEqual(0, rng.NextInt(-1));
-                    //Assert.AreEqual(0, rng.NextSignedInt(-1)); // TODO - uncomment once bug found here is fixed
+                    Assert.AreEqual(0, rng.NextSignedInt(-1)); // TODO - uncomment once bug found here is fixed
 
                     int[] boundaries = {
                         int.MaxValue,
@@ -262,7 +262,7 @@ namespace SquidLibTests {
                         switch (bound) {
                             case 0.0:
                             case double.Epsilon:
-                                //Assert.AreEqual(0.0, value); // TODO - uncomment once bug found here is fixed
+                                Assert.AreEqual(0.0, value); // TODO - uncomment once bug found here is fixed
                                 break;
                             case double.NegativeInfinity:
                             case double.PositiveInfinity:
@@ -271,9 +271,9 @@ namespace SquidLibTests {
                             case double.NaN:
                                 Assert.IsTrue(double.IsNaN(value));
                                 break;
-                            case { } _ when bound >= 0.0:
+                            case { } _ when bound > 0.0:
                                 Assert.IsTrue(value >= 0.0, $"Boundary fail with value {value} and bound {bound}");
-                                //Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}"); // TODO - uncomment once bug found here is fixed
+                                Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}"); // TODO - uncomment once bug found here is fixed
                                 break;
                             case { } _ when bound < 0.0:
                                 Assert.IsTrue(value <= 0.0, $"Boundary fail with value {value} and bound {bound}");
@@ -315,7 +315,7 @@ namespace SquidLibTests {
                         switch (bound) {
                             case 0.0f:
                             case float.Epsilon:
-                                //Assert.AreEqual(0.0, value); // TODO - uncomment once bug found here is fixed
+                                Assert.AreEqual(0.0, value); // TODO - uncomment once bug found here is fixed
                                 break;
                             case float.NegativeInfinity:
                             case float.PositiveInfinity:
@@ -324,9 +324,9 @@ namespace SquidLibTests {
                             case float.NaN:
                                 Assert.IsTrue(float.IsNaN(value));
                                 break;
-                            case { } _ when bound >= 0.0f:
+                            case { } _ when bound > 0.0f:
                                 Assert.IsTrue(value >= 0.0f, $"Boundary fail with value {value} and bound {bound}");
-                                //Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}"); // TODO - uncomment once bug found here is fixed
+                                Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}"); // TODO - uncomment once bug found here is fixed
                                 break;
                             case { } _ when bound < 0.0f:
                                 Assert.IsTrue(value <= 0.0f, $"Boundary fail with value {value} and bound {bound}");

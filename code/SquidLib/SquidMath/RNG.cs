@@ -24,8 +24,8 @@ namespace SquidLib.SquidMath {
     /// </remarks>
     [Serializable]
     public class RNG : Random, IRNG, IReversibleRNG {
-        private const double doubleDivisor = 1.0 / (1L << 53);
-        private const float floatDivisor = 1.0f / (1 << 24);
+        private const double doubleDivisor = 0.5 / (1L << 53);
+        private const float floatDivisor = 0.5f / (1 << 24);
         private static Random localRNG = new Random();
 
         public (ulong a, ulong b) State { get => (StateA, StateB); set { StateA = value.a; StateB = value.b; } }
@@ -214,7 +214,7 @@ namespace SquidLib.SquidMath {
         public override double NextDouble() {
             ulong s = (StateA += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
-            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * 2.0;
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace SquidLib.SquidMath {
         public double NextDouble(double outer) {
             ulong s = (StateA += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
-            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * outer;
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * outer * 2.0;
         }
 
         /// <summary>
@@ -238,7 +238,7 @@ namespace SquidLib.SquidMath {
         public float NextFloat() {
             ulong s = (StateA += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
-            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor;
+            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor * 2f;
         }
 
         /// <summary>
@@ -252,7 +252,7 @@ namespace SquidLib.SquidMath {
         public float NextFloat(float outer) {
             ulong s = (StateA += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
-            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor * outer;
+            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor * outer * 2f;
         }
 
         /// <summary>
@@ -419,7 +419,7 @@ namespace SquidLib.SquidMath {
             state ^= state >> 33;
             state ^= state >> 11;
             state *= 0x1C69B3F74AC4AE35UL;
-            return (state >> 40) * floatDivisor;
+            return (state >> 40) * floatDivisor * 2f;
         }
 
         /// <summary>
@@ -446,7 +446,7 @@ namespace SquidLib.SquidMath {
         /// </param>
         /// <returns>a pseudo-random float between 0f (inclusive) and 1f (exclusive), determined by <code>state</code></returns>
         public static float RandomizeFloat(ulong state) =>
-            (((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L >> 40) * floatDivisor;
+            (((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L >> 40) * floatDivisor * 2f;
 
         /// <summary>
         /// Returns a random double that is deterministic based on state; if state is the same on two calls to this, this
@@ -477,7 +477,7 @@ namespace SquidLib.SquidMath {
             state ^= state >> 33;
             state ^= state >> 11;
             state *= 0x1C69B3F74AC4AE35UL;
-            return ((state ^ state >> 27) & 0x1FFFFFFFFFFFFFL) * doubleDivisor;
+            return ((state ^ state >> 27) & 0x1FFFFFFFFFFFFFL) * doubleDivisor * 2.0;
         }
 
         /// <summary>
@@ -505,7 +505,7 @@ namespace SquidLib.SquidMath {
         /// </param>
         /// <returns>a pseudo-random double between 0.0 (inclusive) and 1.0 (exclusive), determined by <code>state</code></returns>
         public static double RandomizeDouble(ulong state) =>
-           (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * doubleDivisor;
+           (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0x1FFFFFFFFFFFFFL) * doubleDivisor * 2.0;
 
         public int NextInt(int min, int max) => min + NextSignedInt(max - min);
         public long NextLong(long min, long max) => min + NextSignedLong(max - min);
@@ -936,20 +936,33 @@ namespace SquidLib.SquidMath {
             StateA -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * StateB;
             StateB -= 0x9E3779B97F4A7C16UL;
-            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * 2.0;
         }
 
-        public double PreviousDouble(double outer) => PreviousDouble() * outer;
+        public double PreviousDouble(double outer) {
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * outer * 2.0;
+        }
+
 
         public float PreviousFloat() {
             ulong s = StateA;
             StateA -= 0xC6BC279692B5C323UL;
             ulong z = (s ^ s >> 31) * StateB;
             StateB -= 0x9E3779B97F4A7C16UL;
-            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor;
+            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor * 2f;
         }
 
-        public float PreviousFloat(float outer) => PreviousFloat() * outer;
+        public float PreviousFloat(float outer) {
+            ulong s = StateA;
+            StateA -= 0xC6BC279692B5C323UL;
+            ulong z = (s ^ s >> 31) * StateB;
+            StateB -= 0x9E3779B97F4A7C16UL;
+            return ((z ^ z >> 26 ^ z >> 6) & 0xFFFFFFUL) * floatDivisor * outer * 2f;
+        }
 
         public long PreviousSignedLong(long bound) {
             long sign = bound >> 63;
@@ -1134,7 +1147,7 @@ namespace SquidLib.SquidMath {
         protected override double Sample() {
             ulong s = (StateA += 0xC6BC279692B5C323UL);
             ulong z = (s ^ s >> 31) * (StateB += 0x9E3779B97F4A7C16UL);
-            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor;
+            return ((z ^ z >> 26 ^ z >> 6) & 0x1FFFFFFFFFFFFFUL) * doubleDivisor * 2.0;
         }
     }
 
