@@ -11,6 +11,7 @@ namespace SquidLib.SquidGrid {
         WalledBoxRoom = 3,
         WalledRoundRoom = 4
     }
+
     public class WanderingRoomGenerator {
         public bool HasGenerated { get; private set; } = false;
         public Grid<char> Dungeon { get; set; }
@@ -54,9 +55,7 @@ namespace SquidLib.SquidGrid {
 
         private class DistanceComparer : Comparer<Coord> {
             internal Coord start;
-            public override int Compare(Coord x, Coord y) {
-                return Math.Sign(Radius.Circle.Radius(start, x) - Radius.Circle.Radius(start, y));
-            }
+            public override int Compare(Coord x, Coord y) => Math.Sign(Radius.Circle.Radius(start, x) - Radius.Circle.Radius(start, y));
         }
 
 
@@ -98,26 +97,30 @@ namespace SquidLib.SquidGrid {
                 }
             }
         }
+
         private void Store() {
             foreach (Coord m in marked) {
                 Dungeon.TrySet(m.X, m.Y, '.');
             }
         }
-        private void MarkEnvironmentRoom(int x, int y) {
-            Environment[x, y] = CellCategory.RoomFloor;
-        }
+
+        private void MarkEnvironmentRoom(int x, int y) => Environment[x, y] = CellCategory.RoomFloor;
+
         private void MarkEnvironmentCave(int x, int y) {
             if (Environment[x, y] != CellCategory.RoomFloor) Environment[x, y] = CellCategory.CaveFloor;
         }
+
         private void MarkEnvironmentCorridor(int x, int y) {
             if (Environment[x, y] != CellCategory.RoomFloor && Environment[x, y] != CellCategory.CaveFloor) Environment[x, y] = CellCategory.CaveFloor;
         }
+
         private bool Mark(Coord position) {
             if (walled.Contains(position))
                 return true;
             marked[position.X, position.Y] = true;
             return false;
         }
+
         private bool Mark(int x, int y) {
             if (walled[x, y])
                 return true;
@@ -125,9 +128,7 @@ namespace SquidLib.SquidGrid {
             return false;
         }
 
-        private void MarkPiercing(Coord position) {
-            marked[position.X, position.Y] = true;
-        }
+        private void MarkPiercing(Coord position) => marked[position.X, position.Y] = true;
 
         private void MarkPiercingCave(Coord position) {
             marked[position.X, position.Y] = true;
@@ -226,7 +227,7 @@ namespace SquidLib.SquidGrid {
             }
         }
 
-        private Direction stepWobbly(Coord current, Coord target, double weight) {
+        private Direction StepWobbly(Coord current, Coord target, double weight) {
             int dx = target.X - current.X;
             int dy = target.Y - current.Y;
 
@@ -327,7 +328,7 @@ namespace SquidLib.SquidGrid {
                                 MarkPiercingCave(start.ChangeY(-1));
                                 weight = 0.95;
                             }
-                            dir = stepWobbly(start, end, weight);
+                            dir = StepWobbly(start, end, weight);
                             start = Coord.Add(start, dir.Coord());
                         } while (dir != Direction.None);
                         break;

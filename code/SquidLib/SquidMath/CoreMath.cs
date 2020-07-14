@@ -5,8 +5,6 @@ namespace SquidLib.SquidMath {
     /// Utility class; has various small math functions that other classes need to work.
     /// </summary>
     public static class CoreMath {
-        private const short FN_INLINE = 256;
-
         /**
          * Like {@link Math#floor}, but returns a long.
          * Doesn't consider weird doubles like INFINITY and NaN.
@@ -14,7 +12,7 @@ namespace SquidLib.SquidMath {
          * @param t the double to find the floor for
          * @return the floor of t, as a long
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long LongFloor(double t) => t >= 0.0 ? (long)t : (long)t - 1L;
         /**
          * Like {@link Math#floor(double)}, but takes a float and returns a long.
@@ -23,7 +21,7 @@ namespace SquidLib.SquidMath {
          * @param t the double to find the floor for
          * @return the floor of t, as a long
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long LongFloor(float t) => t >= 0f ? (long)t : (long)t - 1L;
         /**
          * Like {@link Math#floor(double)} , but returns an int.
@@ -31,7 +29,7 @@ namespace SquidLib.SquidMath {
          * @param t the float to find the floor for
          * @return the floor of t, as an int
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int FastFloor(double t) => t >= 0.0 ? (int)t : (int)t - 1;
         /**
          * Like {@link Math#floor(double)}, but takes a float and returns an int.
@@ -39,7 +37,7 @@ namespace SquidLib.SquidMath {
          * @param t the float to find the floor for
          * @return the floor of t, as an int
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int FastFloor(float t) => t >= 0f ? (int)t : (int)t - 1;
 
         /**
@@ -59,7 +57,7 @@ namespace SquidLib.SquidMath {
  * @param s the state/seed; any long
  * @return 64-bit hash of the x,y point with the given state
  */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong HashAll(long X, long Y, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -88,7 +86,7 @@ namespace SquidLib.SquidMath {
          * @param s the state/seed; any long
          * @return 64-bit hash of the x,y,z point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong HashAll(long X, long Y, long Z, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -120,7 +118,7 @@ namespace SquidLib.SquidMath {
          * @param s the state; any long
          * @return 64-bit hash of the x,y,z,w point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong HashAll(long X, long Y, long Z, long W, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -156,7 +154,7 @@ namespace SquidLib.SquidMath {
          * @param s the state; any long
          * @return 64-bit hash of the x,y,z,w,u,v point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong HashAll(long X, long Y, long Z, long W, long U, long V, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -191,7 +189,7 @@ namespace SquidLib.SquidMath {
          * @param s the state/seed; any long
          * @return 8-bit hash of the x,y point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash256(long X, long Y, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -220,7 +218,7 @@ namespace SquidLib.SquidMath {
          * @param s the state/seed; any long
          * @return 8-bit hash of the x,y,z point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash256(long X, long Y, long Z, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -252,7 +250,7 @@ namespace SquidLib.SquidMath {
          * @param s the state; any long
          * @return 8-bit hash of the x,y,z,w point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash256(long X, long Y, long Z, long W, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -288,7 +286,7 @@ namespace SquidLib.SquidMath {
          * @param s the state; any long
          * @return 8-bit hash of the x,y,z,w,u,v point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash256(long X, long Y, long Z, long W, long U, long V, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -323,7 +321,7 @@ namespace SquidLib.SquidMath {
          * @param s the state/seed; any long
          * @return 5-bit hash of the x,y point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash32(long X, long Y, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -352,7 +350,7 @@ namespace SquidLib.SquidMath {
          * @param s the state/seed; any long
          * @return 5-bit hash of the x,y,z point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash32(long X, long Y, long Z, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -384,7 +382,7 @@ namespace SquidLib.SquidMath {
          * @param s the state; any long
          * @return 5-bit hash of the x,y,z,w point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash32(long X, long Y, long Z, long W, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -420,7 +418,7 @@ namespace SquidLib.SquidMath {
          * @param s the state; any long
          * @return 5-bit hash of the x,y,z,w,u,v point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash32(long X, long Y, long Z, long W, long U, long V, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -456,7 +454,7 @@ namespace SquidLib.SquidMath {
          * @param s the state/seed; any long
          * @return 6-bit hash of the x,y point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash64(long X, long Y, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -485,7 +483,7 @@ namespace SquidLib.SquidMath {
          * @param s the state/seed; any long
          * @return 6-bit hash of the x,y,z point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash64(long X, long Y, long Z, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -517,7 +515,7 @@ namespace SquidLib.SquidMath {
          * @param s the state; any long
          * @return 6-bit hash of the x,y,z,w point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash64(long X, long Y, long Z, long W, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
@@ -553,7 +551,7 @@ namespace SquidLib.SquidMath {
          * @param s the state; any long
          * @return 6-bit hash of the x,y,z,w,u,v point with the given state
          */
-        [MethodImpl(FN_INLINE)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint Hash64(long X, long Y, long Z, long W, long U, long V, long S) {
             ulong x = (ulong)X;
             ulong y = (ulong)Y;
