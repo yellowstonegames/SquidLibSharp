@@ -20,12 +20,8 @@ jobs:
  
     - name: Install dependencies
       working-directory: ${{env.working-directory}}
-      run: dotnet restore
-      
-    - name: Build
-      working-directory: ${{env.working-directory}}
-      run: dotnet build --configuration Release --no-restore --nologo '.\SquidLib Testing.sln'
+      run: dotnet restore 'SquidLib Testing.sln'
     
     - name: Test
       working-directory: ${{env.working-directory}}
-      run: dotnet test --no-restore --verbosity normal --nologo '.\SquidLib Testing.sln'
+      run: dotnet test --no-restore --verbosity normal --nologo 'SquidLib Testing.sln'
