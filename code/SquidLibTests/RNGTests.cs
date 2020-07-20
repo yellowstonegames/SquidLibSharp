@@ -27,7 +27,6 @@ namespace SquidLibTests {
                 new RNG(ulong.MaxValue, ulong.MinValue)
             };
 
-
         [TestMethod]
         public void TestBools() {
             foreach (RNG rng in rngs) {
@@ -337,6 +336,67 @@ namespace SquidLibTests {
                                 break;
                         }
                     }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestStateCode() {
+            foreach (RNG rng in rngs) {
+                // make sure invalid input is considered invalid
+                AssertHasException.Throws<ArgumentException>(
+                    () => rng.StateCode = null
+                );
+
+                string previousState;
+                string currentState;
+                for (int iteration = 0; iteration < iterations; iteration++) {
+                    previousState = rng.StateCode;
+                    int previousInt = rng.NextInt();
+                    int currentInt = rng.PreviousInt();
+
+                    Assert.AreEqual(previousInt, currentInt);
+
+                    currentState = rng.StateCode;
+
+                    Assert.AreEqual(previousState, currentState);
+
+                    for (int i = 0; i < rng.NextInt(10, 20); i++) {
+                        rng.Next();
+                    }
+
+                    rng.StateCode = currentState;
+                    currentInt = rng.NextInt();
+
+
+                    Assert.AreEqual(previousInt, currentInt);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestState() {
+            foreach (RNG rng in rngs) {
+                for (int iteration = 0; iteration < iterations; iteration++) {
+                    var previousState = rng.State;
+                    int previousInt = rng.NextInt();
+                    int currentInt = rng.PreviousInt();
+
+                    Assert.AreEqual(previousInt, currentInt);
+
+                    var currentState = rng.State;
+
+                    Assert.AreEqual(previousState, currentState);
+
+                    for (int i = 0; i < rng.NextInt(10, 20); i++) {
+                        rng.Next();
+                    }
+
+                    rng.State = currentState;
+                    currentInt = rng.NextInt();
+
+
+                    Assert.AreEqual(previousInt, currentInt);
                 }
             }
         }
