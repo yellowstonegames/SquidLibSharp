@@ -208,6 +208,110 @@ namespace SquidLib.SquidText {
             }
             return alteredString;
         }
+        public string Word() => Word(null, false, null);
+        public string Word(IRNG rng) => Word(rng, false, null);
+        public string Word(IRNG rng, bool capitalize) => Word(rng, capitalize, null);
+        public string Word(IRNG rng, bool capitalize, int approximateSyllables) => Word(rng, capitalize, approximateSyllables, approximateSyllables, null);
+        public string Word(IRNG rng, bool capitalize, int lowerSyllables, int upperSyllables) => Word(rng, capitalize, lowerSyllables, upperSyllables, null);
+        public string Word(IRNG rng, bool capitalize, Regex[] additionalChecks) {
+            if (rng == null) rng = new RNG();
+            while (true) {
+                sb.Length = 0;
+                ender.Length = 0;
+
+                double syllableChance = rng.NextDouble(TotalSyllableFrequency);
+                int syllables = 1, i = 0;
+                for (int s = 0; s < SyllableFrequencies.Length; s++) {
+                    if (syllableChance < SyllableFrequencies[s]) {
+                        syllables = s + 1;
+                        break;
+                    } else {
+                        syllableChance -= SyllableFrequencies[s];
+                    }
+                }
+                if (rng.NextDouble() < VowelStartFrequency) {
+                    sb.Append(rng.RandomElement(OpeningVowels));
+                    if (syllables == 1)
+                        sb.Append(rng.RandomElement(ClosingConsonants));
+                    else
+                        sb.Append(rng.RandomElement(MidConsonants));
+                    i++;
+                } else {
+                    sb.Append(rng.RandomElement(OpeningConsonants));
+                }
+                String close = "";
+                bool redouble = false;
+                if (i < syllables) {
+                    if (rng.NextDouble() < SyllableEndFrequency) {
+                        close = rng.RandomElement(ClosingSyllables);
+                        if (close.Contains("@") && (syllables & 1) == 0) {
+                            redouble = true;
+                            syllables >>= 1;
+                        }
+                        if (!close.Contains("@"))
+                            ender.Append(close);
+                        else if (rng.NextDouble() < VowelEndFrequency) {
+                            ender.Append(rng.RandomElement(MidVowels));
+                            if (rng.NextDouble() < VowelSplitFrequency) {
+                                ender.Append(rng.RandomElement(VowelSplitters))
+                                        .Append(rng.RandomElement(MidVowels));
+                            }
+                        }
+                    } else {
+                        ender.Append(rng.RandomElement(MidVowels));
+                        if (rng.NextDouble() < VowelSplitFrequency) {
+                            ender.Append(rng.RandomElement(VowelSplitters))
+                                    .Append(rng.RandomElement(MidVowels));
+                        }
+                        if (rng.NextDouble() >= VowelEndFrequency) {
+                            ender.Append(rng.RandomElement(ClosingConsonants));
+                            if (rng.NextDouble() < SyllableEndFrequency) {
+                                close = rng.RandomElement(ClosingSyllables);
+                                if (close.Contains("@") && (syllables & 1) == 0) {
+                                    redouble = true;
+                                    syllables >>= 1;
+                                }
+                                if (!close.Contains("@"))
+                                    ender.Append(close);
+                            }
+                        }
+                    }
+                    i += vowelClusters.Matches(ender.ToString()).Count;
+                }
+
+                for (; i < syllables; i++) {
+                    sb.Append(rng.RandomElement(MidVowels));
+                    if (rng.NextDouble() < VowelSplitFrequency) {
+                        sb.Append(rng.RandomElement(VowelSplitters))
+                                .Append(rng.RandomElement(MidVowels));
+                    }
+                    sb.Append(rng.RandomElement(MidConsonants));
+                }
+
+                sb.Append(ender);
+                if (redouble && i <= syllables + 1) {
+                    sb.Append(close.Replace("@", sb.ToString()));
+                }
+
+                if (capitalize)
+                    sb[0] = char.ToUpper(sb[0]);
+                string str = sb.ToString();
+                if (SanityChecks != null && !CheckAll(str, SanityChecks))
+                    continue;
+
+                //for (int m = 0; m < modifiers.size(); m++) {
+                //    str = modifiers.get(m).modify(rng, str);
+                //}
+
+                if (Clean && !CheckAll(str, VulgarChecks))
+                    continue;
+
+                if (additionalChecks != null && !CheckAll(str, additionalChecks))
+                    continue;
+
+                return str;
+            }
+        }
 
         public string Word(IRNG rng, bool capitalize, int lowerSyllables, int upperSyllables, Regex[] additionalChecks) {
             if (lowerSyllables <= 0 || upperSyllables <= 0) {
