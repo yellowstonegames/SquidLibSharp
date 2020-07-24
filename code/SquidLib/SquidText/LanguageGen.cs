@@ -69,6 +69,8 @@ namespace SquidLib.SquidText {
         public bool Clean { get; }
         public Regex[] SanityChecks { get; }
 
+        public static Replacer[] AccentFinders => accentFinders;
+
         private static readonly StringBuilder sb = new StringBuilder(20);
         private static readonly StringBuilder ender = new StringBuilder(12);
         private static readonly StringBuilder ssb = new StringBuilder(80);
@@ -94,60 +96,120 @@ namespace SquidLib.SquidText {
                     },
             VulgarChecks = new Regex[]
             {
-                    new Regex("[sξζzkкκcсς][hнlι].{1,3}[dtтτΓг]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("(?:(?:[pрρ][hн])|[fd]).{1,3}[kкκcсςxхжχq]", RegexOptions.IgnoreCase | RegexOptions.Compiled), // lots of these end in a 'k' sound, huh
-                    new Regex("[kкκcсςСQq][uμυνvhн]{1,3}[kкκcсςxхжχqmм]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("[bъыбвβЪЫБ].?[iτιyуλγУ].?[cсς]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("[hн][^aаαΛeезξεЗΣiτιyуλγУ][^aаαΛeезξεЗΣiτιyуλγУ]?[rяΓ]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("[tтτΓгcсς][iτιyуλγУ][tтτΓг]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("(?:(?:[pрρ][hн])|f)[aаαΛhн]{1,}[rяΓ][tтτΓг]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("[Ssξζzcсς][hн][iτιyуλγУ].?[sξζzcсς]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("[aаαΛ][nи][aаαΛeезξεЗΣiτιyуλγУoоюσοuμυνv]{1,2}[Ssξlιζz]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("[aаαΛ]([sξζz]{2})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("[kкκcсςСQq][hн]?[uμυνv]([hн]?)[nи]+[tтτΓг]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                    new Regex("[nиfvν]..?[jg]", RegexOptions.IgnoreCase | RegexOptions.Compiled), // might as well remove two possible slurs and a body part with one check
-                    new Regex("[pрρ](?:(?:([eезξεЗΣoоюσοuμυνv])\\1)|(?:[eезξεЗΣiτιyуλγУuμυνv]+[sξζz]))", RegexOptions.IgnoreCase | RegexOptions.Compiled), // the grab bag of juvenile words
-                    new Regex("[mм][hнwψшщ]?..?[rяΓ].?d", RegexOptions.IgnoreCase | RegexOptions.Compiled), // should pick up the #1 obscenity from Spanish and French
-                    new Regex("[g][hн]?[aаαАΑΛeеёзξεЕЁЗΕΣ][yуλγУeеёзξεЕЁЗΕΣ]", RegexOptions.IgnoreCase | RegexOptions.Compiled), // could be inappropriate for random text
-                    new Regex("[wψшщuμυνv](?:[hн]?)[aаαΛeеёзξεЗΕΣoоюσοuμυνv](?:[nи]+)[gkкκcсςxхжχq]", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+                    new Regex("[sξζzkкκcсς][hнlι].{1,3}[dtтτΓг]", RegexOptions.IgnoreCase),
+                    new Regex("(?:(?:[pрρ][hн])|[fd]).{1,3}[kкκcсςxхжχq]", RegexOptions.IgnoreCase), // lots of these end in a 'k' sound, huh
+                    new Regex("[kкκcсςСQq][uμυνvhн]{1,3}[kкκcсςxхжχqmм]", RegexOptions.IgnoreCase),
+                    new Regex("[bъыбвβЪЫБ].?[iτιyуλγУ].?[cсς]", RegexOptions.IgnoreCase),
+                    new Regex("[hн][^aаαΛeезξεЗΣiτιyуλγУ][^aаαΛeезξεЗΣiτιyуλγУ]?[rяΓ]", RegexOptions.IgnoreCase),
+                    new Regex("[tтτΓгcсς][iτιyуλγУ][tтτΓг]+$", RegexOptions.IgnoreCase),
+                    new Regex("(?:(?:[pрρ][hн])|f)[aаαΛhн]{1,}[rяΓ][tтτΓг]", RegexOptions.IgnoreCase),
+                    new Regex("[Ssξζzcсς][hн][iτιyуλγУ].?[sξζzcсς]", RegexOptions.IgnoreCase),
+                    new Regex("[aаαΛ][nи][aаαΛeезξεЗΣiτιyуλγУoоюσοuμυνv]{1,2}[Ssξlιζz]", RegexOptions.IgnoreCase),
+                    new Regex("[aаαΛ]([sξζz]{2})", RegexOptions.IgnoreCase),
+                    new Regex("[kкκcсςСQq][hн]?[uμυνv]([hн]?)[nи]+[tтτΓг]", RegexOptions.IgnoreCase),
+                    new Regex("[nиfvν]..?[jg]", RegexOptions.IgnoreCase), // might as well remove two possible slurs and a body part with one check
+                    new Regex("[pрρ](?:(?:([eезξεЗΣoоюσοuμυνv])\\1)|(?:[eезξεЗΣiτιyуλγУuμυνv]+[sξζz]))", RegexOptions.IgnoreCase), // the grab bag of juvenile words
+                    new Regex("[mм][hнwψшщ]?..?[rяΓ].?d", RegexOptions.IgnoreCase), // should pick up the #1 obscenity from Spanish and French
+                    new Regex("[g][hн]?[aаαАΑΛeеёзξεЕЁЗΕΣ][yуλγУeеёзξεЕЁЗΕΣ]", RegexOptions.IgnoreCase), // could be inappropriate for random text
+                    new Regex("[wψшщuμυνv](?:[hн]?)[aаαΛeеёзξεЗΕΣoоюσοuμυνv](?:[nи]+)[gkкκcсςxхжχq]", RegexOptions.IgnoreCase)
             };
-        /**
- * A pattern String that will match any vowel FakeLanguageGen can produce out-of-the-box, including Latin, Greek,
- * and Cyrillic; for use when a String will be interpreted as a regex (as in {@link FakeLanguageGen.Alteration}).
- */
-        public static readonly string AnyVowel = "[àáâãäåæāăąǻǽaèéêëēĕėęěeìíîïĩīĭįıiòóôõöøōŏőœǿoùúûüũūŭůűųuýÿŷỳyαοειυωаеёийоуъыэюя]",
-    /**
-     * A pattern String that will match one or more of any vowels FakeLanguageGen can produce out-of-the-box, including
-     * Latin, Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in 
-     * {@link FakeLanguageGen.Alteration}).
-     */
-    AnyVowelCluster = AnyVowel + '+',
-    /**
-     * A pattern String that will match any consonant FakeLanguageGen can produce out-of-the-box, including Latin,
-     * Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in
-     * {@link FakeLanguageGen.Alteration}).
-     */
-    AnyConsonant = "[bcçćĉċčdþðďđfgĝğġģhĥħjĵȷkķlĺļľŀłmnñńņňŋpqrŕŗřsśŝşšștţťțvwŵẁẃẅxyýÿŷỳzźżžρσζτκχνθμπψβλγφξςбвгдклпрстфхцжмнзчшщ]",
-    /**
-     * A pattern String that will match one or more of any consonants FakeLanguageGen can produce out-of-the-box,
-     * including Latin, Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in
-     * {@link FakeLanguageGen.Alteration}).
-     */
-    AnyConsonantCluster = AnyConsonant + '+';
 
-    protected static readonly Regex repeats = new Regex("(.)\\1+", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-            vowelClusters = new Regex(AnyVowelCluster, RegexOptions.IgnoreCase | RegexOptions.Compiled),
-            consonantClusters = new Regex(AnyConsonantCluster, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Replacer[]
+            accentFinders = new Replacer[]
+            {
+                    new Replacer("[àáâäăāãåąǻ]", "a"),
+                    new Replacer("[èéêëĕēėęě]", "e"),
+                    new Replacer("[ìíîïĭīĩįı]", "i"),
+                    new Replacer("[òóôöŏōõøőǿ]", "o"),
+                    new Replacer("[ùúûüŭūũůűų]", "u"),
+                    new Replacer("[æǽ]", "ae"),
+                    new Replacer("œ", "oe"),
+                    new Replacer("[ÀÁÂÃÄÅĀĂĄǺ]", "A"),
+                    new Replacer("[ÈÉÊËĒĔĖĘĚ]", "E"),
+                    new Replacer("[ÌÍÎÏĨĪĬĮI]", "I"),
+                    new Replacer("[ÒÓÔÕÖØŌŎŐǾ]", "O"),
+                    new Replacer("[ÙÚÛÜŨŪŬŮŰŲ]", "U"),
+                    new Replacer("[ÆǼ]", "Ae"),
+                    new Replacer("Œ", "Oe"),
+                    new Replacer("Ё", "Е"),
+                    new Replacer("Й", "И"),
+                    new Replacer("[çćĉċč]", "c"),
+                    new Replacer("[þðďđ]", "d"),
+                    new Replacer("[ĝğġģ]", "g"),
+                    new Replacer("[ĥħ]", "h"),
+                    new Replacer("[ĵȷ]", "j"),
+                    new Replacer("ķ", "k"),
+                    new Replacer("[ĺļľŀłļ]", "l"),
+                    new Replacer("[ñńņňŋ]", "n"),
+                    new Replacer("[ŕŗřŗŕ]", "r"),
+                    new Replacer("[śŝşšș]", "s"),
+                    new Replacer("[ţťŧț]", "t"),
+                    new Replacer("[ŵẁẃẅ]", "w"),
+                    new Replacer("[ýÿŷỳ]", "y"),
+                    new Replacer("[źżž]", "z"),
+                    new Replacer("[ÇĆĈĊČ]", "C"),
+                    new Replacer("[ÞÐĎĐḌ]", "D"),
+                    new Replacer("[ĜĞĠĢ]", "G"),
+                    new Replacer("[ĤĦḤ]", "H"),
+                    new Replacer("Ĵ", "J"),
+                    new Replacer("Ķ", "K"),
+                    new Replacer("[ĹĻĽĿŁḶḸĻ]", "L"),
+                    new Replacer("Ṃ", "M"),
+                    new Replacer("[ÑŃŅŇŊṄṆ]", "N"),
+                    new Replacer("[ŔŖŘṚṜŖŔ]", "R"),
+                    new Replacer("[ŚŜŞŠȘṢ]", "S"),
+                    new Replacer("[ŢŤŦȚṬ]", "T"),
+                    new Replacer("[ŴẀẂẄ]", "W"),
+                    new Replacer("[ÝŸŶỲ]", "Y"),
+                    new Replacer("[ŹŻŽ]", "Z"),
+                    new Replacer("ё", "е"),
+                    new Replacer("й", "и"),
+            };
+
+        /**
+    * A pattern String that will match any vowel FakeLanguageGen can produce out-of-the-box, including Latin, Greek,
+    * and Cyrillic; for use when a String will be interpreted as a regex (as in {@link FakeLanguageGen.Alteration}).
+*/
+        public static readonly string AnyVowel = "[àáâãäåæāăąǻǽaèéêëēĕėęěeìíîïĩīĭįıiòóôõöøōŏőœǿoùúûüũūŭůűųuýÿŷỳyαοειυωаеёийоуъыэюя]",
+        /**
+         * A pattern String that will match one or more of any vowels FakeLanguageGen can produce out-of-the-box, including
+         * Latin, Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in 
+         * {@link FakeLanguageGen.Alteration}).
+         */
+        AnyVowelCluster = AnyVowel + '+',
+        /**
+         * A pattern String that will match any consonant FakeLanguageGen can produce out-of-the-box, including Latin,
+         * Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in
+         * {@link FakeLanguageGen.Alteration}).
+         */
+        AnyConsonant = "[bcçćĉċčdþðďđfgĝğġģhĥħjĵȷkķlĺļľŀłmnñńņňŋpqrŕŗřsśŝşšștţťțvwŵẁẃẅxyýÿŷỳzźżžρσζτκχνθμπψβλγφξςбвгдклпрстфхцжмнзчшщ]",
+        /**
+         * A pattern String that will match one or more of any consonants FakeLanguageGen can produce out-of-the-box,
+         * including Latin, Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in
+         * {@link FakeLanguageGen.Alteration}).
+         */
+        AnyConsonantCluster = AnyConsonant + '+';
+
+        protected static readonly Regex repeats = new Regex("(.)\\1+", RegexOptions.IgnoreCase),
+                vowelClusters = new Regex(AnyVowelCluster, RegexOptions.IgnoreCase),
+                consonantClusters = new Regex(AnyConsonantCluster, RegexOptions.IgnoreCase);
         protected static bool CheckAll(string testing, Regex[] checks) {
             if (checks == null || checks.Length == 0) return true;
-            //string fixed = removeAccents(testing);
+            testing = RemoveAccents(testing);
             for (int i = 0; i < checks.Length; i++) {
                 if (checks[i].IsMatch(testing)) return false;
             }
             return true;
         }
+        public static string RemoveAccents(string str) {
+            string alteredString = str;
+            for (int i = 0; i < AccentFinders.Length; i++) {
+                alteredString = AccentFinders[i].Replace(alteredString);
+            }
+            return alteredString;
+        }
 
-    public string Word(IRNG rng, bool capitalize, int lowerSyllables, int upperSyllables, Regex[] additionalChecks) {
+        public string Word(IRNG rng, bool capitalize, int lowerSyllables, int upperSyllables, Regex[] additionalChecks) {
             if (lowerSyllables <= 0 || upperSyllables <= 0) {
                 sb.Length = 0;
                 sb.Append(rng.RandomElement(OpeningVowels));
