@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Text;
 using System.Text.RegularExpressions;
+using SquidLib.SquidMath;
 
 namespace SquidLib.SquidText {
     public class LanguageGen {
@@ -67,6 +69,10 @@ namespace SquidLib.SquidText {
         public bool Clean { get; }
         public Regex[] SanityChecks { get; }
 
+        private static readonly StringBuilder sb = new StringBuilder(20);
+        private static readonly StringBuilder ender = new StringBuilder(12);
+        private static readonly StringBuilder ssb = new StringBuilder(80);
+
         public static readonly Regex[] GenericSanityChecks = new Regex[]
                     {
                         new Regex("[aeiou]{3}", RegexOptions.IgnoreCase),
@@ -85,7 +91,159 @@ namespace SquidLib.SquidText {
                             new Regex("[uiy][wy]", RegexOptions.IgnoreCase),
                             new Regex("^[ui]e", RegexOptions.IgnoreCase),
                             new Regex("^([^aeioyl])\\1", RegexOptions.IgnoreCase)
-                    };
+                    },
+            VulgarChecks = new Regex[]
+            {
+                    new Regex("[sξζzkкκcсς][hнlι].{1,3}[dtтτΓг]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("(?:(?:[pрρ][hн])|[fd]).{1,3}[kкκcсςxхжχq]", RegexOptions.IgnoreCase | RegexOptions.Compiled), // lots of these end in a 'k' sound, huh
+                    new Regex("[kкκcсςСQq][uμυνvhн]{1,3}[kкκcсςxхжχqmм]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("[bъыбвβЪЫБ].?[iτιyуλγУ].?[cсς]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("[hн][^aаαΛeезξεЗΣiτιyуλγУ][^aаαΛeезξεЗΣiτιyуλγУ]?[rяΓ]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("[tтτΓгcсς][iτιyуλγУ][tтτΓг]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("(?:(?:[pрρ][hн])|f)[aаαΛhн]{1,}[rяΓ][tтτΓг]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("[Ssξζzcсς][hн][iτιyуλγУ].?[sξζzcсς]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("[aаαΛ][nи][aаαΛeезξεЗΣiτιyуλγУoоюσοuμυνv]{1,2}[Ssξlιζz]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("[aаαΛ]([sξζz]{2})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("[kкκcсςСQq][hн]?[uμυνv]([hн]?)[nи]+[tтτΓг]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    new Regex("[nиfvν]..?[jg]", RegexOptions.IgnoreCase | RegexOptions.Compiled), // might as well remove two possible slurs and a body part with one check
+                    new Regex("[pрρ](?:(?:([eезξεЗΣoоюσοuμυνv])\\1)|(?:[eезξεЗΣiτιyуλγУuμυνv]+[sξζz]))", RegexOptions.IgnoreCase | RegexOptions.Compiled), // the grab bag of juvenile words
+                    new Regex("[mм][hнwψшщ]?..?[rяΓ].?d", RegexOptions.IgnoreCase | RegexOptions.Compiled), // should pick up the #1 obscenity from Spanish and French
+                    new Regex("[g][hн]?[aаαАΑΛeеёзξεЕЁЗΕΣ][yуλγУeеёзξεЕЁЗΕΣ]", RegexOptions.IgnoreCase | RegexOptions.Compiled), // could be inappropriate for random text
+                    new Regex("[wψшщuμυνv](?:[hн]?)[aаαΛeеёзξεЗΕΣoоюσοuμυνv](?:[nи]+)[gkкκcсςxхжχq]", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+            };
+        /**
+ * A pattern String that will match any vowel FakeLanguageGen can produce out-of-the-box, including Latin, Greek,
+ * and Cyrillic; for use when a String will be interpreted as a regex (as in {@link FakeLanguageGen.Alteration}).
+ */
+        public static readonly string AnyVowel = "[àáâãäåæāăąǻǽaèéêëēĕėęěeìíîïĩīĭįıiòóôõöøōŏőœǿoùúûüũūŭůűųuýÿŷỳyαοειυωаеёийоуъыэюя]",
+    /**
+     * A pattern String that will match one or more of any vowels FakeLanguageGen can produce out-of-the-box, including
+     * Latin, Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in 
+     * {@link FakeLanguageGen.Alteration}).
+     */
+    AnyVowelCluster = AnyVowel + '+',
+    /**
+     * A pattern String that will match any consonant FakeLanguageGen can produce out-of-the-box, including Latin,
+     * Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in
+     * {@link FakeLanguageGen.Alteration}).
+     */
+    AnyConsonant = "[bcçćĉċčdþðďđfgĝğġģhĥħjĵȷkķlĺļľŀłmnñńņňŋpqrŕŗřsśŝşšștţťțvwŵẁẃẅxyýÿŷỳzźżžρσζτκχνθμπψβλγφξςбвгдклпрстфхцжмнзчшщ]",
+    /**
+     * A pattern String that will match one or more of any consonants FakeLanguageGen can produce out-of-the-box,
+     * including Latin, Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in
+     * {@link FakeLanguageGen.Alteration}).
+     */
+    AnyConsonantCluster = AnyConsonant + '+';
+
+    protected static readonly Regex repeats = new Regex("(.)\\1+", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            vowelClusters = new Regex(AnyVowelCluster, RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            consonantClusters = new Regex(AnyConsonantCluster, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        protected static bool CheckAll(string testing, Regex[] checks) {
+            if (checks == null || checks.Length == 0) return true;
+            //string fixed = removeAccents(testing);
+            for (int i = 0; i < checks.Length; i++) {
+                if (checks[i].IsMatch(testing)) return false;
+            }
+            return true;
+        }
+
+    public string Word(IRNG rng, bool capitalize, int lowerSyllables, int upperSyllables, Regex[] additionalChecks) {
+            if (lowerSyllables <= 0 || upperSyllables <= 0) {
+                sb.Length = 0;
+                sb.Append(rng.RandomElement(OpeningVowels));
+                //for (int m = 0; m < modifiers.size(); m++) {
+                //    modifiers.get(m).modify(rng, sb);
+                //}
+                if (capitalize) sb[0] = char.ToUpper(sb[0]);
+                return sb.ToString();
+            }
+            int approxSyllables = rng.NextInt(lowerSyllables, upperSyllables + 1);
+            while (true) {
+                sb.Length = 0;
+                ender.Length = 0;
+                int i = 0;
+                if (rng.NextDouble() < VowelStartFrequency) {
+                    sb.Append(rng.RandomElement(OpeningVowels));
+                    if (approxSyllables == 1 && ClosingConsonants.Length > 0)
+                        sb.Append(rng.RandomElement(ClosingConsonants));
+                    else if (MidConsonants.Length > 0)
+                        sb.Append(rng.RandomElement(MidConsonants));
+                    i++;
+                } else if (OpeningConsonants.Length > 0) {
+                    sb.Append(rng.RandomElement(OpeningConsonants));
+                }
+                String close = "";
+                bool redouble = false;
+                if (i < approxSyllables) {
+                    if (ClosingSyllables.Length > 0 && rng.NextDouble() < SyllableEndFrequency) {
+                        close = rng.RandomElement(ClosingSyllables);
+                        if (close.Contains("@") && (approxSyllables & 1) == 0) {
+                            redouble = true;
+                            approxSyllables >>= 1;
+                        }
+                        if (!close.Contains("@"))
+                            ender.Append(close);
+                        else if (redouble && rng.NextDouble() < VowelEndFrequency) {
+                            ender.Append(rng.RandomElement(MidVowels));
+                            if (VowelSplitters.Length > 0 && rng.NextDouble() < VowelSplitFrequency) {
+                                ender.Append(rng.RandomElement(VowelSplitters))
+                                        .Append(rng.RandomElement(MidVowels));
+                            }
+                        }
+                    } else {
+                        ender.Append(rng.RandomElement(MidVowels));
+                        if (rng.NextDouble() < VowelSplitFrequency) {
+                            ender.Append(rng.RandomElement(VowelSplitters))
+                                    .Append(rng.RandomElement(MidVowels));
+                        }
+                        if (rng.NextDouble() >= VowelEndFrequency) {
+                            ender.Append(rng.RandomElement(ClosingConsonants));
+                            if (rng.NextDouble() < SyllableEndFrequency) {
+                                close = rng.RandomElement(ClosingSyllables);
+                                if (close.Contains("@") && (approxSyllables & 1) == 0) {
+                                    redouble = true;
+                                    approxSyllables >>= 1;
+                                }
+                                if (!close.Contains("@"))
+                                    ender.Append(close);
+                            }
+                        }
+                    }
+                    i += vowelClusters.Matches(ender.ToString()).Count;
+                }
+
+                for (; i < approxSyllables; i++) {
+                    sb.Append(rng.RandomElement(MidVowels));
+                    if (rng.NextDouble() < VowelSplitFrequency) {
+                        sb.Append(rng.RandomElement(VowelSplitters))
+                                .Append(rng.RandomElement(MidVowels));
+                    }
+                    sb.Append(rng.RandomElement(MidConsonants));
+                }
+
+                sb.Append(ender);
+                if (redouble && i <= approxSyllables + 1) {
+                    sb.Append(close.Replace("@", sb.ToString()));
+                }
+                if (capitalize)
+                    sb[0] = char.ToUpper(sb[0]);
+                string str = sb.ToString();
+                if (SanityChecks != null && !CheckAll(str, SanityChecks))
+                    continue;
+
+                //for (int m = 0; m < modifiers.size(); m++) {
+                //    str = modifiers.get(m).modify(rng, str);
+                //}
+
+                if (Clean && !CheckAll(str, VulgarChecks))
+                    continue;
+
+                if (additionalChecks != null && !CheckAll(str, additionalChecks))
+                    continue;
+
+                return str;
+            }
+        }
 
         public static readonly LanguageGen SIMPLISH = new LanguageGen(
                 new String[]{
