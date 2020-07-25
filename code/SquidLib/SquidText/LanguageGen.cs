@@ -69,53 +69,7 @@ namespace SquidLib.SquidText {
         public bool Clean { get; }
         public Regex[] SanityChecks { get; }
 
-        public static Replacer[] AccentFinders => accentFinders;
-
-        private static readonly StringBuilder sb = new StringBuilder(20);
-        private static readonly StringBuilder ender = new StringBuilder(12);
-        private static readonly StringBuilder ssb = new StringBuilder(80);
-
-        public static readonly Regex[] GenericSanityChecks = new Regex[]
-                    {
-                        new Regex("[aeiou]{3}", RegexOptions.IgnoreCase),
-                            new Regex("(\\p{L})\\1\\1", RegexOptions.IgnoreCase),
-                            new Regex("[i][iyq]", RegexOptions.IgnoreCase),
-                            new Regex("[y]([aiu])\\1", RegexOptions.IgnoreCase),
-                            new Regex("[r][uy]+[rh]", RegexOptions.IgnoreCase),
-                            new Regex("[q]u[yu]", RegexOptions.IgnoreCase),
-                            new Regex("[^oaei]uch", RegexOptions.IgnoreCase),
-                            new Regex("[h][tcszi]?h", RegexOptions.IgnoreCase),
-                            new Regex("[t]t[^aeiouy]{2}", RegexOptions.IgnoreCase),
-                            new Regex("[y]h([^aeiouy]|$)", RegexOptions.IgnoreCase),
-                            new Regex("([xqy])\\1$", RegexOptions.IgnoreCase),
-                            new Regex("[qi]y$", RegexOptions.IgnoreCase),
-                            new Regex("[szrlL]+?[^aeiouytdfgkcpbmnslrv][rlsz]", RegexOptions.IgnoreCase),
-                            new Regex("[uiy][wy]", RegexOptions.IgnoreCase),
-                            new Regex("^[ui]e", RegexOptions.IgnoreCase),
-                            new Regex("^([^aeioyl])\\1", RegexOptions.IgnoreCase)
-                    },
-            VulgarChecks = new Regex[]
-            {
-                    new Regex("[sξζzkкκcсς][hнlι].{1,3}[dtтτΓг]", RegexOptions.IgnoreCase),
-                    new Regex("(?:(?:[pрρ][hн])|[fd]).{1,3}[kкκcсςxхжχq]", RegexOptions.IgnoreCase), // lots of these end in a 'k' sound, huh
-                    new Regex("[kкκcсςСQq][uμυνvhн]{1,3}[kкκcсςxхжχqmм]", RegexOptions.IgnoreCase),
-                    new Regex("[bъыбвβЪЫБ].?[iτιyуλγУ].?[cсς]", RegexOptions.IgnoreCase),
-                    new Regex("[hн][^aаαΛeезξεЗΣiτιyуλγУ][^aаαΛeезξεЗΣiτιyуλγУ]?[rяΓ]", RegexOptions.IgnoreCase),
-                    new Regex("[tтτΓгcсς][iτιyуλγУ][tтτΓг]+$", RegexOptions.IgnoreCase),
-                    new Regex("(?:(?:[pрρ][hн])|f)[aаαΛhн]{1,}[rяΓ][tтτΓг]", RegexOptions.IgnoreCase),
-                    new Regex("[Ssξζzcсς][hн][iτιyуλγУ].?[sξζzcсς]", RegexOptions.IgnoreCase),
-                    new Regex("[aаαΛ][nи][aаαΛeезξεЗΣiτιyуλγУoоюσοuμυνv]{1,2}[Ssξlιζz]", RegexOptions.IgnoreCase),
-                    new Regex("[aаαΛ]([sξζz]{2})", RegexOptions.IgnoreCase),
-                    new Regex("[kкκcсςСQq][hн]?[uμυνv]([hн]?)[nи]+[tтτΓг]", RegexOptions.IgnoreCase),
-                    new Regex("[nиfvν]..?[jg]", RegexOptions.IgnoreCase), // might as well remove two possible slurs and a body part with one check
-                    new Regex("[pрρ](?:(?:([eезξεЗΣoоюσοuμυνv])\\1)|(?:[eезξεЗΣiτιyуλγУuμυνv]+[sξζz]))", RegexOptions.IgnoreCase), // the grab bag of juvenile words
-                    new Regex("[mм][hнwψшщ]?..?[rяΓ].?d", RegexOptions.IgnoreCase), // should pick up the #1 obscenity from Spanish and French
-                    new Regex("[g][hн]?[aаαАΑΛeеёзξεЕЁЗΕΣ][yуλγУeеёзξεЕЁЗΕΣ]", RegexOptions.IgnoreCase), // could be inappropriate for random text
-                    new Regex("[wψшщuμυνv](?:[hн]?)[aаαΛeеёзξεЗΕΣoоюσοuμυνv](?:[nи]+)[gkкκcсςxхжχq]", RegexOptions.IgnoreCase)
-            };
-
-        private static readonly Replacer[]
-            accentFinders = new Replacer[]
+        public static Replacer[] AccentFinders { get; } = new Replacer[]
             {
                     new Replacer("[àáâäăāãåąǻ]", "a"),
                     new Replacer("[èéêëĕēėęě]", "e"),
@@ -166,6 +120,49 @@ namespace SquidLib.SquidText {
                     new Replacer("й", "и"),
             };
 
+        private static readonly StringBuilder sb = new StringBuilder(20);
+        private static readonly StringBuilder ender = new StringBuilder(12);
+        private static readonly StringBuilder ssb = new StringBuilder(80);
+
+        public static readonly Regex[] GenericSanityChecks = new Regex[]
+                    {
+                        new Regex("[aeiou]{3}", RegexOptions.IgnoreCase),
+                            new Regex("(\\p{L})\\1\\1", RegexOptions.IgnoreCase),
+                            new Regex("[i][iyq]", RegexOptions.IgnoreCase),
+                            new Regex("[y]([aiu])\\1", RegexOptions.IgnoreCase),
+                            new Regex("[r][uy]+[rh]", RegexOptions.IgnoreCase),
+                            new Regex("[q]u[yu]", RegexOptions.IgnoreCase),
+                            new Regex("[^oaei]uch", RegexOptions.IgnoreCase),
+                            new Regex("[h][tcszi]?h", RegexOptions.IgnoreCase),
+                            new Regex("[t]t[^aeiouy]{2}", RegexOptions.IgnoreCase),
+                            new Regex("[y]h([^aeiouy]|$)", RegexOptions.IgnoreCase),
+                            new Regex("([xqy])\\1$", RegexOptions.IgnoreCase),
+                            new Regex("[qi]y$", RegexOptions.IgnoreCase),
+                            new Regex("[szrlL]+?[^aeiouytdfgkcpbmnslrv][rlsz]", RegexOptions.IgnoreCase),
+                            new Regex("[uiy][wy]", RegexOptions.IgnoreCase),
+                            new Regex("^[ui]e", RegexOptions.IgnoreCase),
+                            new Regex("^([^aeioyl])\\1", RegexOptions.IgnoreCase)
+                    },
+            VulgarChecks = new Regex[]
+            {
+                    new Regex("[sξζzkкκcсς][hнlι].{1,3}[dtтτΓг]", RegexOptions.IgnoreCase),
+                    new Regex("(?:(?:[pрρ][hн])|[fd]).{1,3}[kкκcсςxхжχq]", RegexOptions.IgnoreCase), // lots of these end in a 'k' sound, huh
+                    new Regex("[kкκcсςСQq][uμυνvhн]{1,3}[kкκcсςxхжχqmм]", RegexOptions.IgnoreCase),
+                    new Regex("[bъыбвβЪЫБ].?[iτιyуλγУ].?[cсς]", RegexOptions.IgnoreCase),
+                    new Regex("[hн][^aаαΛeезξεЗΣiτιyуλγУ][^aаαΛeезξεЗΣiτιyуλγУ]?[rяΓ]", RegexOptions.IgnoreCase),
+                    new Regex("[tтτΓгcсς][iτιyуλγУ][tтτΓг]+$", RegexOptions.IgnoreCase),
+                    new Regex("(?:(?:[pрρ][hн])|f)[aаαΛhн]{1,}[rяΓ][tтτΓг]", RegexOptions.IgnoreCase),
+                    new Regex("[Ssξζzcсς][hн][iτιyуλγУ].?[sξζzcсς]", RegexOptions.IgnoreCase),
+                    new Regex("[aаαΛ][nи][aаαΛeезξεЗΣiτιyуλγУoоюσοuμυνv]{1,2}[Ssξlιζz]", RegexOptions.IgnoreCase),
+                    new Regex("[aаαΛ]([sξζz]{2})", RegexOptions.IgnoreCase),
+                    new Regex("[kкκcсςСQq][hн]?[uμυνv]([hн]?)[nи]+[tтτΓг]", RegexOptions.IgnoreCase),
+                    new Regex("[nиfvν]..?[jg]", RegexOptions.IgnoreCase), // might as well remove two possible slurs and a body part with one check
+                    new Regex("[pрρ](?:(?:([eезξεЗΣoоюσοuμυνv])\\1)|(?:[eезξεЗΣiτιyуλγУuμυνv]+[sξζz]))", RegexOptions.IgnoreCase), // the grab bag of juvenile words
+                    new Regex("[mм][hнwψшщ]?..?[rяΓ].?d", RegexOptions.IgnoreCase), // should pick up the #1 obscenity from Spanish and French
+                    new Regex("[g][hн]?[aаαАΑΛeеёзξεЕЁЗΕΣ][yуλγУeеёзξεЕЁЗΕΣ]", RegexOptions.IgnoreCase), // could be inappropriate for random text
+                    new Regex("[wψшщuμυνv](?:[hн]?)[aаαΛeеёзξεЗΕΣoоюσοuμυνv](?:[nи]+)[gkкκcсςxхжχq]", RegexOptions.IgnoreCase)
+            };
+
         /**
     * A pattern String that will match any vowel FakeLanguageGen can produce out-of-the-box, including Latin, Greek,
     * and Cyrillic; for use when a String will be interpreted as a regex (as in {@link FakeLanguageGen.Alteration}).
@@ -193,6 +190,9 @@ namespace SquidLib.SquidText {
         protected static readonly Regex repeats = new Regex("(.)\\1+", RegexOptions.IgnoreCase),
                 vowelClusters = new Regex(AnyVowelCluster, RegexOptions.IgnoreCase),
                 consonantClusters = new Regex(AnyConsonantCluster, RegexOptions.IgnoreCase);
+
+        private static readonly string[] mid = new string[] {",", ",", ",", ";"}, end = new string[] { ".", ".", ".", ".", "!", "?", "..."};
+
         protected static bool CheckAll(string testing, Regex[] checks) {
             if (checks == null || checks.Length == 0) return true;
             testing = RemoveAccents(testing);
@@ -314,6 +314,7 @@ namespace SquidLib.SquidText {
         }
 
         public string Word(IRNG rng, bool capitalize, int lowerSyllables, int upperSyllables, Regex[] additionalChecks) {
+            if (rng == null) rng = new RNG();
             if (lowerSyllables <= 0 || upperSyllables <= 0) {
                 sb.Length = 0;
                 sb.Append(rng.RandomElement(OpeningVowels));
@@ -409,6 +410,39 @@ namespace SquidLib.SquidText {
 
                 return str;
             }
+        }
+        public String Sentence(IRNG rng) => Sentence(rng, 1, 7, mid, end, 0.2);
+        public String Sentence(IRNG rng, int minWords, int maxWords) => Sentence(rng, minWords, maxWords, mid, end, 0.2);
+
+        public String Sentence(IRNG rng, int minWords, int maxWords, String[] midPunctuation, String[] endPunctuation,
+                           double midPunctuationFrequency) {
+            if (rng == null) rng = new RNG();
+            if (minWords < 1)
+                minWords = 1;
+            if (minWords > maxWords)
+                maxWords = minWords;
+            if (midPunctuationFrequency > 1.0) {
+                midPunctuationFrequency = 1.0 / midPunctuationFrequency;
+            }
+            ssb.Length = 0;
+            ssb.EnsureCapacity(12 * maxWords);
+            ssb.Append(Word(rng, true, null));
+            for (int i = 1; i < minWords; i++) {
+                if (rng.NextDouble() < midPunctuationFrequency) {
+                    ssb.Append(rng.RandomElement(midPunctuation));
+                }
+                ssb.Append(' ').Append(Word(rng, false, null));
+            }
+            for (int i = minWords; i < maxWords && rng.NextInt(2 * maxWords) > i; i++) {
+                if (rng.NextDouble() < midPunctuationFrequency) {
+                    ssb.Append(rng.RandomElement(midPunctuation));
+                }
+                ssb.Append(' ').Append(Word(rng, false, null));
+            }
+            if (endPunctuation != null && endPunctuation.Length > 0)
+                ssb.Append(rng.RandomElement(endPunctuation));
+            return ssb.ToString();
+
         }
 
         public static readonly LanguageGen SIMPLISH = new LanguageGen(

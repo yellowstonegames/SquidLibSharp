@@ -7,6 +7,7 @@ using BearLib;
 
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
+using SquidLib.SquidText;
 
 namespace Demo {
     public static class DemoChooser {
@@ -25,7 +26,7 @@ namespace Demo {
             while (true) {
                 Console.WriteLine("Please choose a demo:");
                 ShowOptions(demos);
-                int exitChoice = demos.Count+1;
+                int exitChoice = demos.Count + 1;
 
                 int input;
                 while (!int.TryParse(Console.ReadLine().Trim(), out input) || input < 1 || input > exitChoice) {
@@ -65,16 +66,13 @@ namespace Demo {
             int input = 0;
             Grid<char> grid;
             DateTime current = DateTime.Now, start = DateTime.Now;
-            if ((start.Ticks & 64) == 0)
-            {
+            if ((start.Ticks & 64) == 0) {
                 WanderingRoomGenerator generator = new WanderingRoomGenerator(width, height, rng);
                 generator.SetRoomType(DungeonRoom.WalledBoxRoom, 7.0);
                 generator.SetRoomType(DungeonRoom.WalledRoundRoom, 5.0);
                 //generator.SetRoomType(DungeonRoom.Cave, 5.0);
                 grid = generator.Generate();
-            }
-            else
-            {
+            } else {
                 ConnectingGenerator generator = new ConnectingGenerator(width, height, 1, 1, rng, 2);
                 grid = generator.Generate();
             }
@@ -355,10 +353,10 @@ namespace Demo {
                 "::::::::::::::......:::..:::::..::..:::::..::..:::::..::..::::::::::::::::::::",
                 "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
             };
-            int width = big[0].Length, height = big.Length, cellWidth = (int)Math.Round(1280.0 / width), cellHeight = (int)Math.Round(640.0 / height);
+            int width = big[0].Length, height = big.Length + 1, cellWidth = (int)Math.Round(1280.0 / width), cellHeight = (int)Math.Round(640.0 / height);
             Grid<char> grid = new Grid<char>(width, height, ' ');
             char[] raw = grid.RawData();
-            for (int i = 0; i < height; i++) {
+            for (int i = 0; i < height - 1; i++) {
                 big[i].CopyTo(0, raw, i * width, width);
             }
             Grid<char> lined = LineKit.HashesToLines(grid, false);
@@ -375,8 +373,8 @@ namespace Demo {
             Color lightPurple = Terminal.ColorFromName("platinum"), deepPurple = Terminal.ColorFromName("purple_freesia");
             float lightHue = lightPurple.GetHue() / 360f, deepHue = deepPurple.GetHue() / 360f, lightSat = lightPurple.GetSaturation(), deepSat = deepPurple.GetSaturation(),
                 lightBright = lightPurple.GetBrightness(), deepBright = deepPurple.GetBrightness();
-            //DateTime current = DateTime.Now, start = DateTime.Now;
-            //double time = 0.0;
+            DateTime current = DateTime.Now, previous = DateTime.FromBinary(0), start = DateTime.Now;
+            RNG rng = new RNG();
             while (keepRunning) {
                 input = Terminal.Peek();
                 if (input == Terminal.TK_Q || input == Terminal.TK_ESCAPE || input == Terminal.TK_CLOSE)
@@ -389,7 +387,11 @@ namespace Demo {
                             return;
                         }
                     }
-                    for (int y = 0; y < height; y++) {
+                    if ((DateTime.Now - previous).TotalMilliseconds < 2000)
+                        continue;
+                    previous = DateTime.Now;
+                    Terminal.Clear();
+                    for (int y = 0; y < height - 1; y++) {
                         for (int x = 0; x < width; x++) {
                             char c = big[y][x];
                             if (c != '#') {
@@ -413,6 +415,7 @@ namespace Demo {
 
                         }
                     }
+                    Terminal.Print(1, height - 1, LanguageGen.SIMPLISH.Sentence(rng, 1, 8));
 
                     Terminal.Refresh();
                 }
