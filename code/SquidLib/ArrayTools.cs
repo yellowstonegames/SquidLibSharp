@@ -81,6 +81,20 @@ namespace SquidLib {
             }
             return ret;
         }
+        /**
+         * Gets a copy of the 1D char array, source, that has the same data but shares no references with source.
+         *
+         * @param source a 1D array
+         * @return a copy of source, or null if source is null
+         */
+        public static T[] Copy<T>(T[] source) {
+            if (source == null) {
+                return null;
+            }
+            T[] ret = new T[source.Length];
+            Array.Copy(source, ret, source.Length);
+            return ret;
+        }
 
         /**
          * Inserts as much of source into target at the given x,y position as target can hold or source can supply.
