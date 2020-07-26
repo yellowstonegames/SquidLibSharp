@@ -5,17 +5,17 @@ using SquidLib.SquidMath;
 
 namespace SquidLib.SquidText {
     public class LanguageGen {
-        public LanguageGen(String[] openingVowels, String[] midVowels, String[] openingConsonants,
-                       String[] midConsonants, String[] closingConsonants, String[] closingSyllables, String[] vowelSplitters,
+        public LanguageGen(string[] openingVowels, string[] midVowels, string[] openingConsonants,
+                       string[] midConsonants, string[] closingConsonants, string[] closingSyllables, string[] vowelSplitters,
                        int[] syllableLengths, double[] syllableFrequencies, double vowelStartFrequency,
                        double vowelEndFrequency, double vowelSplitFrequency, double syllableEndFrequency,
                        Regex[] sane, bool clean) {
             this.OpeningVowels = openingVowels;
-            this.MidVowels = new String[openingVowels.Length + midVowels.Length];
+            this.MidVowels = new string[openingVowels.Length + midVowels.Length];
             Array.Copy(midVowels, 0, this.MidVowels, 0, midVowels.Length);
             Array.Copy(openingVowels, 0, this.MidVowels, midVowels.Length, openingVowels.Length);
             this.OpeningConsonants = openingConsonants;
-            this.MidConsonants = new String[midConsonants.Length + closingConsonants.Length];
+            this.MidConsonants = new string[midConsonants.Length + closingConsonants.Length];
             Array.Copy(midConsonants, 0, this.MidConsonants, 0, midConsonants.Length);
             Array.Copy(closingConsonants, 0, this.MidConsonants, midConsonants.Length, closingConsonants.Length);
             this.ClosingConsonants = closingConsonants;
@@ -164,25 +164,25 @@ namespace SquidLib.SquidText {
             };
 
         /**
-    * A pattern String that will match any vowel FakeLanguageGen can produce out-of-the-box, including Latin, Greek,
-    * and Cyrillic; for use when a String will be interpreted as a regex (as in {@link FakeLanguageGen.Alteration}).
+    * A pattern string that will match any vowel FakeLanguageGen can produce out-of-the-box, including Latin, Greek,
+    * and Cyrillic; for use when a string will be interpreted as a regex (as in {@link FakeLanguageGen.Alteration}).
 */
         public static readonly string AnyVowel = "[àáâãäåæāăąǻǽaèéêëēĕėęěeìíîïĩīĭįıiòóôõöøōŏőœǿoùúûüũūŭůűųuýÿŷỳyαοειυωаеёийоуъыэюя]",
         /**
-         * A pattern String that will match one or more of any vowels FakeLanguageGen can produce out-of-the-box, including
-         * Latin, Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in 
+         * A pattern string that will match one or more of any vowels FakeLanguageGen can produce out-of-the-box, including
+         * Latin, Greek, and Cyrillic; for use when a string will be interpreted as a regex (as in 
          * {@link FakeLanguageGen.Alteration}).
          */
         AnyVowelCluster = AnyVowel + '+',
         /**
-         * A pattern String that will match any consonant FakeLanguageGen can produce out-of-the-box, including Latin,
-         * Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in
+         * A pattern string that will match any consonant FakeLanguageGen can produce out-of-the-box, including Latin,
+         * Greek, and Cyrillic; for use when a string will be interpreted as a regex (as in
          * {@link FakeLanguageGen.Alteration}).
          */
         AnyConsonant = "[bcçćĉċčdþðďđfgĝğġģhĥħjĵȷkķlĺļľŀłmnñńņňŋpqrŕŗřsśŝşšștţťțvwŵẁẃẅxyýÿŷỳzźżžρσζτκχνθμπψβλγφξςбвгдклпрстфхцжмнзчшщ]",
         /**
-         * A pattern String that will match one or more of any consonants FakeLanguageGen can produce out-of-the-box,
-         * including Latin, Greek, and Cyrillic; for use when a String will be interpreted as a regex (as in
+         * A pattern string that will match one or more of any consonants FakeLanguageGen can produce out-of-the-box,
+         * including Latin, Greek, and Cyrillic; for use when a string will be interpreted as a regex (as in
          * {@link FakeLanguageGen.Alteration}).
          */
         AnyConsonantCluster = AnyConsonant + '+';
@@ -239,7 +239,7 @@ namespace SquidLib.SquidText {
                 } else {
                     sb.Append(rng.RandomElement(OpeningConsonants));
                 }
-                String close = "";
+                string close = "";
                 bool redouble = false;
                 if (i < syllables) {
                     if (rng.NextDouble() < SyllableEndFrequency) {
@@ -339,7 +339,7 @@ namespace SquidLib.SquidText {
                 } else if (OpeningConsonants.Length > 0) {
                     sb.Append(rng.RandomElement(OpeningConsonants));
                 }
-                String close = "";
+                string close = "";
                 bool redouble = false;
                 if (i < approxSyllables) {
                     if (ClosingSyllables.Length > 0 && rng.NextDouble() < SyllableEndFrequency) {
@@ -411,10 +411,11 @@ namespace SquidLib.SquidText {
                 return str;
             }
         }
-        public String Sentence(IRNG rng) => Sentence(rng, 1, 7, mid, end, 0.2);
-        public String Sentence(IRNG rng, int minWords, int maxWords) => Sentence(rng, minWords, maxWords, mid, end, 0.2);
+        public string Sentence(IRNG rng) => Sentence(rng, 1, 7, mid, end, 0.2);
+        public string Sentence(IRNG rng, int minWords, int maxWords) => Sentence(rng, minWords, maxWords, mid, end, 0.2);
+        public string Sentence(IRNG rng, int minWords, int maxWords, int maxChars) => Sentence(rng, minWords, maxWords, mid, end, 0.2, maxChars);
 
-        public String Sentence(IRNG rng, int minWords, int maxWords, String[] midPunctuation, String[] endPunctuation,
+        public string Sentence(IRNG rng, int minWords, int maxWords, string[] midPunctuation, string[] endPunctuation,
                            double midPunctuationFrequency) {
             if (rng == null) rng = new RNG();
             if (minWords < 1)
@@ -442,11 +443,78 @@ namespace SquidLib.SquidText {
             if (endPunctuation != null && endPunctuation.Length > 0)
                 ssb.Append(rng.RandomElement(endPunctuation));
             return ssb.ToString();
+        }
 
+        public string Sentence(IRNG rng, int minWords, int maxWords, string[] midPunctuation, string[] endPunctuation,
+                       double midPunctuationFrequency, int maxChars) {
+            if (rng == null) rng = new RNG();
+            if (maxChars < 0)
+                return Sentence(rng, minWords, maxWords, midPunctuation, endPunctuation, midPunctuationFrequency);
+            if (minWords < 1)
+                minWords = 1;
+            if (minWords > maxWords)
+                maxWords = minWords;
+            if (midPunctuationFrequency > 1.0) {
+                midPunctuationFrequency = 1.0 / midPunctuationFrequency;
+            }
+            if (maxChars < 4)
+                return "!";
+            if (maxChars <= 5 * minWords) {
+                minWords = 1;
+                maxWords = 1;
+            }
+            int frustration = 0;
+            ssb.Length = 0;
+            ssb.EnsureCapacity(maxChars);
+            string next = Word(rng, true);
+            while (next.Length >= maxChars - 1 && frustration < 50) {
+                next = Word(rng, true);
+                frustration++;
+            }
+            if (frustration >= 50) return "!";
+            ssb.Append(next);
+            for (int i = 1; i < minWords && ssb.Length < maxChars - 7; i++) {
+                if (rng.NextDouble() < midPunctuationFrequency && ssb.Length < maxChars - 3) {
+                    ssb.Append(rng.RandomElement(midPunctuation));
+                }
+                next = Word(rng, false);
+                while (ssb.Length + next.Length >= maxChars - 2 && frustration < 50) {
+                    next = Word(rng, false);
+                    frustration++;
+                }
+                if (frustration >= 50) break;
+                ssb.Append(' ').Append(next);
+            }
+            for (int i = minWords; i < maxWords && ssb.Length < maxChars - 7 && rng.NextInt(2 * maxWords) > i && frustration < 50; i++) {
+                if (rng.NextDouble() < midPunctuationFrequency && ssb.Length < maxChars - 3) {
+                    ssb.Append(rng.RandomElement(midPunctuation));
+                }
+                next = Word(rng, false);
+                while (ssb.Length + next.Length >= maxChars - 2 && frustration < 50) {
+                    next = Word(rng, false);
+                    frustration++;
+                }
+                if (frustration >= 50) break;
+                ssb.Append(' ');
+                ssb.Append(next);
+            }
+
+            if (endPunctuation != null && endPunctuation.Length > 0) {
+
+                next = rng.RandomElement(endPunctuation);
+                if (ssb.Length + next.Length >= maxChars)
+                    ssb.Append('.');
+                else
+                    ssb.Append(next);
+            }
+
+            if (ssb.Length > maxChars)
+                return "!";
+            return ssb.ToString();
         }
 
         public static readonly LanguageGen SIMPLISH = new LanguageGen(
-                new String[]{
+                new string[]{
                         "a", "a", "a", "a", "o", "o", "o", "e", "e", "e", "e", "e", "i", "i", "i", "i", "u",
                         "a", "a", "a", "a", "o", "o", "o", "e", "e", "e", "e", "e", "i", "i", "i", "i", "u",
                         "a", "a", "a", "a", "o", "o", "o", "e", "e", "e", "e", "e", "i", "i", "i", "i", "u",
@@ -454,8 +522,8 @@ namespace SquidLib.SquidText {
                         "a", "a", "a", "o", "o", "e", "e", "e", "i", "i", "i", "u",
                         "ai", "ai", "ea", "io", "oi", "ia", "io", "eo"
                 },
-                new String[] { "u", "u", "oa" },
-                new String[]{
+                new string[] { "u", "u", "oa" },
+                new string[]{
                         "b", "bl", "br", "c", "cl", "cr", "ch", "d", "dr", "f", "fl", "fr", "g", "gl", "gr", "h", "j", "k", "l", "m", "n",
                         "p", "pl", "pr", "r", "s", "sh", "sk", "st", "sp", "sl", "sm", "sn", "t", "tr", "th", "v", "w", "y", "z",
                         "b", "bl", "br", "c", "cl", "cr", "ch", "d", "dr", "f", "fl", "fr", "g", "gr", "h", "j", "k", "l", "m", "n",
@@ -474,10 +542,10 @@ namespace SquidLib.SquidText {
                         "p", "r", "s", "sh", "t", "th",
                         "r", "s", "t", "l", "n",
                 },
-                new String[]{"ch", "j", "w", "y", "v", "w", "y", "w", "y", "ch",
+                new string[]{"ch", "j", "w", "y", "v", "w", "y", "w", "y", "ch",
                         "b", "c", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "sh", "t",
                 },
-                new String[]{"bs", "lt", "mb", "ng", "ng", "nt", "ns", "ps", "mp", "rt", "rg", "sk", "rs", "ts", "lk", "ct",
+                new string[]{"bs", "lt", "mb", "ng", "ng", "nt", "ns", "ps", "mp", "rt", "rg", "sk", "rs", "ts", "lk", "ct",
                         "b", "c", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "sh", "t", "th", "z",
                         "b", "c", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "sh", "t",
                         "b", "c", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "sh", "t",
