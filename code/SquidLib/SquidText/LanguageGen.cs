@@ -556,5 +556,16 @@ namespace SquidLib.SquidText {
                 },
                 Array.Empty<string>(),
                 Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 7, 18, 6, 1 }, 0.26, 0.12, 0.0, 0.0, GenericSanityChecks, true);
+
+        public static readonly LanguageGen LOVECRAFT = new LanguageGen(
+                new string[] { "a", "i", "o", "e", "u", "a", "i", "o", "e", "u", "ia", "ai", "aa", "ei" },
+                Array.Empty<string>(),
+                new string[] { "s", "t", "k", "n", "y", "p", "k", "l", "g", "gl", "th", "sh", "ny", "ft", "hm", "zvr", "cth" },
+                new string[] { "h", "gl", "gr", "nd", "mr", "vr", "kr" },
+                new string[] { "l", "p", "s", "t", "n", "k", "g", "x", "rl", "th", "gg", "gh", "ts", "lt", "rk", "kh", "sh", "ng", "shk" },
+                new string[] { "aghn", "ulhu", "urath", "oigor", "alos", "'yeh", "achtal", "elt", "ikhet", "adzek", "agd" },
+                new string[] { "'", "-" }, new int[] { 1, 2, 3, 4 }, new double[] { 5, 7, 3, 2 },
+                0.4, 0.31, 0.07, 0.04, null, true);
+
     }
 }
