@@ -94,7 +94,7 @@
       <Name>BearLibTerminalIntegration</Name>
     </ProjectReference>
     <ProjectReference Include="..\SquidLib\SquidLib.csproj">
-      <Project>{36CAD530-7978-4065-B1A5-378C933CE3EA}</Project>
+      <Project>{36cad530-7978-4065-b1a5-378c933ce3ea}</Project>
       <Name>SquidLib</Name>
     </ProjectReference>
   </ItemGroup>

@@ -415,7 +415,7 @@ namespace Demo {
 
                         }
                     }
-                    Terminal.Print(1, height - 1, LanguageGen.SIMPLISH.Sentence(rng, 1, 8));
+                    Terminal.Print(1, height - 1, LanguageGen.SIMPLISH.Sentence(rng, 1, 25, width - 1));
 
                     Terminal.Refresh();
                 }
