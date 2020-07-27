@@ -348,7 +348,7 @@ namespace SquidLib.SquidText {
                 }
 
                 if (capitalize)
-                    sb[0] = char.ToUpper(sb[0]);
+                    sb[0] = char.ToUpperInvariant(sb[0]);
                 string str = sb.ToString();
                 if (SanityChecks != null && !CheckAll(str, SanityChecks))
                     continue;
@@ -452,7 +452,7 @@ namespace SquidLib.SquidText {
                     sb.Append(close.Replace("@", sb.ToString()));
                 }
                 if (capitalize)
-                    sb[0] = char.ToUpper(sb[0]);
+                    sb[0] = char.ToUpperInvariant(sb[0]);
                 string str = sb.ToString();
                 if (SanityChecks != null && !CheckAll(str, SanityChecks))
                     continue;
@@ -679,6 +679,194 @@ Vietnamese
                 Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 10, 11, 4, 1 },
                 0.22, 0.1, 0.0, 0.22, EnglishSanityChecks, true).Register("English");
 
+        public static readonly LanguageGen GREEK_ROMANIZED = new LanguageGen(
+                new String[]{"a", "a", "a", "a", "a", "o", "o", "e", "e", "e", "i", "i", "i", "i", "i", "au", "ai", "ai", "oi", "oi",
+                        "ia", "io", "u", "u", "eo", "ei", "o", "o", "ou", "oi", "y", "y", "y", "y"},
+                new String[] { "ui", "ui", "ei", "ei" },
+                new String[]{"rh", "s", "z", "t", "t", "k", "ch", "n", "th", "kth", "m", "p", "ps", "b", "l", "kr",
+                        "g", "phth", "d", "t", "k", "ch", "n", "ph", "ph", "k",},
+                new String[] { "lph", "pl", "l", "l", "kr", "nch", "nx", "ps" },
+                new String[]{"s", "p", "t", "ch", "n", "m", "s", "p", "t", "ch", "n", "m", "b", "g", "st", "rst",
+                        "rt", "sp", "rk", "ph", "x", "z", "nk", "ng", "th", "d", "k", "n", "n",},
+                new String[]{"os", "os", "os", "is", "is", "us", "um", "eum", "ium", "iam", "us", "um", "es",
+                        "anes", "eros", "or", "or", "ophon", "on", "on", "ikon", "otron", "ik",},
+                Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 5, 7, 4, 1 }, 0.45, 0.45, 0.0, 0.2, null, true).Register("Greek Romanized");
+
+        public static readonly LanguageGen GREEK_AUTHENTIC = new LanguageGen(
+            new String[]{"α", "α", "α", "α", "α", "ο", "ο", "ε", "ε", "ε", "ι", "ι", "ι", "ι", "ι", "αυ", "αι", "αι", "οι", "οι",
+                    "ια", "ιο", "ου", "ου", "εο", "ει", "ω", "ω", "ωυ", "ωι", "υ", "υ", "υ", "υ"},
+            new String[] { "υι", "υι", "ει", "ει" },
+            new String[]{"ρ", "σ", "ζ", "τ", "τ", "κ", "χ", "ν", "θ", "κθ", "μ", "π", "ψ", "β", "λ", "κρ",
+                    "γ", "φθ", "δ", "τ", "κ", "χ", "ν", "φ", "φ", "κ",},
+            new String[] { "λφ", "πλ", "λ", "λ", "κρ", "γχ", "γξ", "ψ" },
+            new String[]{"σ", "π", "τ", "χ", "ν", "μ", "σ", "π", "τ", "χ", "ν", "μ", "β", "γ", "στ", "ρστ",
+                    "ρτ", "σπ", "ρκ", "φ", "ξ", "ζ", "γκ", "γγ", "θ", "δ", "κ", "ν", "ν",},
+            new String[]{"ος", "ος", "ος", "ις", "ις", "υς", "υμ", "ευμ", "ιυμ", "ιαμ", "υς", "υμ", "ες",
+                    "ανες", "ερος", "ορ", "ορ", "οφον", "ον", "ον", "ικον", "οτρον", "ικ",},
+            Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 5, 7, 4, 1 }, 0.45, 0.45, 0.0, 0.2, null, true).Register("Greek Authentic");
+
+        public static readonly LanguageGen FRENCH = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("French");
+
+        public static readonly LanguageGen RUSSIAN_ROMANIZED = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Russian Romanized");
+
+        public static readonly LanguageGen RUSSIAN_AUTHENTIC = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Russian Authentic");
+
+        public static readonly LanguageGen JAPANESE_ROMANIZED = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Japanese Romanized");
+
+        public static readonly LanguageGen SWAHILI = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Swahili");
+
+        public static readonly LanguageGen SOMALI = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Somali");
+
+        public static readonly LanguageGen HINDI_ROMANIZED = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Hindi Romanized");
+
+        public static readonly LanguageGen ARABIC_ROMANIZED = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Arabic Romanized");
+
+        public static readonly LanguageGen INUKTITUT = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Inuktitut");
+
+        public static readonly LanguageGen NORSE = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Norse");
+
+        public static readonly LanguageGen NAHUATL = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Nahuatl");
+
+        public static readonly LanguageGen MONGOLIAN = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Mongolian");
+
+        public static readonly LanguageGen FANTASY = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Fantasy");
+
+        public static readonly LanguageGen FANCY_FANTASY = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Fancy Fantasy");
+
+        public static readonly LanguageGen GOBLIN = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Goblin");
+
+        public static readonly LanguageGen ELF = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Elf");
+
+        public static readonly LanguageGen DEMONIC = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Demonic");
+
+        public static readonly LanguageGen INFERNAL = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Infernal");
+
         public static readonly LanguageGen SIMPLISH = new LanguageGen(
                 new string[]{
                         "a", "a", "a", "a", "o", "o", "o", "e", "e", "e", "e", "e", "i", "i", "i", "i", "u",
@@ -722,6 +910,96 @@ Vietnamese
                 },
                 Array.Empty<string>(),
                 Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 7, 18, 6, 1 }, 0.26, 0.12, 0.0, 0.0, GenericSanityChecks, true).Register("Simplish");
+
+        public static readonly LanguageGen ALIEN_A = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Alien A");
+
+        public static readonly LanguageGen KOREAN_ROMANIZED = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Korean Romanized");
+
+        public static readonly LanguageGen ALIEN_E = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Alien E");
+
+        public static readonly LanguageGen ALIEN_I = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Alien I");
+
+        public static readonly LanguageGen ALIEN_O = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Alien O");
+
+        public static readonly LanguageGen ALIEN_U = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Alien U");
+
+        public static readonly LanguageGen DRAGON = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Dragon");
+
+        public static readonly LanguageGen KOBOLD = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Kobold");
+
+        public static readonly LanguageGen INSECT = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Insect");
+
+        public static readonly LanguageGen MAORI = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Maori");
 
         public static readonly LanguageGen SPANISH = new LanguageGen(
                 new string[] { "a", "a", "a", "a", "a", "i", "i", "i", "o", "o", "o", "e", "e", "e", "e", "e", "u", "u" },
@@ -801,6 +1079,96 @@ Vietnamese
                 },
                 Array.Empty<string>(),
                 new string[] { "'" }, new int[] { 1, 2, 3, 4 }, new double[] { 3, 6, 5, 1 }, 0.18, 0.25, 0.07, 0.0, null, true).Register("Deep Speech");
+
+        public static readonly LanguageGen NORSE_SIMPLIFIED = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Norse Simplified");
+
+        public static readonly LanguageGen HLETKIP = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Hletkip");
+
+        public static readonly LanguageGen ANCIENT_EGYPTIAN = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Ancient Egyptian");
+
+        public static readonly LanguageGen CROW = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Crow");
+
+        public static readonly LanguageGen IMP = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Imp");
+
+        public static readonly LanguageGen MALAY = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Malay");
+
+        public static readonly LanguageGen CELESTIAL = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Celestial");
+
+        public static readonly LanguageGen CHINESE_ROMANIZED = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Chinese Romanized");
+
+        public static readonly LanguageGen CHEROKEE_ROMANIZED = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Cherokee Romanized");
+
+        public static readonly LanguageGen VIETNAMESE = new LanguageGen(
+                new string[] { "u" },
+                new string[] { "au" },
+                new string[] { "b" },
+                new string[] { "b", "lb" },
+                new string[] { "lb" },
+                Array.Empty<string>(),
+                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Vietnamese");
 
         #endregion LANGUAGES
     }
