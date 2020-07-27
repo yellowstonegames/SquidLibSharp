@@ -375,6 +375,7 @@ namespace Demo {
                 lightBright = lightPurple.GetBrightness(), deepBright = deepPurple.GetBrightness();
             DateTime current = DateTime.Now, previous = DateTime.FromBinary(0), start = DateTime.Now;
             RNG rng = new RNG();
+            int languageCount = LanguageGen.Registry.Count - 1, languageIndex = 0;
             while (keepRunning) {
                 input = Terminal.Peek();
                 if (input == Terminal.TK_Q || input == Terminal.TK_ESCAPE || input == Terminal.TK_CLOSE)
@@ -415,7 +416,8 @@ namespace Demo {
 
                         }
                     }
-                    Terminal.Print(1, height - 1, LanguageGen.SPANISH.Sentence(rng, 1, 25, width - 1));
+                    Terminal.Print(1, height - 1, LanguageGen.Registry[Value.At, ++languageIndex].Sentence(rng, 4, 25, width - 1));
+                    languageIndex %= languageCount;
 
                     Terminal.Refresh();
                 }

@@ -706,31 +706,72 @@ Vietnamese
             Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 5, 7, 4, 1 }, 0.45, 0.45, 0.0, 0.2, null, true).Register("Greek Authentic");
 
         public static readonly LanguageGen FRENCH = new LanguageGen(
-                new string[] { "u" },
-                new string[] { "au" },
-                new string[] { "b" },
-                new string[] { "b", "lb" },
-                new string[] { "lb" },
-                Array.Empty<string>(),
-                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("French");
+                new String[]{"a", "a", "a", "e", "e", "e", "i", "i", "o", "u", "a", "a", "a", "e", "e", "e", "i", "i", "o",
+                        "a", "a", "a", "e", "e", "e", "i", "i", "o", "u", "a", "a", "a", "e", "e", "e", "i", "i", "o",
+                        "a", "a", "e", "e", "i", "o", "a", "a", "a", "e", "e", "e", "i", "i", "o",
+                        "ai", "oi", "oui", "au", "œu", "ou"
+                },
+                new String[]{
+                        "ai", "aie", "aou", "eau", "oi", "oui", "oie", "eu", "eu",
+                        "à", "â", "ai", "aî", "aï", "aie", "aou", "aoû", "au", "ay", "e", "é", "ée", "è",
+                        "ê", "eau", "ei", "eî", "eu", "eû", "i", "î", "ï", "o", "ô", "oe", "oê", "oë", "œu",
+                        "oi", "oie", "oï", "ou", "oû", "oy", "u", "û", "ue",
+                        "a", "a", "a", "e", "e", "e", "i", "i", "o", "u", "a", "a", "a", "e", "e", "e", "i", "i", "o",
+                        "a", "a", "e", "e", "i", "o", "a", "a", "a", "e", "e", "e", "i", "i", "o",
+                        "a", "a", "a", "e", "e", "e", "i", "i", "o", "u", "a", "a", "a", "e", "e", "e", "i", "i", "o",
+                        "a", "a", "e", "e", "i", "o", "a", "a", "a", "e", "e", "e", "i", "i", "o",
+                        "ai", "ai", "eau", "oi", "oi", "oui", "eu", "au", "au", "ei", "ei", "oe", "oe", "ou", "ou", "ue"
+                },
+                new String[]{"tr", "ch", "m", "b", "b", "br", "j", "j", "j", "j", "g", "t", "t", "t", "c", "d", "f", "f", "h", "n", "l", "l",
+                        "s", "s", "s", "r", "r", "r", "v", "v", "p", "pl", "pr", "bl", "br", "dr", "gl", "gr"},
+                new String[]{"cqu", "gu", "qu", "rqu", "nt", "ng", "ngu", "mb", "ll", "nd", "ndr", "nct", "st",
+                        "xt", "mbr", "pl", "g", "gg", "ggr", "gl", "bl", "j", "gn",
+                        "m", "m", "mm", "v", "v", "f", "f", "f", "ff", "b", "b", "bb", "d", "d", "dd", "s", "s", "s", "ss", "ss", "ss",
+                        "cl", "cr", "ng", "ç", "ç", "rç", "rd", "lg", "rg"},
+                new String[]{"rt", "ch", "m", "b", "b", "lb", "t", "t", "t", "t", "c", "d", "f", "f", "n", "n", "l", "l",
+                        "s", "s", "s", "r", "r", "p", "rd", "ff", "ss", "ll"
+                },
+                new String[]{"e", "e", "e", "e", "e", "é", "é", "er", "er", "er", "er", "er", "es", "es", "es", "es", "es", "es",
+                        "e", "e", "e", "e", "e", "é", "é", "er", "er", "er", "er", "er", "er", "es", "es", "es", "es", "es",
+                        "e", "e", "e", "e", "e", "é", "é", "é", "er", "er", "er", "er", "er", "es", "es", "es", "es", "es",
+                        "ent", "em", "en", "en", "aim", "ain", "an", "oin", "ien", "iere", "ors", "anse",
+                        "ombs", "ommes", "ancs", "ends", "œufs", "erfs", "ongs", "aps", "ats", "ives", "ui", "illes",
+                        "aen", "aon", "am", "an", "eun", "ein", "age", "age", "uile", "uin", "um", "un", "un", "un",
+                        "aille", "ouille", "eille", "ille", "eur", "it", "ot", "oi", "oi", "oi", "aire", "om", "on", "on",
+                        "im", "in", "in", "ien", "ien", "ine", "ion", "il", "eil", "oin", "oint", "iguïté", "ience", "incte",
+                        "ang", "ong", "acré", "eau", "ouche", "oux", "oux", "ect", "ecri", "agne", "uer", "aix", "eth", "ut", "ant",
+                        "anc", "anc", "anche", "ioche", "eaux", "ive", "eur", "ancois", "ecois", "ente", "enri",
+                        "arc", "oc", "ouis", "arche", "ique", "ique", "ique", "oque", "arque", "uis", "este", "oir", "oir"
+                },
+                Array.Empty<string>(), new int[] { 1, 2, 3 }, new double[] { 15, 7, 2 }, 0.35, 1.0, 0.0, 0.4, null, true).Register("French");
 
         public static readonly LanguageGen RUSSIAN_ROMANIZED = new LanguageGen(
-                new string[] { "u" },
-                new string[] { "au" },
-                new string[] { "b" },
-                new string[] { "b", "lb" },
-                new string[] { "lb" },
+                new String[] { "a", "e", "e", "i", "i", "o", "u", "ie", "y", "e", "iu", "ia", "y", "a", "a", "o", "u" },
                 Array.Empty<string>(),
-                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Russian Romanized");
+                new String[]{"b", "v", "g", "d", "k", "l", "p", "r", "s", "t", "f", "kh", "ts",
+                        "b", "v", "g", "d", "k", "l", "p", "r", "s", "t", "f", "kh", "ts",
+                        "b", "v", "g", "d", "k", "l", "p", "r", "s", "t", "f",
+                        "zh", "m", "n", "z", "ch", "sh", "shch",
+                        "br", "sk", "tr", "bl", "gl", "kr", "gr"},
+                new String[] { "bl", "br", "pl", "dzh", "tr", "gl", "gr", "kr" },
+                new String[]{"b", "v", "g", "d", "zh", "z", "k", "l", "m", "n", "p", "r", "s", "t", "f", "kh", "ts", "ch", "sh",
+                        "v", "f", "sk", "sk", "sk", "s", "b", "d", "d", "n", "r", "r"},
+                new String[] { "odka", "odna", "usk", "ask", "usky", "ad", "ar", "ovich", "ev", "ov", "of", "agda", "etsky", "ich", "on", "akh", "iev", "ian" },
+                Array.Empty<string>(), new int[] { 1, 2, 3, 4, 5, 6 }, new double[] { 4, 5, 6, 5, 3, 1 }, 0.1, 0.2, 0.0, 0.12, null, true).Register("Russian Romanized");
 
         public static readonly LanguageGen RUSSIAN_AUTHENTIC = new LanguageGen(
-                new string[] { "u" },
-                new string[] { "au" },
-                new string[] { "b" },
-                new string[] { "b", "lb" },
-                new string[] { "lb" },
+                new String[] { "а", "е", "ё", "и", "й", "о", "у", "ъ", "ы", "э", "ю", "я", "ы", "а", "а", "о", "у" },
                 Array.Empty<string>(),
-                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Russian Authentic");
+                new String[]{"б", "в", "г", "д", "к", "л", "п", "р", "с", "т", "ф", "х", "ц",
+                        "б", "в", "г", "д", "к", "л", "п", "р", "с", "т", "ф", "х", "ц",
+                        "б", "в", "г", "д", "к", "л", "п", "р", "с", "т", "ф",
+                        "ж", "м", "н", "з", "ч", "ш", "щ",
+                        "бр", "ск", "тр", "бл", "гл", "кр", "гр"},
+                new String[] { "бл", "бр", "пл", "дж", "тр", "гл", "гр", "кр" },
+                new String[]{"б", "в", "г", "д", "ж", "з", "к", "л", "м", "н", "п", "р", "с", "т", "ф", "х", "ц", "ч", "ш",
+                        "в", "ф", "ск", "ск", "ск", "с", "б", "д", "д", "н", "р", "р"},
+                new String[] { "одка", "одна", "уск", "аск", "ускы", "ад", "ар", "овйч", "ев", "ов", "оф", "агда", "ёцкы", "йч", "он", "ах", "ъв", "ян" },
+                Array.Empty<string>(), new int[] { 1, 2, 3, 4, 5, 6 }, new double[] { 4, 5, 6, 5, 3, 1 }, 0.1, 0.2, 0.0, 0.12, null, true).Register("Russian Authentic");
 
         public static readonly LanguageGen JAPANESE_ROMANIZED = new LanguageGen(
                 new string[] { "u" },
