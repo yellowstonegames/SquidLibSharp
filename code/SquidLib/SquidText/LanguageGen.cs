@@ -88,9 +88,20 @@ namespace SquidLib.SquidText {
         public double SyllableEndFrequency { get; }
         public bool Clean { get; }
         public Regex[] SanityChecks { get; }
-
         public List<Modifier> Modifiers { get; }
+        internal string Summary { get; set; }
+        public string Name { get; internal set; }
 
+
+        public static IndexedDictionary<string, LanguageGen> Registry { get; } = new IndexedDictionary<string, LanguageGen>(64, StringComparer.OrdinalIgnoreCase);
+
+        public LanguageGen Register(string languageName) {
+            if (Registry.Count == 0) Registry[""] = null;
+            Summary = Registry.Count + "@1";
+            Name = languageName;
+            Registry[languageName] = this;
+            return this;
+        }
         public static Replacer[] AccentFinders { get; } = new Replacer[]
             {
                     new Replacer("[àáâäăāãåąǻ]", "a"),
@@ -213,7 +224,7 @@ namespace SquidLib.SquidText {
                 vowelClusters = new Regex(AnyVowelCluster, RegexOptions.IgnoreCase),
                 consonantClusters = new Regex(AnyConsonantCluster, RegexOptions.IgnoreCase);
 
-        private static readonly string[] mid = new string[] {",", ",", ",", ";"}, end = new string[] { ".", ".", ".", ".", "!", "?", "..."};
+        private static readonly string[] mid = new string[] { ",", ",", ",", ";" }, end = new string[] { ".", ".", ".", ".", "!", "?", "..." };
 
         protected static bool CheckAll(string testing, Regex[] checks) {
             if (checks == null || checks.Length == 0) return true;
@@ -540,6 +551,14 @@ namespace SquidLib.SquidText {
             return ssb.ToString();
         }
 
+        private LanguageGen AddModifiers(params Modifier[] modifiers) {
+            LanguageGen cp = new LanguageGen(this);
+            cp.Modifiers.AddRange(modifiers);
+            return cp;
+        }
+
+        #region LANGUAGES
+
         public static readonly LanguageGen SIMPLISH = new LanguageGen(
                 new string[]{
                         "a", "a", "a", "a", "o", "o", "o", "e", "e", "e", "e", "e", "i", "i", "i", "i", "u",
@@ -582,7 +601,7 @@ namespace SquidLib.SquidText {
                         "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "sh", "t",
                 },
                 Array.Empty<string>(),
-                Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 7, 18, 6, 1 }, 0.26, 0.12, 0.0, 0.0, GenericSanityChecks, true);
+                Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 7, 18, 6, 1 }, 0.26, 0.12, 0.0, 0.0, GenericSanityChecks, true).Register("Simplish");
 
         public static readonly LanguageGen LOVECRAFT = new LanguageGen(
                 new string[] { "a", "i", "o", "e", "u", "a", "i", "o", "e", "u", "ia", "ai", "aa", "ei" },
@@ -592,11 +611,11 @@ namespace SquidLib.SquidText {
                 new string[] { "l", "p", "s", "t", "n", "k", "g", "x", "rl", "th", "gg", "gh", "ts", "lt", "rk", "kh", "sh", "ng", "shk" },
                 new string[] { "aghn", "ulhu", "urath", "oigor", "alos", "'yeh", "achtal", "elt", "ikhet", "adzek", "agd" },
                 new string[] { "'", "-" }, new int[] { 1, 2, 3, 4 }, new double[] { 5, 7, 3, 2 },
-                0.4, 0.31, 0.07, 0.04, null, true);
+                0.4, 0.31, 0.07, 0.04, null, true).Register("Lovecraft");
 
         public static readonly LanguageGen SPANISH = new LanguageGen(
                 new String[] { "a", "a", "a", "a", "a", "i", "i", "i", "o", "o", "o", "e", "e", "e", "e", "e", "u", "u" },
-                new String[]{"a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e",
+                new String[] { "a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e",
                         "a", "a", "a", "a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e", "e",
                         "a", "a", "a", "a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e", "e",
                         "a", "a", "a", "a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e", "e",
@@ -608,7 +627,7 @@ namespace SquidLib.SquidText {
                         "ai", "ai", "eo", "ia", "ia", "ie", "io", "iu", "oi", "ui", "ue", "ua",
                         "ái", "aí", "éo", "ía", "iá", "íe", "ié", "ío", "íu", "oí", "uí", "ué", "uá",
                         "á", "é", "í", "ó", "ú", "á", "é", "í", "ó",},
-                new String[]{"b", "c", "ch", "d", "f", "g", "gu", "h", "j", "l", "m", "n", "p", "qu", "r", "s", "t", "v", "z",
+                new String[] { "b", "c", "ch", "d", "f", "g", "gu", "h", "j", "l", "m", "n", "p", "qu", "r", "s", "t", "v", "z",
                         "b", "s", "z", "r", "n", "h", "j", "j", "s", "c", "r",
                         "b", "s", "z", "r", "n", "h", "j", "s", "c", "r",
                         "b", "s", "r", "n", "h", "j", "s", "c", "r",
@@ -616,7 +635,7 @@ namespace SquidLib.SquidText {
                         "br", "gr", "fr"
                 },
                 new String[] { "ñ", "rr", "ll", "ñ", "rr", "ll", "mb", "nd", "ng", "nqu", "rqu", "zqu", "zc", "rd", "rb", "rt", "rt", "rc", "sm", "sd" },
-                new String[]{"r", "n", "s", "s", "r", "n", "s", "s", "r", "n", "s", "s", "r", "n", "s", "s",
+                new String[] { "r", "n", "s", "s", "r", "n", "s", "s", "r", "n", "s", "s", "r", "n", "s", "s",
                         "r", "n", "s", "r", "n", "s", "r", "n", "s", "r", "n", "s",
                 },
                 new String[]{"on", "ez", "es", "es", "es", "es", "es",
@@ -626,18 +645,13 @@ namespace SquidLib.SquidText {
                         "ir", "es", "imos", "en", "io",
                         "o", "a", "o", "a", "o", "a", "o", "a", "os", "as", "os", "as", "os", "as"
                 },
-                new String[] { }, new int[] { 1, 2, 3, 4 }, new double[] { 4, 5, 3, 1 }, 0.1, 1.0, 0.0, 0.3, GenericSanityChecks, true)
+                Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 4, 5, 3, 1 }, 0.1, 1.0, 0.0, 0.3, GenericSanityChecks, true)
                 .AddModifiers(
                         new Modifier("([aeouáéóú])i$", "$1y"),
                         new Modifier("([qQ])ua", "$1ue"), // guapo, agua, guano, all real Spanish, we should allow gua
                         new Modifier("([qQ])uá", "$1ué"),
                         new Modifier("([qgQG])u[ouy]", "$1ui"),
-                        new Modifier("([qgQG])u[óú]", "$1uí"));
-
-        private LanguageGen AddModifiers(params Modifier[] modifiers) {
-            LanguageGen cp = new LanguageGen(this);
-            cp.Modifiers.AddRange(modifiers);
-            return cp;
-        }
+                        new Modifier("([qgQG])u[óú]", "$1uí")).Register("Spanish");
+        #endregion LANGUAGES
     }
 }
