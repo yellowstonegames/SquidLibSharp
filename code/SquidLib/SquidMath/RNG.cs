@@ -361,7 +361,7 @@ namespace SquidLib.SquidMath {
             state ^= state >> 33;
             state ^= state >> 11;
             state *= 0x1C69B3F74AC4AE35UL;
-            return (int)(((ulong)bound * ((state ^ state >> 27) & 0xFFFFFFFFUL)) >> 32);
+            return (int)(((ulong)(bound - (bound >> 31)) * ((state ^ state >> 27) & 0xFFFFFFFFUL)) >> 32);
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace SquidLib.SquidMath {
         /// <param name="bound">the outer exclusive bound, as an int</param>
         /// <returns>an int between 0 (inclusive) and bound (exclusive)</returns>
         public static int RandomizeBounded(ulong state, int bound) =>
-            (int)(((ulong)bound * (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0xFFFFFFFFL)) >> 32);
+            (int)(((ulong)(bound - (bound >> 31)) * (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0xFFFFFFFFUL)) >> 32);
 
         /// <summary>
         /// Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
