@@ -176,6 +176,27 @@ namespace SquidLib.SquidText {
                             new Regex("^[ui]e", RegexOptions.IgnoreCase),
                             new Regex("^([^aeioyl])\\1", RegexOptions.IgnoreCase)
                     },
+            EnglishSanityChecks = new Regex[]
+            {
+                            new Regex("[aeiou]{3}", RegexOptions.IgnoreCase),
+                            new Regex("(\\w)\\1\\1", RegexOptions.IgnoreCase),
+                            new Regex("(.)\\1(.)\\2", RegexOptions.IgnoreCase),
+                            new Regex("[a][ae]", RegexOptions.IgnoreCase),
+                            new Regex("[u][umlkj]", RegexOptions.IgnoreCase),
+                            new Regex("[i][iyqkhrl]", RegexOptions.IgnoreCase),
+                            new Regex("[o][c]", RegexOptions.IgnoreCase),
+                            new Regex("[y]([aiu])\\1", RegexOptions.IgnoreCase),
+                            new Regex("[r][aeiouy]+[rh]", RegexOptions.IgnoreCase),
+                            new Regex("[q]u[yu]", RegexOptions.IgnoreCase),
+                            new Regex("[^oaei]uch", RegexOptions.IgnoreCase),
+                            new Regex("[h][tcszi]?h", RegexOptions.IgnoreCase),
+                            new Regex("[t]t[^aeiouy]{2}", RegexOptions.IgnoreCase),
+                            new Regex("[y]h([^aeiouy]|$)", RegexOptions.IgnoreCase),
+                            new Regex("[szrl]+?[^aeiouytdfgkcpbmnslr][szrl]", RegexOptions.IgnoreCase),
+                            new Regex("[uiy][wy]", RegexOptions.IgnoreCase),
+                            new Regex("^[ui][ae]", RegexOptions.IgnoreCase),
+                            new Regex("q(?:u?)$", RegexOptions.IgnoreCase)
+                    },
             VulgarChecks = new Regex[]
             {
                     new Regex("[sξζzkкκcсς][hнlι].{1,3}[dtтτΓг]", RegexOptions.IgnoreCase),
@@ -558,6 +579,105 @@ namespace SquidLib.SquidText {
         }
 
         #region LANGUAGES
+        /* Goal languages to implement, in the order they should be registered:
+Lovecraft
+English
+Greek Romanized
+Greek Authentic
+French
+Russian Romanized
+Russian Authentic
+Japanese Romanized
+Swahili
+Somali
+Hindi Romanized
+Arabic Romanized
+Inuktitut
+Norse
+Nahuatl
+Mongolian
+Fantasy
+Fancy Fantasy
+Goblin
+Elf
+Demonic
+Infernal
+Simplish
+Alien A
+Korean Romanized
+Alien E
+Alien I
+Alien O
+Alien U
+Dragon
+Kobold
+Insect
+Maori
+Spanish
+Deep Speech
+Norse Simplified
+Hletkip
+Ancient Egyptian
+Crow
+Imp
+Malay
+Celestial
+Chinese Romanized
+Cherokee Romanized
+Vietnamese
+         */
+        public static readonly LanguageGen LOVECRAFT = new LanguageGen(
+                new string[] { "a", "i", "o", "e", "u", "a", "i", "o", "e", "u", "ia", "ai", "aa", "ei" },
+                Array.Empty<string>(),
+                new string[] { "s", "t", "k", "n", "y", "p", "k", "l", "g", "gl", "th", "sh", "ny", "ft", "hm", "zvr", "cth" },
+                new string[] { "h", "gl", "gr", "nd", "mr", "vr", "kr" },
+                new string[] { "l", "p", "s", "t", "n", "k", "g", "x", "rl", "th", "gg", "gh", "ts", "lt", "rk", "kh", "sh", "ng", "shk" },
+                new string[] { "aghn", "ulhu", "urath", "oigor", "alos", "'yeh", "achtal", "elt", "ikhet", "adzek", "agd" },
+                new string[] { "'", "-" }, new int[] { 1, 2, 3, 4 }, new double[] { 5, 7, 3, 2 },
+                0.4, 0.31, 0.07, 0.04, null, true).Register("Lovecraft");
+
+        public static readonly LanguageGen ENGLISH = new LanguageGen(
+                new string[]{
+                        "a", "a", "a", "a", "o", "o", "o", "e", "e", "e", "e", "e", "i", "i", "i", "i", "u",
+                        "a", "a", "a", "a", "o", "o", "o", "e", "e", "e", "e", "e", "i", "i", "i", "i", "u",
+                        "a", "a", "a", "o", "o", "e", "e", "e", "i", "i", "i", "u",
+                        "a", "a", "a", "o", "o", "e", "e", "e", "i", "i", "i", "u",
+                        "au", "ai", "ai", "ou", "ea", "ie", "io", "ei",
+                },
+                new string[] { "u", "u", "oa", "oo", "oo", "oo", "ee", "ee", "ee", "ee", },
+                new string[]{
+                        "b", "bl", "br", "c", "cl", "cr", "ch", "d", "dr", "f", "fl", "fr", "g", "gl", "gr", "h", "j", "k", "l", "m", "n",
+                        "p", "pl", "pr", "qu", "r", "s", "sh", "sk", "st", "sp", "sl", "sm", "sn", "t", "tr", "th", "thr", "v", "w", "y", "z",
+                        "b", "bl", "br", "c", "cl", "cr", "ch", "d", "dr", "f", "fl", "fr", "g", "gr", "h", "j", "k", "l", "m", "n",
+                        "p", "pl", "pr", "r", "s", "sh", "st", "sp", "sl", "t", "tr", "th", "w", "y",
+                        "b", "br", "c", "ch", "d", "dr", "f", "g", "h", "j", "l", "m", "n",
+                        "p", "r", "s", "sh", "st", "sl", "t", "tr", "th",
+                        "b", "d", "f", "g", "h", "l", "m", "n",
+                        "p", "r", "s", "sh", "t", "th",
+                        "b", "d", "f", "g", "h", "l", "m", "n",
+                        "p", "r", "s", "sh", "t", "th",
+                        "r", "s", "t", "l", "n",
+                        "str", "spr", "spl", "wr", "kn", "kn", "gn",
+                },
+                new string[]{"x", "cst", "bs", "ff", "lg", "g", "gs",
+                        "ll", "ltr", "mb", "mn", "mm", "ng", "ng", "ngl", "nt", "ns", "nn", "ps", "mbl", "mpr",
+                        "pp", "ppl", "ppr", "rr", "rr", "rr", "rl", "rtn", "ngr", "ss", "sc", "rst", "tt", "tt", "ts", "ltr", "zz"
+                },
+                new string[]{"b", "rb", "bb", "c", "rc", "ld", "d", "ds", "dd", "f", "ff", "lf", "rf", "rg", "gs", "ch", "lch", "rch", "tch",
+                        "ck", "ck", "lk", "rk", "l", "ll", "lm", "m", "rm", "mp", "n", "nk", "nch", "nd", "ng", "ng", "nt", "ns", "lp", "rp",
+                        "p", "r", "rn", "rts", "s", "s", "s", "s", "ss", "ss", "st", "ls", "t", "t", "ts", "w", "wn", "x", "ly", "lly", "z",
+                        "b", "c", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "t", "w",
+                },
+                new string[]{"ate", "ite", "ism", "ist", "er", "er", "er", "ed", "ed", "ed", "es", "es", "ied", "y", "y", "y", "y",
+                        "ate", "ite", "ism", "ist", "er", "er", "er", "ed", "ed", "ed", "es", "es", "ied", "y", "y", "y", "y",
+                        "ate", "ite", "ism", "ist", "er", "er", "er", "ed", "ed", "ed", "es", "es", "ied", "y", "y", "y", "y",
+                        "ay", "ay", "ey", "oy", "ay", "ay", "ey", "oy",
+                        "ough", "aught", "ant", "ont", "oe", "ance", "ell", "eal", "oa", "urt", "ut", "iom", "ion", "ion", "ision", "ation", "ation", "ition",
+                        "ough", "aught", "ant", "ont", "oe", "ance", "ell", "eal", "oa", "urt", "ut", "iom", "ion", "ion", "ision", "ation", "ation", "ition",
+                        "ily", "ily", "ily", "adly", "owly", "oorly", "ardly", "iedly",
+                },
+                Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 10, 11, 4, 1 },
+                0.22, 0.1, 0.0, 0.22, EnglishSanityChecks, true).Register("English");
 
         public static readonly LanguageGen SIMPLISH = new LanguageGen(
                 new string[]{
@@ -603,19 +723,9 @@ namespace SquidLib.SquidText {
                 Array.Empty<string>(),
                 Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 7, 18, 6, 1 }, 0.26, 0.12, 0.0, 0.0, GenericSanityChecks, true).Register("Simplish");
 
-        public static readonly LanguageGen LOVECRAFT = new LanguageGen(
-                new string[] { "a", "i", "o", "e", "u", "a", "i", "o", "e", "u", "ia", "ai", "aa", "ei" },
-                Array.Empty<string>(),
-                new string[] { "s", "t", "k", "n", "y", "p", "k", "l", "g", "gl", "th", "sh", "ny", "ft", "hm", "zvr", "cth" },
-                new string[] { "h", "gl", "gr", "nd", "mr", "vr", "kr" },
-                new string[] { "l", "p", "s", "t", "n", "k", "g", "x", "rl", "th", "gg", "gh", "ts", "lt", "rk", "kh", "sh", "ng", "shk" },
-                new string[] { "aghn", "ulhu", "urath", "oigor", "alos", "'yeh", "achtal", "elt", "ikhet", "adzek", "agd" },
-                new string[] { "'", "-" }, new int[] { 1, 2, 3, 4 }, new double[] { 5, 7, 3, 2 },
-                0.4, 0.31, 0.07, 0.04, null, true).Register("Lovecraft");
-
         public static readonly LanguageGen SPANISH = new LanguageGen(
-                new String[] { "a", "a", "a", "a", "a", "i", "i", "i", "o", "o", "o", "e", "e", "e", "e", "e", "u", "u" },
-                new String[] { "a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e",
+                new string[] { "a", "a", "a", "a", "a", "i", "i", "i", "o", "o", "o", "e", "e", "e", "e", "e", "u", "u" },
+                new string[] { "a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e",
                         "a", "a", "a", "a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e", "e",
                         "a", "a", "a", "a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e", "e",
                         "a", "a", "a", "a", "a", "a", "i", "i", "i", "i", "o", "o", "o", "o", "o", "e", "e", "e", "e", "e",
@@ -627,18 +737,18 @@ namespace SquidLib.SquidText {
                         "ai", "ai", "eo", "ia", "ia", "ie", "io", "iu", "oi", "ui", "ue", "ua",
                         "ái", "aí", "éo", "ía", "iá", "íe", "ié", "ío", "íu", "oí", "uí", "ué", "uá",
                         "á", "é", "í", "ó", "ú", "á", "é", "í", "ó",},
-                new String[] { "b", "c", "ch", "d", "f", "g", "gu", "h", "j", "l", "m", "n", "p", "qu", "r", "s", "t", "v", "z",
+                new string[] { "b", "c", "ch", "d", "f", "g", "gu", "h", "j", "l", "m", "n", "p", "qu", "r", "s", "t", "v", "z",
                         "b", "s", "z", "r", "n", "h", "j", "j", "s", "c", "r",
                         "b", "s", "z", "r", "n", "h", "j", "s", "c", "r",
                         "b", "s", "r", "n", "h", "j", "s", "c", "r",
                         "n", "s", "l", "c", "n", "s", "l", "c",
                         "br", "gr", "fr"
                 },
-                new String[] { "ñ", "rr", "ll", "ñ", "rr", "ll", "mb", "nd", "ng", "nqu", "rqu", "zqu", "zc", "rd", "rb", "rt", "rt", "rc", "sm", "sd" },
-                new String[] { "r", "n", "s", "s", "r", "n", "s", "s", "r", "n", "s", "s", "r", "n", "s", "s",
+                new string[] { "ñ", "rr", "ll", "ñ", "rr", "ll", "mb", "nd", "ng", "nqu", "rqu", "zqu", "zc", "rd", "rb", "rt", "rt", "rc", "sm", "sd" },
+                new string[] { "r", "n", "s", "s", "r", "n", "s", "s", "r", "n", "s", "s", "r", "n", "s", "s",
                         "r", "n", "s", "r", "n", "s", "r", "n", "s", "r", "n", "s",
                 },
-                new String[]{"on", "ez", "es", "es", "es", "es", "es",
+                new string[]{"on", "ez", "es", "es", "es", "es", "es",
                         "ador", "edor", "ando", "endo", "indo",
                         "ar", "as", "amos", "an", "oy", "ay",
                         "er", "es", "emos", "en", "e",
@@ -652,6 +762,46 @@ namespace SquidLib.SquidText {
                         new Modifier("([qQ])uá", "$1ué"),
                         new Modifier("([qgQG])u[ouy]", "$1ui"),
                         new Modifier("([qgQG])u[óú]", "$1uí")).Register("Spanish");
+
+        public static readonly LanguageGen DEEP_SPEECH = new LanguageGen(
+                new string[]{
+                        "a", "a", "o", "o", "o", "o", "u", "u", "u", "u",
+                        "a", "a", "o", "o", "o", "o", "u", "u", "u", "u",
+                        "a", "a", "o", "o", "o", "o", "u", "u", "u", "u",
+                        "a", "a", "o", "o", "o", "o", "u", "u", "u", "u",
+                        "a", "a", "o", "o", "o", "o", "u", "u", "u", "u",
+                        "aa", "aa", "oo", "oo", "oo", "oo", "uu", "uu", "uu", "uu",
+                        "aa", "aa", "oo", "oo", "oo", "oo", "uu", "uu", "uu", "uu",
+                        "ah", "ah", "oh", "oh", "oh", "oh", "uh", "uh", "uh", "uh",
+                        "aah", "ooh", "ooh", "uuh", "uuh",
+                },
+                Array.Empty<string>(),
+                new string[]{
+                        "m", "ng", "r", "x", "y", "z", "v", "l",
+                        "m", "ng", "r", "x", "y", "z", "v", "l",
+                        "m", "ng", "r", "x", "y", "z", "v", "l",
+                        "m", "ng", "r", "x", "y", "z", "v", "l",
+                        "m", "ng", "r", "x", "y", "z", "v", "l",
+                        "m", "ng", "r", "z", "l",
+                        "m", "ng", "r", "z", "l",
+                        "m", "ng", "r", "z", "l",
+                        "m", "ng", "r", "z", "l",
+                        "mr", "vr", "ry", "zr",
+                        "mw", "vw", "ly", "zw",
+                        "zl", "vl"
+                },
+                Array.Empty<string>(),
+                new string[]{
+                        "m", "ng", "r", "x", "z", "v", "l",
+                        "m", "ng", "r", "x", "z", "v", "l",
+                        "m", "ng", "r", "x", "z", "v", "l",
+                        "m", "ng", "r", "x", "z", "v", "l",
+                        "rm", "rng", "rx", "rz", "rv", "rl",
+                        "lm", "lx", "lz", "lv",
+                },
+                Array.Empty<string>(),
+                new string[] { "'" }, new int[] { 1, 2, 3, 4 }, new double[] { 3, 6, 5, 1 }, 0.18, 0.25, 0.07, 0.0, null, true).Register("Deep Speech");
+
         #endregion LANGUAGES
     }
 }
