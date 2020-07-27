@@ -345,7 +345,7 @@ namespace SquidLib.SquidMath {
         /// the inputs are sequential, while <code>randomize()</code> is meant to have excellent quality regardless of patterns in
         /// input, though randomize() will be about 30% slower than determine(). Both algorithms use Pelle Evensen's work on
         /// unary hashes; determine() is a slightly stronger/slower version of 
-        /// <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a, while
+        /// <a href="http://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html">Moremur64</a> while
         /// randomize is a completely different algorithm based on Pelle Evensen's rrxmrrxmsx_0 and evaluated with
         /// <a href="http://mostlymangling.blogspot.com/2019/01/better-stronger-mixer-and-test-procedure.html">the same
         /// testing requirements Evensen used for rrxmrrxmsx_0</a>; it will have excellent quality regardless of patterns in

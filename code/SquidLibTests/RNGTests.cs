@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -249,6 +250,7 @@ namespace SquidLibTests {
                         double.MaxValue / 2.0,
                         double.MinValue / 2.0,
                         double.Epsilon,
+                        -double.Epsilon,
                         double.NaN,
                         double.NegativeInfinity,
                         double.PositiveInfinity,
@@ -303,6 +305,7 @@ namespace SquidLibTests {
                         float.MaxValue / 2.0f,
                         float.MinValue / 2.0f,
                         float.Epsilon,
+                        -float.Epsilon,
                         float.NaN,
                         float.NegativeInfinity,
                         float.PositiveInfinity
@@ -314,7 +317,7 @@ namespace SquidLibTests {
                         switch (bound) {
                             case 0.0f:
                             case float.Epsilon:
-                                Assert.AreEqual(0.0, value); // TODO - uncomment once bug found here is fixed
+                                Assert.AreEqual(0.0f, value);
                                 break;
                             case float.NegativeInfinity:
                             case float.PositiveInfinity:
@@ -334,6 +337,178 @@ namespace SquidLibTests {
                             default:
                                 Assert.Fail($"Untested value: {bound}");
                                 break;
+                        }
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestDetermineFloat() {
+            for (int count = 0; count < iterations; count++) {
+                ulong[] states = {
+                    ulong.MinValue,
+                    ulong.MaxValue,
+                    ulong.MaxValue / 2
+                };
+
+                foreach (ulong state in states) {
+                    for (ulong adding = 0; adding <= 300; adding += 3) {
+                        float value = RNG.DetermineFloat(state + adding);
+                        Assert.AreEqual(value, RNG.DetermineFloat(state + adding));
+                        Assert.IsTrue(value >= 0.0f);
+                        Assert.IsTrue(value < 1.0f);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestDetermineDouble() {
+            for (int count = 0; count < iterations; count++) {
+                ulong[] states = {
+                    ulong.MinValue,
+                    ulong.MaxValue,
+                    ulong.MaxValue / 2
+                };
+
+                foreach (ulong state in states) {
+                    for (ulong adding = 0; adding <= 300; adding += 3) {
+                        double value = RNG.DetermineDouble(state + adding);
+                        Assert.AreEqual(value, RNG.DetermineDouble(state + adding));
+                        Assert.IsTrue(value >= 0.0);
+                        Assert.IsTrue(value < 1.0);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestRandomizeFloat() {
+            for (int count = 0; count < iterations; count++) {
+                ulong[] states = {
+                    ulong.MinValue,
+                    ulong.MaxValue,
+                    ulong.MaxValue / 2
+                };
+
+                foreach (ulong state in states) {
+                    for (ulong adding = 0; adding <= 300; adding += 3) {
+                        float value = RNG.RandomizeFloat(state + adding);
+                        Assert.AreEqual(value, RNG.RandomizeFloat(state + adding));
+                        Assert.IsTrue(value >= 0.0f);
+                        Assert.IsTrue(value < 1.0f);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestRandomizeDouble() {
+            for (int count = 0; count < iterations; count++) {
+                ulong[] states = {
+                    ulong.MinValue,
+                    ulong.MaxValue,
+                    ulong.MaxValue / 2
+                };
+
+                foreach (ulong state in states) {
+                    for (ulong adding = 0; adding <= 300; adding += 3) {
+                        double value = RNG.RandomizeDouble(state + adding);
+                        Assert.AreEqual(value, RNG.RandomizeDouble(state + adding));
+                        Assert.IsTrue(value >= 0.0);
+                        Assert.IsTrue(value < 1.0);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestDetermineBounded() {
+            for (int count = 0; count < iterations; count++) {
+                ulong[] states = {
+                        ulong.MinValue,
+                        ulong.MaxValue,
+                        ulong.MaxValue / 2
+                    };
+
+                int[] boundaries = {
+                        int.MaxValue,
+                        int.MinValue,
+                        0,
+                        1,
+                        //-1, // TODO - uncomment once bug found is fixed
+                        int.MaxValue / 2,
+                        int.MinValue / 2
+                    };
+
+                foreach (ulong state in states) {
+                    for (ulong adding = 0; adding <= 300; adding += 3) {
+                        foreach (int bound in boundaries) {
+                            int value = RNG.DetermineBounded(state + adding, bound);
+                            Assert.AreEqual(value, RNG.DetermineBounded(state + adding, bound));
+                            switch (bound) {
+                                case 0:
+                                    Assert.AreEqual(0, value);
+                                    break;
+                                case { } _ when bound > 0:
+                                    Assert.IsTrue(value >= 0, $"Boundary fail with value {value} and bound {bound}");
+                                    Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}");
+                                    break;
+                                case { } _ when bound < 0:
+                                    Assert.IsTrue(value <= 0, $"Boundary fail with value {value} and bound {bound}");
+                                    Assert.IsTrue(value > bound, $"Boundary fail with value {value} and bound {bound}");
+                                    break;
+                                default:
+                                    Assert.Fail($"Untested value: {bound}");
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestRandomizeBounded() {
+            for (int count = 0; count < iterations; count++) {
+                ulong[] states = {
+                        ulong.MinValue,
+                        ulong.MaxValue,
+                        ulong.MaxValue / 2
+                    };
+
+                int[] boundaries = {
+                        int.MaxValue,
+                        int.MinValue,
+                        0,
+                        1,
+                        //-1, // TODO - uncomment once bug found is fixed
+                        int.MaxValue / 2,
+                        int.MinValue / 2
+                    };
+
+                foreach (ulong state in states) {
+                    for (ulong adding = 0; adding <= 300; adding += 3) {
+                        foreach (int bound in boundaries) {
+                            int value = RNG.RandomizeBounded(state + adding, bound);
+                            Assert.AreEqual(value, RNG.RandomizeBounded(state + adding, bound));
+                            switch (bound) {
+                                case 0:
+                                    Assert.AreEqual(0, value);
+                                    break;
+                                case { } _ when bound > 0:
+                                    Assert.IsTrue(value >= 0, $"Boundary fail with value {value} and bound {bound}");
+                                    Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}");
+                                    break;
+                                case { } _ when bound < 0:
+                                    Assert.IsTrue(value <= 0, $"Boundary fail with value {value} and bound {bound}");
+                                    Assert.IsTrue(value > bound, $"Boundary fail with value {value} and bound {bound}");
+                                    break;
+                                default:
+                                    Assert.Fail($"Untested value: {bound}");
+                                    break;
+                            }
                         }
                     }
                 }
@@ -397,6 +572,31 @@ namespace SquidLibTests {
 
 
                     Assert.AreEqual(previousInt, currentInt);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestToString() {
+            foreach (RNG rng in rngs) {
+                for (int iteration = 0; iteration < iterations; iteration++) {
+                    Assert.IsNotNull(rng.ToString());
+                    Assert.AreNotEqual("", rng.ToString().Trim());
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestBytes() {
+            byte[] noBytes = { };
+            byte[] manyBytes = new byte[100];
+            byte[] nullBytes = null;
+            foreach (RNG rng in rngs) {
+                for (int iteration = 0; iteration < iterations; iteration++) {
+                    rng.NextBytes(manyBytes);
+                    rng.NextBytes(noBytes);
+                    rng.NextBytes(nullBytes);
+                    Assert.IsNull(nullBytes);
                 }
             }
         }
