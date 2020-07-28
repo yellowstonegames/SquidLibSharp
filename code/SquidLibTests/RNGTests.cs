@@ -430,14 +430,14 @@ namespace SquidLibTests {
 
         [TestMethod]
         public void TestDetermineBounded() {
-            for (int count = 0; count < iterations; count++) {
-                ulong[] states = {
+            ulong[] states = {
+                    0UL,
                         ulong.MinValue,
                         ulong.MaxValue,
                         ulong.MaxValue / 2
                     };
 
-                int[] boundaries = {
+            int[] boundaries = {
                         int.MaxValue,
                         int.MinValue,
                         0,
@@ -449,48 +449,47 @@ namespace SquidLibTests {
                         int.MinValue / 2
                     };
 
-                foreach (ulong state in states) {
-                    for (ulong adding = 0; adding <= 300; adding += 3) {
-                        foreach (int bound in boundaries) {
-                            int value = RNG.DetermineBounded(state + adding, bound);
-                            Assert.AreEqual(value, RNG.DetermineBounded(state + adding, bound));
-                            switch (bound) {
-                                case 0:
-                                    Assert.AreEqual(0, value);
-                                    break;
-                                case { } _ when bound > 0:
-                                    Assert.IsTrue(value >= 0, $"Boundary fail with value {value} and bound {bound}");
-                                    Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}");
-                                    break;
-                                case { } _ when bound < 0:
-                                    Assert.IsTrue(value <= 0, $"Boundary fail with value {value} and bound {bound}");
-                                    Assert.IsTrue(value > bound, $"Boundary fail with value {value} and bound {bound}");
-                                    break;
-                                default:
-                                    Assert.Fail($"Untested value: {bound}");
-                                    break;
-                            }
+            foreach (ulong state in states) {
+                for (ulong adding = 0; adding <= 300; adding += 3) {
+                    foreach (int bound in boundaries) {
+                        int value = RNG.DetermineBounded(state + adding, bound);
+                        Assert.AreEqual(value, RNG.DetermineBounded(state + adding, bound));
+                        switch (bound) {
+                            case 0:
+                                Assert.AreEqual(0, value);
+                                break;
+                            case { } _ when bound > 0:
+                                Assert.IsTrue(value >= 0, $"Boundary fail with value {value} and bound {bound}");
+                                Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}");
+                                break;
+                            case { } _ when bound < 0:
+                                Assert.IsTrue(value <= 0, $"Boundary fail with value {value} and bound {bound}");
+                                Assert.IsTrue(value > bound, $"Boundary fail with value {value} and bound {bound}");
+                                break;
+                            default:
+                                Assert.Fail($"Untested value: {bound}");
+                                break;
                         }
-                        int sum = 0;
-                        for (ulong i = 0; i < 1000; i++) {
-                            sum += RNG.DetermineBounded(state + adding + i, -2);
-                        }
-                        Assert.IsTrue(sum < -375 && sum > -625, $"Sum of 1000 calls to DetermineBounded(-2): {sum}");
                     }
+                    int sum = 0;
+                    for (ulong i = 0; i < 1000; i++) {
+                        sum += RNG.DetermineBounded(state + adding + i, -2);
+                    }
+                    Assert.IsTrue(sum < -375 && sum > -625, $"Sum of 1000 calls to DetermineBounded(-2): {sum}");
                 }
             }
         }
 
         [TestMethod]
         public void TestRandomizeBounded() {
-            for (int count = 0; count < iterations; count++) {
-                ulong[] states = {
+
+            ulong[] states = {
                         ulong.MinValue,
                         ulong.MaxValue,
                         ulong.MaxValue / 2
                     };
 
-                int[] boundaries = {
+            int[] boundaries = {
                         int.MaxValue,
                         int.MinValue,
                         0,
@@ -502,35 +501,34 @@ namespace SquidLibTests {
                         int.MinValue / 2
                     };
 
-                foreach (ulong state in states) {
-                    for (ulong adding = 0; adding <= 300; adding += 3) {
-                        foreach (int bound in boundaries) {
-                            int value = RNG.RandomizeBounded(state + adding, bound);
-                            Assert.AreEqual(value, RNG.RandomizeBounded(state + adding, bound));
-                            switch (bound) {
-                                case 0:
-                                    Assert.AreEqual(0, value);
-                                    break;
-                                case { } _ when bound > 0:
-                                    Assert.IsTrue(value >= 0, $"Boundary fail with value {value} and bound {bound}");
-                                    Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}");
-                                    break;
-                                case { } _ when bound < 0:
-                                    Assert.IsTrue(value <= 0, $"Boundary fail with value {value} and bound {bound}");
-                                    Assert.IsTrue(value > bound, $"Boundary fail with value {value} and bound {bound}");
-                                    break;
-                                default:
-                                    Assert.Fail($"Untested value: {bound}");
-                                    break;
-                            }
+            foreach (ulong state in states) {
+                for (ulong adding = 0; adding <= 300; adding += 3) {
+                    foreach (int bound in boundaries) {
+                        int value = RNG.RandomizeBounded(state + adding, bound);
+                        Assert.AreEqual(value, RNG.RandomizeBounded(state + adding, bound));
+                        switch (bound) {
+                            case 0:
+                                Assert.AreEqual(0, value);
+                                break;
+                            case { } _ when bound > 0:
+                                Assert.IsTrue(value >= 0, $"Boundary fail with value {value} and bound {bound}");
+                                Assert.IsTrue(value < bound, $"Boundary fail with value {value} and bound {bound}");
+                                break;
+                            case { } _ when bound < 0:
+                                Assert.IsTrue(value <= 0, $"Boundary fail with value {value} and bound {bound}");
+                                Assert.IsTrue(value > bound, $"Boundary fail with value {value} and bound {bound}");
+                                break;
+                            default:
+                                Assert.Fail($"Untested value: {bound}");
+                                break;
                         }
-                        int sum = 0;
-                        for (ulong i = 0; i < 1000; i++) {
-                            sum += RNG.RandomizeBounded(state + adding + i, -2);
-                        }
-                        Assert.IsTrue(sum < -375 && sum > -625, $"Sum of 1000 calls to RandomizeBounded(-2): {sum}");
-
                     }
+                    int sum = 0;
+                    for (ulong i = 0; i < 1000; i++) {
+                        sum += RNG.RandomizeBounded(state + adding + i, -2);
+                    }
+                    Assert.IsTrue(sum < -375 && sum > -625, $"Sum of 1000 calls to RandomizeBounded(-2): {sum}");
+
                 }
             }
         }

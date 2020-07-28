@@ -7,7 +7,7 @@
     <ApplicationIcon>tentacle.ico</ApplicationIcon>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Version>0.0.1</Version>
-    <Configurations>Debug;Release</Configurations>
+    <Configurations>Debug;Release;TestRel</Configurations>
     <Platforms>AnyCPU;x64</Platforms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Company>Yellowstone Games</Company>
@@ -27,7 +27,15 @@
     <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestRel|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestRel|x64'">
     <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
 
