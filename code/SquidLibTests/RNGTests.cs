@@ -99,6 +99,11 @@ namespace SquidLibTests {
                                 break;
                         }
                     }
+                    int sum = 0;
+                    for(int i = 0; i < 1000; i++) {
+                        sum += rng.NextSignedInt(-2);
+                    }
+                    Assert.IsTrue(sum < -375 && sum > -625, $"Sum of 1000 calls to NextSignedInt(-2): {sum}");
                 }
             }
         }
@@ -466,6 +471,11 @@ namespace SquidLibTests {
                                     break;
                             }
                         }
+                        int sum = 0;
+                        for (ulong i = 0; i < 1000; i++) {
+                            sum += RNG.DetermineBounded(state + adding + i, -2);
+                        }
+                        Assert.IsTrue(sum < -375 && sum > -625, $"Sum of 1000 calls to DetermineBounded(-2): {sum}");
                     }
                 }
             }
@@ -514,6 +524,12 @@ namespace SquidLibTests {
                                     break;
                             }
                         }
+                        int sum = 0;
+                        for (ulong i = 0; i < 1000; i++) {
+                            sum += RNG.RandomizeBounded(state + adding + i, -2);
+                        }
+                        Assert.IsTrue(sum < -375 && sum > -625, $"Sum of 1000 calls to RandomizeBounded(-2): {sum}");
+
                     }
                 }
             }

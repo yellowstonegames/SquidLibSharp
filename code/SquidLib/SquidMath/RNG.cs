@@ -51,7 +51,7 @@ namespace SquidLib.SquidMath {
             this(MakeSeed(), MakeSeed()) { }
 
         public RNG(int seed) : this((ulong)seed, Randomize((ulong)seed)) { }
-        
+
         public RNG(long seed) : this((ulong)seed, Randomize((ulong)seed)) { }
 
         public RNG(ulong seed) : this(seed, Randomize(seed)) { }
@@ -78,7 +78,7 @@ namespace SquidLib.SquidMath {
         /// <param name="other">Another RNG that must not be null, and will be copied exactly.</param>
         public RNG(RNG other) : this(other is null ? MakeSeed() : other.StateA, other is null ? MakeSeed() : other.StateB) { }
 
-        private static ulong MakeSeed() =>(ulong)(localRNG.NextDouble() * 0x10000000000000UL) ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL);
+        private static ulong MakeSeed() => (ulong)(localRNG.NextDouble() * 0x10000000000000UL) ^ (ulong)(localRNG.NextDouble() * 2.0 * 0x8000000000000000UL);
 
         public IRNG Copy() => new RNG(StateA, StateB);
 
@@ -356,12 +356,13 @@ namespace SquidLib.SquidMath {
         /// <param name="bound">the outer exclusive bound, as an int</param>
         /// <returns>an int between 0 (inclusive) and bound (exclusive)</returns>
         public static int DetermineBounded(ulong state, int bound) {
+            int sign = bound >> 31;
             state ^= state >> 27;
             state *= 0x3C79AC492BA7B653UL;
             state ^= state >> 33;
             state ^= state >> 11;
             state *= 0x1C69B3F74AC4AE35UL;
-            return (int)(((ulong)(bound - (bound >> 31)) * ((state ^ state >> 27) & 0xFFFFFFFFUL)) >> 32);
+            return (int)(((uint)(bound + sign ^ sign) * ((state ^ state >> 27) & 0xFFFFFFFFUL)) >> 32) + sign ^ sign;
         }
 
         /// <summary>
@@ -387,8 +388,12 @@ namespace SquidLib.SquidMath {
         /// <param name="state">any long; subsequent calls should change by an odd number, such as with <code>++state</code></param>
         /// <param name="bound">the outer exclusive bound, as an int</param>
         /// <returns>an int between 0 (inclusive) and bound (exclusive)</returns>
-        public static int RandomizeBounded(ulong state, int bound) =>
-            (int)(((ulong)(bound - (bound >> 31)) * (((state = ((state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L) ^ state >> 28) & 0xFFFFFFFFUL)) >> 32);
+        public static int RandomizeBounded(ulong state, int bound) {
+            int sign = bound >> 31;
+            state = (state ^ (state << 41 | state >> 23) ^ (state << 17 | state >> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L;
+            state = (state ^ state >> 43 ^ state >> 31 ^ state >> 23) * 0xDB4F0B9175AE2165L;
+            return (int)(((uint)(bound + sign ^ sign) * ((state ^ state >> 28) & 0xFFFFFFFFUL)) >> 32) + sign  ^ sign;
+        }
 
         /// <summary>
         /// Returns a random float that is deterministic based on state; if state is the same on two calls to this, this will
