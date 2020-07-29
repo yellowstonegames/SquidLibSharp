@@ -2139,14 +2139,20 @@ Clojure script to mass-convert most of this:
                 Array.Empty<string>(),
                 new string[] { "'" }, new int[] { 1, 2, 3, 4 }, new double[] { 3, 6, 5, 1 }, 0.18, 0.25, 0.07, 0.0, null, true).Register("Deep Speech");
 
-        public static readonly LanguageGen NORSE_SIMPLIFIED = new LanguageGen(
-                new string[] { "u" },
-                new string[] { "au" },
-                new string[] { "b" },
-                new string[] { "b", "lb" },
-                new string[] { "lb" },
-                Array.Empty<string>(),
-                Array.Empty<string>(), new int[] { 1, 2 }, new double[] { 5, 3 }, 0.45, 0.45, 0.0, 0.0, null, true).Register("Norse Simplified");
+        public static readonly LanguageGen NORSE_SIMPLIFIED = NORSE.AddModifiers(Modifier.ReplacementTable(
+                "á", "a",
+                "é", "e",
+                "í", "i",
+                "ý", "y",
+                "ó", "o",
+                "ú", "u",
+                "æ", "ae",
+                "ö", "ou",
+                "([^aeiou])jy", "$1yai",
+                "([^aeiou])j(?:[aeiouy]+)", "$1yo",
+                "s([ðþ])", "st",
+                "\\bf[ðþ]", "fr",
+                "[ðþ]", "th")).Register("Norse Simplified");
 
         public static readonly LanguageGen HLETKIP = new LanguageGen(
                 new string[] { "u" },
