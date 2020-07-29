@@ -234,26 +234,26 @@ namespace SquidLib.SquidText {
             };
 
         /**
-    * A pattern string that will match any vowel FakeLanguageGen can produce out-of-the-box, including Latin, Greek,
-    * and Cyrillic; for use when a string will be interpreted as a regex (as in {@link FakeLanguageGen.Alteration}).
+    * A pattern string that will match any vowel LanguageGen can produce out-of-the-box, including Latin, Greek,
+    * and Cyrillic; for use when a string will be interpreted as a regex (as in {@link LanguageGen.Alteration}).
 */
         public static readonly string AnyVowel = "[àáâãäåæāăąǻǽaèéêëēĕėęěeìíîïĩīĭįıiòóôõöøōŏőœǿoùúûüũūŭůűųuýÿŷỳyαοειυωаеёийоуъыэюя]",
         /**
-         * A pattern string that will match one or more of any vowels FakeLanguageGen can produce out-of-the-box, including
+         * A pattern string that will match one or more of any vowels LanguageGen can produce out-of-the-box, including
          * Latin, Greek, and Cyrillic; for use when a string will be interpreted as a regex (as in 
-         * {@link FakeLanguageGen.Alteration}).
+         * {@link LanguageGen.Alteration}).
          */
         AnyVowelCluster = AnyVowel + '+',
         /**
-         * A pattern string that will match any consonant FakeLanguageGen can produce out-of-the-box, including Latin,
+         * A pattern string that will match any consonant LanguageGen can produce out-of-the-box, including Latin,
          * Greek, and Cyrillic; for use when a string will be interpreted as a regex (as in
-         * {@link FakeLanguageGen.Alteration}).
+         * {@link LanguageGen.Alteration}).
          */
         AnyConsonant = "[bcçćĉċčdþðďđfgĝğġģhĥħjĵȷkķlĺļľŀłmnñńņňŋpqrŕŗřsśŝşšștţťțvwŵẁẃẅxyýÿŷỳzźżžρσζτκχνθμπψβλγφξςбвгдклпрстфхцжмнзчшщ]",
         /**
-         * A pattern string that will match one or more of any consonants FakeLanguageGen can produce out-of-the-box,
+         * A pattern string that will match one or more of any consonants LanguageGen can produce out-of-the-box,
          * including Latin, Greek, and Cyrillic; for use when a string will be interpreted as a regex (as in
-         * {@link FakeLanguageGen.Alteration}).
+         * {@link LanguageGen.Alteration}).
          */
         AnyConsonantCluster = AnyConsonant + '+';
 
@@ -278,6 +278,141 @@ namespace SquidLib.SquidText {
             }
             return alteredString;
         }
+
+        public LanguageGen RemoveAccents() {
+
+            String[] ov =ArrayTools.Copy(OpeningVowels),
+                    mv = ArrayTools.Copy(MidVowels),
+                    oc = ArrayTools.Copy(OpeningConsonants),
+                    mc = ArrayTools.Copy(MidConsonants),
+                    cc = ArrayTools.Copy(ClosingConsonants),
+                    cs = ArrayTools.Copy(ClosingSyllables);
+            for (int i = 0; i < ov.Length; i++) {
+                ov[i] = RemoveAccents(OpeningVowels[i]);
+            }
+            for (int i = 0; i < mv.Length; i++) {
+                mv[i] = RemoveAccents(MidVowels[i]);
+            }
+            for (int i = 0; i < oc.Length; i++) {
+                oc[i] = RemoveAccents(OpeningConsonants[i]);
+            }
+            for (int i = 0; i < mc.Length; i++) {
+                mc[i] = RemoveAccents(MidConsonants[i]);
+            }
+            for (int i = 0; i < cc.Length; i++) {
+                cc[i] = RemoveAccents(ClosingConsonants[i]);
+            }
+            for (int i = 0; i < cs.Length; i++) {
+                cs[i] = RemoveAccents(ClosingSyllables[i]);
+            }
+            int[] syllableCounts = new int[SyllableFrequencies.Length];
+            double[] syllableFrequencies = ArrayTools.Copy(SyllableFrequencies);
+            for (int i = 0; i < syllableCounts.Length; i++) {
+                syllableCounts[i] = i + 1;
+            }
+
+            LanguageGen lang = new LanguageGen(ov, mv, oc, mc, cc, cs, VowelSplitters, syllableCounts, syllableFrequencies,
+                    VowelStartFrequency,
+                    VowelEndFrequency,
+                    VowelSplitFrequency,
+                    SyllableEndFrequency, SanityChecks, Clean);
+            lang.Modifiers.AddRange(Modifiers);
+            lang.Name = Name;
+            return lang;
+        }
+
+        public LanguageGen Mix(double myWeight, params (LanguageGen lang, double weight)[] pairs) {
+            if (pairs == null || pairs.Length == 0)
+                return new LanguageGen(this);
+            Modifier[] mods = Modifiers.ToArray();
+            LanguageGen mixer = RemoveModifiers();
+            LanguageGen[] languages = new LanguageGen[2 + pairs.Length];
+            double[] weights = new double[languages.Length];
+            string[] summaries = new string[languages.Length];
+            double total = 0.0, current, weight;
+            languages[0] = mixer;
+            total += weights[0] = myWeight;
+            for (int i = 0; i < pairs.Length; i++) {
+                languages[i+1] = pairs[i].lang.RemoveModifiers();
+                total += weights[i + 1] = pairs[i].weight;
+            }
+            if (total == 0)
+                return new LanguageGen(this);
+            current = myWeight / total;
+            for (int i = 1; i < languages.Length; i++) {
+                if ((weight = weights[i]) > 0)
+                    mixer = mixer.MixPair(languages[i], weight / total / (current += weight / total));
+            }
+            return mixer.AddModifiers(mods);
+        }
+        public LanguageGen MixPair(LanguageGen other, double otherInfluence) {
+            if (other == null || otherInfluence <= 0.0)
+                return new LanguageGen(this);
+            otherInfluence = Math.Max(0.0, Math.Min(otherInfluence, 1.0));
+            double myInfluence = 1.0 - otherInfluence;
+
+            RNG rng = new RNG(SeededHash.Murmur.Hash64(Name), SeededHash.Murmur.Hash64(other.Name) ^ (ulong)BitConverter.DoubleToInt64Bits(otherInfluence));
+
+            string[] ov = Merge1000(rng, OpeningVowels, other.OpeningVowels, otherInfluence),
+                    mv = Merge1000(rng, MidVowels, other.MidVowels, otherInfluence),
+                    oc = Merge1000(rng, OpeningConsonants, other.OpeningConsonants, otherInfluence *
+                            Math.Max(0.0, Math.Min(1.0, 1.0 - other.VowelStartFrequency + VowelStartFrequency))),
+                    mc = Merge1000(rng, MidConsonants, other.MidConsonants, otherInfluence),
+                    cc = Merge1000(rng, ClosingConsonants, other.ClosingConsonants, otherInfluence *
+                            Math.Max(0.0, Math.Min(1.0, 1.0 - other.VowelEndFrequency + VowelEndFrequency))),
+                    cs = Merge1000(rng, ClosingSyllables, other.ClosingSyllables, otherInfluence *
+                            Math.Max(0.0, Math.Min(1.0, other.SyllableEndFrequency - SyllableEndFrequency))),
+                    splitters = Merge1000(rng, VowelSplitters, other.VowelSplitters, otherInfluence);
+
+            double[] fr = new double[Math.Max(SyllableFrequencies.Length, other.SyllableFrequencies.Length)];
+            int[] syllableCounts = new int[fr.Length];
+            for (int i = 0; i < fr.Length; i++) {
+                syllableCounts[i] = i + 1;
+            }
+            Array.Copy(SyllableFrequencies, 0, fr, 0, SyllableFrequencies.Length);
+            for (int i = 0; i < other.SyllableFrequencies.Length; i++) {
+                fr[i] += other.SyllableFrequencies[i];
+            }
+
+            LanguageGen lang = new LanguageGen(ov, mv, oc, mc, cc, cs, splitters, syllableCounts, fr,
+                    VowelStartFrequency * myInfluence + other.VowelStartFrequency * otherInfluence,
+                    VowelEndFrequency * myInfluence + other.VowelEndFrequency * otherInfluence,
+                    VowelSplitFrequency * myInfluence + other.VowelSplitFrequency * otherInfluence,
+                    SyllableEndFrequency * myInfluence + other.SyllableEndFrequency * otherInfluence,
+                    (SanityChecks == null) ? other.SanityChecks : SanityChecks, true);
+            lang.Modifiers.AddRange(Modifiers);
+            lang.Modifiers.AddRange(other.Modifiers);
+            lang.Name = (otherInfluence > 0.5 ? other.Name + "/" + Name : Name + "/" + other.Name);
+            return lang;
+        }
+        private string[] Merge1000(RNG rng, string[] me, string[] other, double otherInfluence) {
+            if (other.Length <= 0 && me.Length <= 0)
+                return Array.Empty<string>();
+            string[] ret = new string[1000];
+            int otherCount = (int)(1000 * otherInfluence);
+            int idx = 0;
+            if (other.Length > 0) {
+                string[] tmp = new string[other.Length];
+                rng.Shuffle(other, tmp);
+                for (idx = 0; idx < otherCount; idx++) {
+                    ret[idx] = tmp[idx % tmp.Length];
+                }
+            }
+            if (me.Length > 0) {
+                string[] tmp = new string[me.Length];
+                rng.Shuffle(me, tmp);
+                for (; idx < 1000; idx++) {
+                    ret[idx] = tmp[idx % tmp.Length];
+                }
+            } else {
+                for (; idx < 1000; idx++) {
+                    ret[idx] = other[idx % other.Length];
+                }
+            }
+            return ret;
+        }
+
+
         public string Word() => Word(null, false, null);
         public string Word(IRNG rng) => Word(rng, false, null);
         public string Word(IRNG rng, bool capitalize) => Word(rng, capitalize, null);
@@ -588,9 +723,16 @@ namespace SquidLib.SquidText {
             return ssb.ToString();
         }
 
-        private LanguageGen AddModifiers(params Modifier[] modifiers) {
+        public LanguageGen AddModifiers(params Modifier[] modifiers) {
             LanguageGen cp = new LanguageGen(this);
             cp.Modifiers.AddRange(modifiers);
+            return cp;
+        }
+
+
+        public LanguageGen RemoveModifiers() {
+            LanguageGen cp = new LanguageGen(this);
+            cp.Modifiers.Clear();
             return cp;
         }
 
@@ -709,38 +851,38 @@ Clojure script to mass-convert most of this:
                 0.22, 0.1, 0.0, 0.22, EnglishSanityChecks, true).Register("English");
 
         public static readonly LanguageGen GREEK_ROMANIZED = new LanguageGen(
-                new String[]{"a", "a", "a", "a", "a", "o", "o", "e", "e", "e", "i", "i", "i", "i", "i", "au", "ai", "ai", "oi", "oi",
+                new string[]{"a", "a", "a", "a", "a", "o", "o", "e", "e", "e", "i", "i", "i", "i", "i", "au", "ai", "ai", "oi", "oi",
                         "ia", "io", "u", "u", "eo", "ei", "o", "o", "ou", "oi", "y", "y", "y", "y"},
-                new String[] { "ui", "ui", "ei", "ei" },
-                new String[]{"rh", "s", "z", "t", "t", "k", "ch", "n", "th", "kth", "m", "p", "ps", "b", "l", "kr",
+                new string[] { "ui", "ui", "ei", "ei" },
+                new string[]{"rh", "s", "z", "t", "t", "k", "ch", "n", "th", "kth", "m", "p", "ps", "b", "l", "kr",
                         "g", "phth", "d", "t", "k", "ch", "n", "ph", "ph", "k",},
-                new String[] { "lph", "pl", "l", "l", "kr", "nch", "nx", "ps" },
-                new String[]{"s", "p", "t", "ch", "n", "m", "s", "p", "t", "ch", "n", "m", "b", "g", "st", "rst",
+                new string[] { "lph", "pl", "l", "l", "kr", "nch", "nx", "ps" },
+                new string[]{"s", "p", "t", "ch", "n", "m", "s", "p", "t", "ch", "n", "m", "b", "g", "st", "rst",
                         "rt", "sp", "rk", "ph", "x", "z", "nk", "ng", "th", "d", "k", "n", "n",},
-                new String[]{"os", "os", "os", "is", "is", "us", "um", "eum", "ium", "iam", "us", "um", "es",
+                new string[]{"os", "os", "os", "is", "is", "us", "um", "eum", "ium", "iam", "us", "um", "es",
                         "anes", "eros", "or", "or", "ophon", "on", "on", "ikon", "otron", "ik",},
                 Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 5, 7, 4, 1 }, 0.45, 0.45, 0.0, 0.2, null, true).Register("Greek Romanized");
 
         public static readonly LanguageGen GREEK_AUTHENTIC = new LanguageGen(
-            new String[]{"α", "α", "α", "α", "α", "ο", "ο", "ε", "ε", "ε", "ι", "ι", "ι", "ι", "ι", "αυ", "αι", "αι", "οι", "οι",
+            new string[]{"α", "α", "α", "α", "α", "ο", "ο", "ε", "ε", "ε", "ι", "ι", "ι", "ι", "ι", "αυ", "αι", "αι", "οι", "οι",
                     "ια", "ιο", "ου", "ου", "εο", "ει", "ω", "ω", "ωυ", "ωι", "υ", "υ", "υ", "υ"},
-            new String[] { "υι", "υι", "ει", "ει" },
-            new String[]{"ρ", "σ", "ζ", "τ", "τ", "κ", "χ", "ν", "θ", "κθ", "μ", "π", "ψ", "β", "λ", "κρ",
+            new string[] { "υι", "υι", "ει", "ει" },
+            new string[]{"ρ", "σ", "ζ", "τ", "τ", "κ", "χ", "ν", "θ", "κθ", "μ", "π", "ψ", "β", "λ", "κρ",
                     "γ", "φθ", "δ", "τ", "κ", "χ", "ν", "φ", "φ", "κ",},
-            new String[] { "λφ", "πλ", "λ", "λ", "κρ", "γχ", "γξ", "ψ" },
-            new String[]{"σ", "π", "τ", "χ", "ν", "μ", "σ", "π", "τ", "χ", "ν", "μ", "β", "γ", "στ", "ρστ",
+            new string[] { "λφ", "πλ", "λ", "λ", "κρ", "γχ", "γξ", "ψ" },
+            new string[]{"σ", "π", "τ", "χ", "ν", "μ", "σ", "π", "τ", "χ", "ν", "μ", "β", "γ", "στ", "ρστ",
                     "ρτ", "σπ", "ρκ", "φ", "ξ", "ζ", "γκ", "γγ", "θ", "δ", "κ", "ν", "ν",},
-            new String[]{"ος", "ος", "ος", "ις", "ις", "υς", "υμ", "ευμ", "ιυμ", "ιαμ", "υς", "υμ", "ες",
+            new string[]{"ος", "ος", "ος", "ις", "ις", "υς", "υμ", "ευμ", "ιυμ", "ιαμ", "υς", "υμ", "ες",
                     "ανες", "ερος", "ορ", "ορ", "οφον", "ον", "ον", "ικον", "οτρον", "ικ",},
             Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 5, 7, 4, 1 }, 0.45, 0.45, 0.0, 0.2, null, true).Register("Greek Authentic");
 
         public static readonly LanguageGen FRENCH = new LanguageGen(
-                new String[]{"a", "a", "a", "e", "e", "e", "i", "i", "o", "u", "a", "a", "a", "e", "e", "e", "i", "i", "o",
+                new string[]{"a", "a", "a", "e", "e", "e", "i", "i", "o", "u", "a", "a", "a", "e", "e", "e", "i", "i", "o",
                         "a", "a", "a", "e", "e", "e", "i", "i", "o", "u", "a", "a", "a", "e", "e", "e", "i", "i", "o",
                         "a", "a", "e", "e", "i", "o", "a", "a", "a", "e", "e", "e", "i", "i", "o",
                         "ai", "oi", "oui", "au", "œu", "ou"
                 },
-                new String[]{
+                new string[]{
                         "ai", "aie", "aou", "eau", "oi", "oui", "oie", "eu", "eu",
                         "à", "â", "ai", "aî", "aï", "aie", "aou", "aoû", "au", "ay", "e", "é", "ée", "è",
                         "ê", "eau", "ei", "eî", "eu", "eû", "i", "î", "ï", "o", "ô", "oe", "oê", "oë", "œu",
@@ -751,16 +893,16 @@ Clojure script to mass-convert most of this:
                         "a", "a", "e", "e", "i", "o", "a", "a", "a", "e", "e", "e", "i", "i", "o",
                         "ai", "ai", "eau", "oi", "oi", "oui", "eu", "au", "au", "ei", "ei", "oe", "oe", "ou", "ou", "ue"
                 },
-                new String[]{"tr", "ch", "m", "b", "b", "br", "j", "j", "j", "j", "g", "t", "t", "t", "c", "d", "f", "f", "h", "n", "l", "l",
+                new string[]{"tr", "ch", "m", "b", "b", "br", "j", "j", "j", "j", "g", "t", "t", "t", "c", "d", "f", "f", "h", "n", "l", "l",
                         "s", "s", "s", "r", "r", "r", "v", "v", "p", "pl", "pr", "bl", "br", "dr", "gl", "gr"},
-                new String[]{"cqu", "gu", "qu", "rqu", "nt", "ng", "ngu", "mb", "ll", "nd", "ndr", "nct", "st",
+                new string[]{"cqu", "gu", "qu", "rqu", "nt", "ng", "ngu", "mb", "ll", "nd", "ndr", "nct", "st",
                         "xt", "mbr", "pl", "g", "gg", "ggr", "gl", "bl", "j", "gn",
                         "m", "m", "mm", "v", "v", "f", "f", "f", "ff", "b", "b", "bb", "d", "d", "dd", "s", "s", "s", "ss", "ss", "ss",
                         "cl", "cr", "ng", "ç", "ç", "rç", "rd", "lg", "rg"},
-                new String[]{"rt", "ch", "m", "b", "b", "lb", "t", "t", "t", "t", "c", "d", "f", "f", "n", "n", "l", "l",
+                new string[]{"rt", "ch", "m", "b", "b", "lb", "t", "t", "t", "t", "c", "d", "f", "f", "n", "n", "l", "l",
                         "s", "s", "s", "r", "r", "p", "rd", "ff", "ss", "ll"
                 },
-                new String[]{"e", "e", "e", "e", "e", "é", "é", "er", "er", "er", "er", "er", "es", "es", "es", "es", "es", "es",
+                new string[]{"e", "e", "e", "e", "e", "é", "é", "er", "er", "er", "er", "er", "es", "es", "es", "es", "es", "es",
                         "e", "e", "e", "e", "e", "é", "é", "er", "er", "er", "er", "er", "er", "es", "es", "es", "es", "es",
                         "e", "e", "e", "e", "e", "é", "é", "é", "er", "er", "er", "er", "er", "es", "es", "es", "es", "es",
                         "ent", "em", "en", "en", "aim", "ain", "an", "oin", "ien", "iere", "ors", "anse",
@@ -775,31 +917,31 @@ Clojure script to mass-convert most of this:
                 Array.Empty<string>(), new int[] { 1, 2, 3 }, new double[] { 15, 7, 2 }, 0.35, 1.0, 0.0, 0.4, null, true).Register("French");
 
         public static readonly LanguageGen RUSSIAN_ROMANIZED = new LanguageGen(
-                new String[] { "a", "e", "e", "i", "i", "o", "u", "ie", "y", "e", "iu", "ia", "y", "a", "a", "o", "u" },
+                new string[] { "a", "e", "e", "i", "i", "o", "u", "ie", "y", "e", "iu", "ia", "y", "a", "a", "o", "u" },
                 Array.Empty<string>(),
-                new String[]{"b", "v", "g", "d", "k", "l", "p", "r", "s", "t", "f", "kh", "ts",
+                new string[]{"b", "v", "g", "d", "k", "l", "p", "r", "s", "t", "f", "kh", "ts",
                         "b", "v", "g", "d", "k", "l", "p", "r", "s", "t", "f", "kh", "ts",
                         "b", "v", "g", "d", "k", "l", "p", "r", "s", "t", "f",
                         "zh", "m", "n", "z", "ch", "sh", "shch",
                         "br", "sk", "tr", "bl", "gl", "kr", "gr"},
-                new String[] { "bl", "br", "pl", "dzh", "tr", "gl", "gr", "kr" },
-                new String[]{"b", "v", "g", "d", "zh", "z", "k", "l", "m", "n", "p", "r", "s", "t", "f", "kh", "ts", "ch", "sh",
+                new string[] { "bl", "br", "pl", "dzh", "tr", "gl", "gr", "kr" },
+                new string[]{"b", "v", "g", "d", "zh", "z", "k", "l", "m", "n", "p", "r", "s", "t", "f", "kh", "ts", "ch", "sh",
                         "v", "f", "sk", "sk", "sk", "s", "b", "d", "d", "n", "r", "r"},
-                new String[] { "odka", "odna", "usk", "ask", "usky", "ad", "ar", "ovich", "ev", "ov", "of", "agda", "etsky", "ich", "on", "akh", "iev", "ian" },
+                new string[] { "odka", "odna", "usk", "ask", "usky", "ad", "ar", "ovich", "ev", "ov", "of", "agda", "etsky", "ich", "on", "akh", "iev", "ian" },
                 Array.Empty<string>(), new int[] { 1, 2, 3, 4, 5, 6 }, new double[] { 4, 5, 6, 5, 3, 1 }, 0.1, 0.2, 0.0, 0.12, null, true).Register("Russian Romanized");
 
         public static readonly LanguageGen RUSSIAN_AUTHENTIC = new LanguageGen(
-                new String[] { "а", "е", "ё", "и", "й", "о", "у", "ъ", "ы", "э", "ю", "я", "ы", "а", "а", "о", "у" },
+                new string[] { "а", "е", "ё", "и", "й", "о", "у", "ъ", "ы", "э", "ю", "я", "ы", "а", "а", "о", "у" },
                 Array.Empty<string>(),
-                new String[]{"б", "в", "г", "д", "к", "л", "п", "р", "с", "т", "ф", "х", "ц",
+                new string[]{"б", "в", "г", "д", "к", "л", "п", "р", "с", "т", "ф", "х", "ц",
                         "б", "в", "г", "д", "к", "л", "п", "р", "с", "т", "ф", "х", "ц",
                         "б", "в", "г", "д", "к", "л", "п", "р", "с", "т", "ф",
                         "ж", "м", "н", "з", "ч", "ш", "щ",
                         "бр", "ск", "тр", "бл", "гл", "кр", "гр"},
-                new String[] { "бл", "бр", "пл", "дж", "тр", "гл", "гр", "кр" },
-                new String[]{"б", "в", "г", "д", "ж", "з", "к", "л", "м", "н", "п", "р", "с", "т", "ф", "х", "ц", "ч", "ш",
+                new string[] { "бл", "бр", "пл", "дж", "тр", "гл", "гр", "кр" },
+                new string[]{"б", "в", "г", "д", "ж", "з", "к", "л", "м", "н", "п", "р", "с", "т", "ф", "х", "ц", "ч", "ш",
                         "в", "ф", "ск", "ск", "ск", "с", "б", "д", "д", "н", "р", "р"},
-                new String[] { "одка", "одна", "уск", "аск", "ускы", "ад", "ар", "овйч", "ев", "ов", "оф", "агда", "ёцкы", "йч", "он", "ах", "ъв", "ян" },
+                new string[] { "одка", "одна", "уск", "аск", "ускы", "ад", "ар", "овйч", "ев", "ов", "оф", "агда", "ёцкы", "йч", "он", "ах", "ъв", "ян" },
                 Array.Empty<string>(), new int[] { 1, 2, 3, 4, 5, 6 }, new double[] { 4, 5, 6, 5, 3, 1 }, 0.1, 0.2, 0.0, 0.12, null, true).Register("Russian Authentic");
 
 
@@ -2196,8 +2338,7 @@ Clojure script to mass-convert most of this:
                         "nb", "nd", "nk", "nf", "tn", "mn", "np", "nkh", "nsh", "nzh", "nh", "nv", "nw", "nt", "nz",
                         "zb", "zd", "zk", "zf", "zt", "nz", "zp", "zkh", "zhz", "dz",  "hz", "zv", "zw", "tz",
                     },
-                    new string[]{
-                    },
+                    Array.Empty<string>(),
                     new string[]{"ip", "ik", "id", "iz", "ir", "ikh", "ish", "is", "ith", "iv", "in", "im", "ib", "if",
                         "ep", "ek", "ed", "ez", "er", "ekh", "esh", "es", "eth", "ev", "en", "em", "eb", "ef",
                         "up", "ud", "uz", "ur", "ush", "us", "uth", "uv", "un", "um", "ub", "uf",
@@ -2265,8 +2406,7 @@ Clojure script to mass-convert most of this:
                         "u", "u","u", "u","u", "u","u", "u", "u", "u", "uu", "úú", "úu", "ú",
                         "ia", "ua", "ia", "ua", "ia", "ua", "ia", "ua", "ía", "úa"
                     },
-                    new string[]{
-                    },
+                    Array.Empty<string>(),
                     new string[]{
                         "b", "p", "s", "x", "k", "l", "m", "n", "d", "t", "h", "w", "ch", "sh",
                         "k", "k", "m", "k", "k", "m", "d", "s"},
@@ -2289,8 +2429,7 @@ Clojure script to mass-convert most of this:
                     new string[]{"b", "p", "s", "x", "k", "l", "m", "n", "d", "t", "h", "w", "ch", "sh",
                         "k", "k", "m", "k", "k", "m", "d", "s"
                     },
-                    new string[]{
-                    },
+                    Array.Empty<string>(),
                     new string[] { "-" }, new int[] { 1, 2, 3, 4, 5 }, new double[] { 5, 7, 6, 4, 2 }, 0.4, 1.0, 0.12, 0.0, null, true).Register("Crow");
 
         public static readonly LanguageGen IMP = new LanguageGen(
@@ -2301,8 +2440,7 @@ Clojure script to mass-convert most of this:
                         "u", "u", "u", "u", "u", "u", "u", "u", "ú", "ú", "ú", "uu", "uu", "uu", "úú", "úú", "úúú", "úúú",
                         "ia", "ia", "ia", "ui", "ui"
                     },
-                    new string[]{
-                    },
+                    Array.Empty<string>(),
                     new string[]{
                         "s", "k", "d", "t", "h", "f", "g", "r", "r", "r", "r", "gh", "ch",
                         "sk", "st", "skr", "str", "kr", "dr", "tr", "fr", "gr"
@@ -2314,8 +2452,7 @@ Clojure script to mass-convert most of this:
                     new string[]{
                         "s", "k", "d", "t", "g", "gh", "ch"
                     },
-                    new string[]{
-                    },
+                    Array.Empty<string>(),
                     new string[] { "-" }, new int[] { 1, 2, 3 }, new double[] { 7, 11, 4 }, 0.2, 0.5, 0.4, 0.0, null, true).Register("Imp");
 
         public static readonly LanguageGen MALAY = new LanguageGen(
@@ -2543,8 +2680,7 @@ Clojure script to mass-convert most of this:
                         "a", "a", "a", "a", "a", "a", "a", "a", "a",
                         "ah", "ah", "ah", "ah", "ah", "ah", "ah",
                     },
-                    new string[]{
-                    },
+                    Array.Empty<string>(),
                     new string[]{
                         "g", "k", "h", "l", "n", "qu", "s", "d", "t", "dl", "ts", "w", "y",
                         "g", "k", "h", "l", "n", "qu", "s", "d", "t", "dl", "ts", "w", "y",
@@ -2577,8 +2713,7 @@ Clojure script to mass-convert most of this:
                     new string[]{
                         "s"
                     },
-                    new string[]{
-                    },
+                    Array.Empty<string>(),
                     Array.Empty<string>(), new int[] { 1, 2, 3, 4 }, new double[] { 4, 7, 6, 2 }, 0.3, 0.96, 0.0, 0.0, null, true).Register("Cherokee Romanized");
 
         public static readonly LanguageGen VIETNAMESE = new LanguageGen(new string[]{
@@ -2670,6 +2805,9 @@ Clojure script to mass-convert most of this:
                         "b", "c", "d", "m", "n", "ng", "p",
                     }, Array.Empty<string>(), Array.Empty<string>(), new int[] { 1, 2, 3 }, new double[] { 37.0, 3.0, 1.0 },
                     0.04, 0.4, 0.0, 0.0, GenericSanityChecks, true).Register("Vietnamese");
+
+        public static readonly LanguageGen FANTASY = MALAY.Mix(2, (FRENCH, 4), (SIMPLISH, 1), (JAPANESE_ROMANIZED, 2), (ELF, 2), (GREEK_ROMANIZED, 1), (CELESTIAL, 1))
+            .RemoveAccents().Register("Fantasy");
         #endregion LANGUAGES
     }
 }

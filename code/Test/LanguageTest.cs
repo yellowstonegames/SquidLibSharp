@@ -27,8 +27,8 @@ namespace Test {
         }
         static void Main(string[] _) {
             LanguageTest test = new LanguageTest();
-            test.TestSupportedLanguages();
-            //test.TestSentences();
+            //test.TestSupportedLanguages();
+            test.TestSentences();
         }
     }
 }
