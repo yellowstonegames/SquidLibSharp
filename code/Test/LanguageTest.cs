@@ -6,10 +6,17 @@ using SquidLib.SquidText;
 
 namespace Test {
     public class LanguageTest {
+        public void TestSupportedLanguages() {
+            int registered = LanguageGen.Registry.Count;
+            for (int i = 1; i < registered; i++) {
+                LanguageGen lang = LanguageGen.Registry[Value.At, i];
+                Console.WriteLine(lang.Name);
+            }
+        }
         public void TestSentences() {
             RNG random = new RNG("Language!");
             int registered = LanguageGen.Registry.Count;
-            for(int i = 1; i < registered; i++) {
+            for (int i = 1; i < registered; i++) {
                 LanguageGen lang = LanguageGen.Registry[Value.At, i];
                 Console.WriteLine("===============================================================================");
                 Console.WriteLine(lang.Name.ToUpperInvariant());
@@ -20,7 +27,8 @@ namespace Test {
         }
         static void Main(string[] _) {
             LanguageTest test = new LanguageTest();
-            test.TestSentences();
+            test.TestSupportedLanguages();
+            //test.TestSentences();
         }
     }
 }

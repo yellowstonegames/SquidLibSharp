@@ -595,52 +595,58 @@ namespace SquidLib.SquidText {
         }
 
         #region LANGUAGES
-        /* Goal languages to implement, in the order they should be registered:
-Lovecraft
-English
-Greek Romanized
-Greek Authentic
-French
-Russian Romanized
-Russian Authentic
-Japanese Romanized
-Swahili
-Somali
-Hindi Romanized
-Arabic Romanized
-Inuktitut
-Norse
-Nahuatl
-Mongolian
+        /*
+Goal languages to implement, in the order they should be registered:
+
+  GOAL                              IMPLEMENTED
+=============================     ================================
+Lovecraft                         Lovecraft
+English                           English
+Greek Romanized                   Greek Romanized
+Greek Authentic                   Greek Authentic
+French                            French
+Russian Romanized                 Russian Romanized
+Russian Authentic                 Russian Authentic
+Japanese Romanized                Japanese Romanized
+Swahili                           Swahili
+Somali                            Somali
+Hindi Romanized                   Hindi Romanized
+Arabic Romanized                  Arabic Romanized
+Inuktitut                         Inuktitut
+Norse                             Norse
+Nahuatl                           Nahuatl
+Mongolian                         Mongolian
 Fantasy
 Fancy Fantasy
-Goblin
-Elf
-Demonic
-Infernal
-Simplish
-Alien A
-Korean Romanized
-Alien E
-Alien I
-Alien O
-Alien U
-Dragon
-Kobold
-Insect
-Maori
-Spanish
-Deep Speech
-Norse Simplified
-Hletkip
-Ancient Egyptian
-Crow
-Imp
-Malay
-Celestial
-Chinese Romanized
-Cherokee Romanized
-Vietnamese
+Goblin                            Goblin
+Elf                               Elf
+Demonic                           Demonic
+Infernal                          Infernal
+Simplish                          Simplish
+Alien A                           Alien A
+Korean Romanized                  Korean Romanized
+Alien E                           Alien E
+Alien I                           Alien I
+Alien O                           Alien O
+Alien U                           Alien U
+Dragon                            Dragon
+Kobold                            Kobold
+Insect                            Insect
+Maori                             Maori
+Spanish                           Spanish
+Deep Speech                       Deep Speech
+Norse Simplified                  Norse Simplified
+Hletkip                           Hletkip
+Ancient Egyptian                  Ancient Egyptian
+Crow                              Crow
+Imp                               Imp
+Malay                             Malay
+Celestial                         Celestial
+Chinese Romanized                 Chinese Romanized
+Cherokee Romanized                Cherokee Romanized
+Vietnamese                        Vietnamese
+
+Only Fantasy and Fancy Fantasy left.
          */
         /*
 Clojure script to mass-convert most of this:
@@ -1974,6 +1980,12 @@ Clojure script to mass-convert most of this:
                     new string[] { "iamat", "at", "ut", "ok", "iok", "ioz", "ez", "ion", "ioth", "aaz", "iel" },
                     Array.Empty<string>(), new int[] { 2, 3, 4, 5 }, new double[] { 2, 7, 10, 3 }, 0.14, 0.04, 0.0, 0.11, GenericSanityChecks, true).Register("Dragon");
 
+        public static readonly LanguageGen KOBOLD = new LanguageGen(
+            DRAGON.OpeningVowels, DRAGON.MidVowels, DRAGON.OpeningConsonants, DRAGON.MidConsonants, DRAGON.ClosingConsonants,
+            new string[] { "ik", "ak", "ek", "at", "it", "ik", "ak", "ek", "at", "it", "ik", "ak", "ek", "at", "it", "et", "ut", "ark", "irk", "erk" },
+            Array.Empty<string>(), new int[] { 1, 2, 3 }, new double[] { 5, 11, 1 },
+            0.1, 0.0, 0.0, 0.22, GenericSanityChecks, true).Register("Kobold");
+
         public static readonly LanguageGen INSECT = new LanguageGen(
                     new string[]{
                         "a", "a", "a", "a", "a", "a",
@@ -2658,8 +2670,6 @@ Clojure script to mass-convert most of this:
                         "b", "c", "d", "m", "n", "ng", "p",
                     }, Array.Empty<string>(), Array.Empty<string>(), new int[] { 1, 2, 3 }, new double[] { 37.0, 3.0, 1.0 },
                     0.04, 0.4, 0.0, 0.0, GenericSanityChecks, true).Register("Vietnamese");
-
-
         #endregion LANGUAGES
     }
 }
