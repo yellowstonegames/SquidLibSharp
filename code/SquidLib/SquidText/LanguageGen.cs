@@ -355,7 +355,7 @@ namespace SquidLib.SquidText {
 
         public LanguageGen RemoveAccents() {
 
-            String[] ov =ArrayTools.Copy(OpeningVowels),
+            string[] ov = ArrayTools.Copy(OpeningVowels),
                     mv = ArrayTools.Copy(MidVowels),
                     oc = ArrayTools.Copy(OpeningConsonants),
                     mc = ArrayTools.Copy(MidConsonants),
@@ -407,7 +407,7 @@ namespace SquidLib.SquidText {
             languages[0] = mixer;
             total += weights[0] = myWeight;
             for (int i = 0; i < pairs.Length; i++) {
-                languages[i+1] = pairs[i].lang.RemoveModifiers();
+                languages[i + 1] = pairs[i].lang.RemoveModifiers();
                 total += weights[i + 1] = pairs[i].weight;
             }
             if (total == 0)
@@ -814,7 +814,7 @@ namespace SquidLib.SquidText {
             vowelInfluence = Math.Max(0.0, Math.Min(vowelInfluence, 1.0));
             consonantInfluence = Math.Max(0.0, Math.Min(consonantInfluence, 1.0));
             RNG rng = new RNG(SeededHash.Andrealphus.Hash64(Name), (ulong)BitConverter.DoubleToInt64Bits(vowelInfluence) ^ (ulong)BitConverter.DoubleToInt64Bits(consonantInfluence));
-            String[] ov = AccentVowels(rng, OpeningVowels, vowelInfluence),
+            string[] ov = AccentVowels(rng, OpeningVowels, vowelInfluence),
                     mv = AccentVowels(rng, MidVowels, vowelInfluence),
                     oc = AccentConsonants(rng, OpeningConsonants, consonantInfluence),
                     mc = AccentConsonants(rng, MidConsonants, consonantInfluence),
@@ -838,11 +838,11 @@ namespace SquidLib.SquidText {
         }
 
         private string[] AccentVowels(RNG rng, string[] me, double influence) {
-            String[] ret = new String[1000];
+            string[] ret = new string[1000];
             int otherCount = (int)(1000 * influence);
             int idx;
             if (me.Length > 0) {
-                String[] tmp = new String[me.Length];
+                string[] tmp = new string[me.Length];
                 rng.Shuffle(me, tmp);
                 for (idx = 0; idx < otherCount; idx++) {
                     ret[idx] = tmp[idx % tmp.Length]
@@ -862,22 +862,22 @@ namespace SquidLib.SquidText {
         }
 
         private string[] AccentConsonants(RNG rng, string[] me, double influence) {
-            String[] ret = new String[1000];
+            string[] ret = new string[1000];
             int otherCount = (int)(1000 * influence);
             int idx;
             if (me.Length > 0) {
-                String[] tmp = new String[me.Length];
+                string[] tmp = new string[me.Length];
                 rng.Shuffle(me, tmp);
                 for (idx = 0; idx < otherCount; idx++) {
                     ret[idx] = tmp[idx % tmp.Length]
-                            .Replace('c', rng.RandomElement(accentedConsonants[1] ))
-                            .Replace('d', rng.RandomElement(accentedConsonants[2] ))
-                            .Replace('f', rng.RandomElement(accentedConsonants[3] ))
-                            .Replace('g', rng.RandomElement(accentedConsonants[4] ))
-                            .Replace('h', rng.RandomElement(accentedConsonants[5] ))
-                            .Replace('j', rng.RandomElement(accentedConsonants[6] ))
-                            .Replace('k', rng.RandomElement(accentedConsonants[7] ))
-                            .Replace('l', rng.RandomElement(accentedConsonants[8] ))
+                            .Replace('c', rng.RandomElement(accentedConsonants[1]))
+                            .Replace('d', rng.RandomElement(accentedConsonants[2]))
+                            .Replace('f', rng.RandomElement(accentedConsonants[3]))
+                            .Replace('g', rng.RandomElement(accentedConsonants[4]))
+                            .Replace('h', rng.RandomElement(accentedConsonants[5]))
+                            .Replace('j', rng.RandomElement(accentedConsonants[6]))
+                            .Replace('k', rng.RandomElement(accentedConsonants[7]))
+                            .Replace('l', rng.RandomElement(accentedConsonants[8]))
                             .Replace('n', rng.RandomElement(accentedConsonants[10]))
                             .Replace('r', rng.RandomElement(accentedConsonants[13]))
                             .Replace('s', rng.RandomElement(accentedConsonants[14]))
@@ -896,11 +896,11 @@ namespace SquidLib.SquidText {
             return ret;
         }
 
-        private string[] AccentBoth(IRNG rng, String[] me, double vowelInfluence, double consonantInfluence) {
-            String[] ret = new String[1000];
+        private string[] AccentBoth(IRNG rng, string[] me, double vowelInfluence, double consonantInfluence) {
+            string[] ret = new string[1000];
             int idx;
             if (me.Length > 0) {
-                String[] tmp = new String[me.Length];
+                string[] tmp = new string[me.Length];
                 rng.Shuffle(me, tmp);
                 for (idx = 0; idx < 1000; idx++) {
                     bool subVowel = rng.NextDouble() < vowelInfluence, subCon = rng.NextDouble() < consonantInfluence;
@@ -968,9 +968,9 @@ namespace SquidLib.SquidText {
 
         #region LANGUAGES
         /*
-Goal languages to implement, in the order they should be registered:
+Comparison of the ordering of JVM SquidLib's FakeLanguageGen and SquidLibSharp's LanguageGen:
 
-  GOAL                              IMPLEMENTED
+  JVM                               .NET
 =============================     ================================
 Lovecraft                         Lovecraft
 English                           English
@@ -988,39 +988,38 @@ Inuktitut                         Inuktitut
 Norse                             Norse
 Nahuatl                           Nahuatl
 Mongolian                         Mongolian
-Fantasy
-Fancy Fantasy
-Goblin                            Goblin
-Elf                               Elf
-Demonic                           Demonic
-Infernal                          Infernal
-Simplish                          Simplish
-Alien A                           Alien A
-Korean Romanized                  Korean Romanized
-Alien E                           Alien E
-Alien I                           Alien I
-Alien O                           Alien O
-Alien U                           Alien U
-Dragon                            Dragon
-Kobold                            Kobold
-Insect                            Insect
-Maori                             Maori
-Spanish                           Spanish
-Deep Speech                       Deep Speech
-Norse Simplified                  Norse Simplified
-Hletkip                           Hletkip
-Ancient Egyptian                  Ancient Egyptian
-Crow                              Crow
-Imp                               Imp
-Malay                             Malay
-Celestial                         Celestial
-Chinese Romanized                 Chinese Romanized
-Cherokee Romanized                Cherokee Romanized
-Vietnamese                        Vietnamese
-                                  Fantasy
-                                  Fancy Fantasy
+Fantasy                           Goblin
+Fancy Fantasy                     Elf
+Goblin                            Demonic
+Elf                               Infernal
+Demonic                           Simplish
+Infernal                          Alien A
+Simplish                          Korean Romanized
+Alien A                           Alien E
+Korean Romanized                  Alien I
+Alien E                           Alien O
+Alien I                           Alien U
+Alien O                           Dragon
+Alien U                           Kobold
+Dragon                            Insect
+Kobold                            Maori
+Insect                            Spanish
+Maori                             Deep Speech
+Spanish                           Norse Simplified
+Deep Speech                       Hletkip
+Norse Simplified                  Ancient Egyptian
+Hletkip                           Crow
+Ancient Egyptian                  Imp
+Crow                              Malay
+Imp                               Celestial
+Malay                             Chinese Romanized
+Celestial                         Cherokee Romanized
+Chinese Romanized                 Vietnamese
+Cherokee Romanized                Fantasy
+Vietnamese                        Fancy Fantasy
 
-Only Fancy Fantasy left.
+Fantasy and Fancy Fantasy are out of order, which is required because they combine other languages and those languages must be defined first.
+All of the languages are implemented, but getting cross-VM output to be identical would be hard, and isn't currently possible with this code.
          */
         /*
 Clojure script to mass-convert most of this:
@@ -3040,6 +3039,9 @@ Clojure script to mass-convert most of this:
 
         public static readonly LanguageGen FANTASY = MALAY.Mix(2, (FRENCH, 4), (SIMPLISH, 1), (JAPANESE_ROMANIZED, 2), (ELF, 2), (GREEK_ROMANIZED, 1), (CELESTIAL, 1))
             .RemoveAccents().Register("Fantasy");
+
+        public static readonly LanguageGen FANCY_FANTASY = FANTASY.AddAccents(0.47, 0.07).Register("Fancy Fantasy");
+
         #endregion LANGUAGES
     }
 }
