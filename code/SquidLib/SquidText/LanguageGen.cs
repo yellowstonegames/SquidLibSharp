@@ -152,6 +152,80 @@ namespace SquidLib.SquidText {
                     new Replacer("ё", "е"),
                     new Replacer("й", "и"),
             };
+        private static readonly char[][] accentedVowels = new char[][]{
+            new char[]{'a', 'à', 'á', 'â', 'ä', 'ā', 'ă', 'ã', 'å', 'ą', 'ǻ'},
+            new char[]{'e', 'è', 'é', 'ê', 'ë', 'ē', 'ĕ', 'ė', 'ę', 'ě'},
+            new char[]{'i', 'ì', 'í', 'î', 'ï', 'ī', 'ĭ', 'ĩ', 'į', 'ı',},
+            new char[]{'o', 'ò', 'ó', 'ô', 'ö', 'ō', 'ŏ', 'õ', 'ø', 'ő', 'ǿ'},
+            new char[]{'u', 'ù', 'ú', 'û', 'ü', 'ū', 'ŭ', 'ũ', 'ů', 'ű', 'ų'}
+    },
+        accentedConsonants = new char[][]
+                {
+                            new char[]{
+                                    'b'
+                            },
+                            new char[]{
+                                    'c', 'ç', 'ć', 'ĉ', 'ċ', 'č',
+                            },
+                            new char[]{
+                                    'd', 'þ', 'ð', 'ď', 'đ',
+                            },
+                            new char[]{
+                                    'f'
+                            },
+                            new char[]{
+                                    'g', 'ĝ', 'ğ', 'ġ', 'ģ',
+                            },
+                            new char[]{
+                                    'h', 'ĥ', 'ħ',
+                            },
+                            new char[]{
+                                    'j', 'ĵ', 'ȷ',
+                            },
+                            new char[]{
+                                    'k', 'ķ',
+                            },
+                            new char[]{
+                                    'l', 'ĺ', 'ļ', 'ľ', 'ŀ', 'ł',
+                            },
+                            new char[]{
+                                    'm',
+                            },
+                            new char[]{
+                                    'n', 'ñ', 'ń', 'ņ', 'ň', 'ŋ',
+                            },
+                            new char[]{
+                                    'p',
+                            },
+                            new char[]{
+                                    'q',
+                            },
+                            new char[]{
+                                    'r', 'ŕ', 'ŗ', 'ř',
+                            },
+                            new char[]{
+                                    's', 'ś', 'ŝ', 'ş', 'š', 'ș',
+                            },
+                            new char[]{
+                                    't', 'ţ', 'ť', 'ț',
+                            },
+                            new char[]{
+                                    'v',
+                            },
+                            new char[]{
+                                    'w', 'ŵ', 'ẁ', 'ẃ', 'ẅ',
+                            },
+                            new char[]{
+                                    'x',
+                            },
+                            new char[]{
+                                    'y', 'ý', 'ÿ', 'ŷ', 'ỳ',
+                            },
+                            new char[]{
+                                    'z', 'ź', 'ż', 'ž',
+                            },
+                };
+
 
         private static readonly StringBuilder sb = new StringBuilder(20);
         private static readonly StringBuilder ender = new StringBuilder(12);
@@ -385,7 +459,7 @@ namespace SquidLib.SquidText {
             lang.Name = (otherInfluence > 0.5 ? other.Name + "/" + Name : Name + "/" + other.Name);
             return lang;
         }
-        private string[] Merge1000(RNG rng, string[] me, string[] other, double otherInfluence) {
+        private static string[] Merge1000(RNG rng, string[] me, string[] other, double otherInfluence) {
             if (other.Length <= 0 && me.Length <= 0)
                 return Array.Empty<string>();
             string[] ret = new string[1000];
@@ -736,6 +810,162 @@ namespace SquidLib.SquidText {
             return cp;
         }
 
+        public LanguageGen AddAccents(double vowelInfluence, double consonantInfluence) {
+            vowelInfluence = Math.Max(0.0, Math.Min(vowelInfluence, 1.0));
+            consonantInfluence = Math.Max(0.0, Math.Min(consonantInfluence, 1.0));
+            RNG rng = new RNG(SeededHash.Andrealphus.Hash64(Name), (ulong)BitConverter.DoubleToInt64Bits(vowelInfluence) ^ (ulong)BitConverter.DoubleToInt64Bits(consonantInfluence));
+            String[] ov = AccentVowels(rng, OpeningVowels, vowelInfluence),
+                    mv = AccentVowels(rng, MidVowels, vowelInfluence),
+                    oc = AccentConsonants(rng, OpeningConsonants, consonantInfluence),
+                    mc = AccentConsonants(rng, MidConsonants, consonantInfluence),
+                    cc = AccentConsonants(rng, ClosingConsonants, consonantInfluence),
+                    cs = AccentBoth(rng, ClosingSyllables, vowelInfluence, consonantInfluence);
+
+            int[] syllableCounts = new int[SyllableFrequencies.Length];
+            double[] syllableFrequencies = ArrayTools.Copy(SyllableFrequencies);
+            for (int i = 0; i < syllableCounts.Length; i++) {
+                syllableCounts[i] = i + 1;
+            }
+
+            LanguageGen lang = new LanguageGen(ov, mv, oc, mc, cc, cs, VowelSplitters, syllableCounts, syllableFrequencies,
+                    VowelStartFrequency,
+                    VowelEndFrequency,
+                    VowelSplitFrequency,
+                    SyllableEndFrequency, SanityChecks, Clean);
+            lang.Modifiers.AddRange(Modifiers);
+            lang.Name = Name + "-Bònüs";
+            return lang;
+        }
+
+        private string[] AccentVowels(RNG rng, string[] me, double influence) {
+            String[] ret = new String[1000];
+            int otherCount = (int)(1000 * influence);
+            int idx;
+            if (me.Length > 0) {
+                String[] tmp = new String[me.Length];
+                rng.Shuffle(me, tmp);
+                for (idx = 0; idx < otherCount; idx++) {
+                    ret[idx] = tmp[idx % tmp.Length]
+                        .Replace('a', rng.RandomElement(accentedVowels[0]))
+                        .Replace('e', rng.RandomElement(accentedVowels[1]))
+                        .Replace('i', rng.RandomElement(accentedVowels[2]))
+                        .Replace('o', rng.RandomElement(accentedVowels[3]))
+                        .Replace('u', rng.RandomElement(accentedVowels[4]));
+                    ret[idx] = repeats.Replace(ret[idx], rng.RandomElement(me));
+                }
+                for (; idx < 1000; idx++) {
+                    ret[idx] = tmp[idx % tmp.Length];
+                }
+            } else
+                return Array.Empty<string>();
+            return ret;
+        }
+
+        private string[] AccentConsonants(RNG rng, string[] me, double influence) {
+            String[] ret = new String[1000];
+            int otherCount = (int)(1000 * influence);
+            int idx;
+            if (me.Length > 0) {
+                String[] tmp = new String[me.Length];
+                rng.Shuffle(me, tmp);
+                for (idx = 0; idx < otherCount; idx++) {
+                    ret[idx] = tmp[idx % tmp.Length]
+                            .Replace('c', rng.RandomElement(accentedConsonants[1] ))
+                            .Replace('d', rng.RandomElement(accentedConsonants[2] ))
+                            .Replace('f', rng.RandomElement(accentedConsonants[3] ))
+                            .Replace('g', rng.RandomElement(accentedConsonants[4] ))
+                            .Replace('h', rng.RandomElement(accentedConsonants[5] ))
+                            .Replace('j', rng.RandomElement(accentedConsonants[6] ))
+                            .Replace('k', rng.RandomElement(accentedConsonants[7] ))
+                            .Replace('l', rng.RandomElement(accentedConsonants[8] ))
+                            .Replace('n', rng.RandomElement(accentedConsonants[10]))
+                            .Replace('r', rng.RandomElement(accentedConsonants[13]))
+                            .Replace('s', rng.RandomElement(accentedConsonants[14]))
+                            .Replace('t', rng.RandomElement(accentedConsonants[15]))
+                            .Replace('w', rng.RandomElement(accentedConsonants[17]))
+                            .Replace('y', rng.RandomElement(accentedConsonants[19]))
+                            .Replace('z', rng.RandomElement(accentedConsonants[20]));
+
+                    ret[idx] = repeats.Replace(ret[idx], rng.RandomElement(me));
+                }
+                for (; idx < 1000; idx++) {
+                    ret[idx] = tmp[idx % tmp.Length];
+                }
+            } else
+                return Array.Empty<string>();
+            return ret;
+        }
+
+        private string[] AccentBoth(IRNG rng, String[] me, double vowelInfluence, double consonantInfluence) {
+            String[] ret = new String[1000];
+            int idx;
+            if (me.Length > 0) {
+                String[] tmp = new String[me.Length];
+                rng.Shuffle(me, tmp);
+                for (idx = 0; idx < 1000; idx++) {
+                    bool subVowel = rng.NextDouble() < vowelInfluence, subCon = rng.NextDouble() < consonantInfluence;
+                    if (subVowel && subCon) {
+                        ret[idx] = tmp[idx % tmp.Length]
+                        .Replace('a', rng.RandomElement(accentedVowels[0]))
+                        .Replace('e', rng.RandomElement(accentedVowels[1]))
+                        .Replace('i', rng.RandomElement(accentedVowels[2]))
+                        .Replace('o', rng.RandomElement(accentedVowels[3]))
+                        .Replace('u', rng.RandomElement(accentedVowels[4]))
+
+                            .Replace('c', rng.RandomElement(accentedConsonants[1]))
+                            .Replace('d', rng.RandomElement(accentedConsonants[2]))
+                            .Replace('f', rng.RandomElement(accentedConsonants[3]))
+                            .Replace('g', rng.RandomElement(accentedConsonants[4]))
+                            .Replace('h', rng.RandomElement(accentedConsonants[5]))
+                            .Replace('j', rng.RandomElement(accentedConsonants[6]))
+                            .Replace('k', rng.RandomElement(accentedConsonants[7]))
+                            .Replace('l', rng.RandomElement(accentedConsonants[8]))
+                            .Replace('n', rng.RandomElement(accentedConsonants[10]))
+                            .Replace('r', rng.RandomElement(accentedConsonants[13]))
+                            .Replace('s', rng.RandomElement(accentedConsonants[14]))
+                            .Replace('t', rng.RandomElement(accentedConsonants[15]))
+                            .Replace('w', rng.RandomElement(accentedConsonants[17]))
+                            .Replace('y', rng.RandomElement(accentedConsonants[19]))
+                            .Replace('z', rng.RandomElement(accentedConsonants[20]));
+
+                        ret[idx] = repeats.Replace(ret[idx], rng.RandomElement(me));
+                    } else if (subVowel) {
+                        ret[idx] = tmp[idx % tmp.Length]
+                        .Replace('a', rng.RandomElement(accentedVowels[0]))
+                        .Replace('e', rng.RandomElement(accentedVowels[1]))
+                        .Replace('i', rng.RandomElement(accentedVowels[2]))
+                        .Replace('o', rng.RandomElement(accentedVowels[3]))
+                        .Replace('u', rng.RandomElement(accentedVowels[4]));
+
+                        ret[idx] = repeats.Replace(ret[idx], rng.RandomElement(me));
+                    } else if (subCon) {
+                        ret[idx] = tmp[idx % tmp.Length]
+                            .Replace('c', rng.RandomElement(accentedConsonants[1]))
+                            .Replace('d', rng.RandomElement(accentedConsonants[2]))
+                            .Replace('f', rng.RandomElement(accentedConsonants[3]))
+                            .Replace('g', rng.RandomElement(accentedConsonants[4]))
+                            .Replace('h', rng.RandomElement(accentedConsonants[5]))
+                            .Replace('j', rng.RandomElement(accentedConsonants[6]))
+                            .Replace('k', rng.RandomElement(accentedConsonants[7]))
+                            .Replace('l', rng.RandomElement(accentedConsonants[8]))
+                            .Replace('n', rng.RandomElement(accentedConsonants[10]))
+                            .Replace('r', rng.RandomElement(accentedConsonants[13]))
+                            .Replace('s', rng.RandomElement(accentedConsonants[14]))
+                            .Replace('t', rng.RandomElement(accentedConsonants[15]))
+                            .Replace('w', rng.RandomElement(accentedConsonants[17]))
+                            .Replace('y', rng.RandomElement(accentedConsonants[19]))
+                            .Replace('z', rng.RandomElement(accentedConsonants[20]));
+
+                        ret[idx] = repeats.Replace(ret[idx], rng.RandomElement(me));
+                    } else ret[idx] = tmp[idx % tmp.Length];
+
+                }
+            } else
+                return Array.Empty<string>();
+            return ret;
+        }
+
+
         #region LANGUAGES
         /*
 Goal languages to implement, in the order they should be registered:
@@ -787,8 +1017,10 @@ Celestial                         Celestial
 Chinese Romanized                 Chinese Romanized
 Cherokee Romanized                Cherokee Romanized
 Vietnamese                        Vietnamese
+                                  Fantasy
+                                  Fancy Fantasy
 
-Only Fantasy and Fancy Fantasy left.
+Only Fancy Fantasy left.
          */
         /*
 Clojure script to mass-convert most of this:
