@@ -50,7 +50,7 @@ namespace SquidLib.SquidText {
         /// <summary>
         /// Creates a Modifier that will replace the nth String key in dict with the nth value. Because
         /// of the state of the text at the time modifiers are run, only lower-case letters need to be searched for.
-        /// This overload of replacementTable allows full regex syntax for search and replacement Strings,
+        /// This overload of ReplacementTable allows full regex syntax for search and replacement Strings,
         /// such as searching for "([aeiou])\\1+" to find repeated occurrences of the same vowel, and "$1" in
         /// this example to replace the repeated section with only the first vowel.
         /// The ordering of dict matters if a later search contains an earlier search(the earlier one will be replaced
@@ -72,7 +72,7 @@ namespace SquidLib.SquidText {
         /// <summary>
         /// Creates a Modifier that will replace the (n*2)th String in pairs with the (n*2+1)th value in pairs. Because
         /// of the state of the text at the time modifiers are run, only lower-case letters need to be searched for.
-        /// This overload of replacementTable allows full regex syntax for search and replacement Strings,
+        /// This overload of ReplacementTable allows full regex syntax for search and replacement Strings,
         /// such as searching for "([aeiou])\\1+" to find repeated occurrences of the same vowel, and "$1" in
         /// this example to replace the repeated section with only the first vowel.
         /// The ordering of pairs matters if a later search contains an earlier search(the earlier one will be replaced
@@ -91,6 +91,69 @@ namespace SquidLib.SquidText {
             }
             return new Modifier(alts);
         }
+
+        /// <summary>
+        /// For a character who always pronounces 's', 'ss', and 'sh' as 'th'.
+        /// </summary>
+        public static readonly Modifier LISP = new Modifier("[tţťț]?[sśŝşšș]+h?", "th");
+
+        /// <summary>
+        /// For a character who always lengthens 's' and 'z' sounds not starting a word.
+        /// </summary>
+        public static readonly Modifier HISS = new Modifier("(.)([sśŝşšșzźżž])+", "$1$2$2$2");
+
+        /// <summary>
+        /// For a character who has a 20% chance to repeat a starting consonant or vowel.
+        /// </summary>
+        public static readonly Modifier STUTTER = new Modifier(
+                new Alteration("^([^aàáâãäåæāăąǻǽeèéêëēĕėęěiìíîïĩīĭįıoòóôõöøōŏőœǿuùúûüũūŭůűųyýÿŷỳαοειυωаеёийъыэюяоу]+)", "$1-$1", 0.2),
+                new Alteration("^([aàáâãäåæāăąǻǽeèéêëēĕėęěiìíîïĩīĭįıoòóôõöøōŏőœǿuùúûüũūŭůűųyýÿŷỳαοειυωаеёийъыэюяоу]+)", "$1-$1", 0.2));
+
+        /// <summary>
+        /// For a language that has a 40% chance to repeat a single Latin vowel (a, e, o, or a variant on one of them like å or ö, but not merged letters like æ and œ).
+        /// </summary>
+        public static readonly Modifier DOUBLE_VOWELS = new Modifier(
+                "([^aàáâãäåæāăąǻǽeèéêëēĕėęěiìíîïĩīĭįıoòóôõöøōŏőœǿuùúûüũūŭůűųyýÿŷỳ]|^)"
+                        + "([aàáâãäåāăąǻeèéêëēĕėęěòóôõöøōŏőǿ])"
+                        + "([^aàáâãäåæāăąǻǽeèéêëēĕėęěiìíîïĩīĭįıoòóôõöøōŏőœǿuùúûüũūŭůűųyýÿŷỳ]|$)", "$1$2$2$3", 0.4);
+
+
+        /// <summary>
+        /// For a language that has a 50% chance to repeat a single consonant.
+        /// </summary>
+        public static readonly Modifier DOUBLE_CONSONANTS = new Modifier("([aàáâãäåæāăąǻǽeèéêëēĕėęěiìíîïĩīĭįıoòóôõöøōŏőœǿuùúûüũūŭůűųyýÿŷỳαοειυωаеёийъыэюяоу])" +
+                "([^aàáâãäåæāăąǻǽeèéêëēĕėęěiìíîïĩīĭįıoòóôõöøōŏőœǿuùúûüũūŭůűųyýÿŷỳαοειυωаеёийъыэюяоуqwhjx])" +
+                "([aàáâãäåæāăąǻǽeèéêëēĕėęěiìíîïĩīĭįıoòóôõöøōŏőœǿuùúûüũūŭůűųyýÿŷỳαοειυωаеёийъыэюяоу]|$)", "$1$2$2$3", 0.5);
+
+        /// <summary>
+        /// For a language that never repeats the same letter twice in a row.
+        /// </summary>
+        public static readonly Modifier NO_DOUBLES = new Modifier("(.)\\1", "$1");
+
+        /// <summary>
+        /// Simple changes to merge "ae" into "æ", "oe" into "œ", and any of "aé", "áe", or "áé" into "ǽ".
+        /// </summary>
+        public static readonly Modifier LIGATURES = ReplacementTable("ae", "æ", "oe", "œ", "áe", "ǽ", "aé", "ǽ", "áé", "ǽ");
+
+        /// <summary>
+        /// Simple changes to split "æ" into "ae", "œ" into "oe", and "ǽ" into "áe".
+        /// </summary>
+        public static readonly Modifier SPLIT_LIGATURES = ReplacementTable("æ", "ae", "œ", "oe", "ǽ", "áe");
+
+        /// <summary>
+        /// Some changes that can be applied when sanity checks (which force re-generating a new word) aren't appropriate
+        /// for fixing a word that isn't pronounceable.
+        /// </summary>
+        public static readonly Modifier GENERAL_CLEANUP = ReplacementTable(
+                "[æǽœìíîïĩīĭįıiùúûüũūŭůűųuýÿŷỳy]([æǽœýÿŷỳy])", "$1",
+                "q([ùúûüũūŭůűųu])$", "q$1e",
+                "([ìíîïĩīĭįıi])[ìíîïĩīĭįıi]", "$1",
+                "([æǽœìíîïĩīĭįıiùúûüũūŭůűųuýÿŷỳy])[wŵẁẃẅ]$", "$1",
+                "([ùúûüũūŭůűųu])([òóôõöøōŏőǿo])", "$2$1",
+                "[àáâãäåāăąǻaèéêëēĕėęěeìíîïĩīĭįıiòóôõöøōŏőǿoùúûüũūŭůűųuýÿŷỳy]([æǽœ])", "$1",
+                "([æǽœ])[àáâãäåāăąǻaèéêëēĕėęěeìíîïĩīĭįıiòóôõöøōŏőǿoùúûüũūŭůűųuýÿŷỳy]", "$1",
+                "([wŵẁẃẅ])[wŵẁẃẅ]", "$1",
+                "qq", "q");
 
     }
 }
