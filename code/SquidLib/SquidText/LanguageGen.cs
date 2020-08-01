@@ -89,7 +89,7 @@ namespace SquidLib.SquidText {
         public bool Clean { get; }
         public Regex[] SanityChecks { get; }
         public List<Modifier> Modifiers { get; }
-        internal string Summary { get; set; }
+        public string Summary { get; internal set; }
         public string Name { get; internal set; }
 
 
@@ -945,7 +945,7 @@ namespace SquidLib.SquidText {
             return lang;
         }
 
-        private string[] AccentVowels(RNG rng, string[] me, double influence) {
+        private static string[] AccentVowels(RNG rng, string[] me, double influence) {
             string[] ret = new string[1000];
             int otherCount = (int)(1000 * influence);
             int idx;
@@ -969,7 +969,7 @@ namespace SquidLib.SquidText {
             return ret;
         }
 
-        private string[] AccentConsonants(RNG rng, string[] me, double influence) {
+        private static string[] AccentConsonants(RNG rng, string[] me, double influence) {
             string[] ret = new string[1000];
             int otherCount = (int)(1000 * influence);
             int idx;
@@ -1004,7 +1004,7 @@ namespace SquidLib.SquidText {
             return ret;
         }
 
-        private string[] AccentBoth(IRNG rng, string[] me, double vowelInfluence, double consonantInfluence) {
+        private static string[] AccentBoth(IRNG rng, string[] me, double vowelInfluence, double consonantInfluence) {
             string[] ret = new string[1000];
             int idx;
             if (me.Length > 0) {
@@ -1125,16 +1125,16 @@ namespace SquidLib.SquidText {
             if (rng.NextDouble() < 0.8) {
                 for (int i = 0; i < sz0; i++) {
                     char ac = nextAccents[i], ua = unaccented[i];
-                    String v = "", uas = new string(ua, 1);
+                    string v = "", uas = new string(ua, 1);
                     Replacer rep = new Replacer("\\b([aeiou]*)(" + ua + ")([aeiou]*)\\b", "$1$2$3 $1" + ac + "$3"),
                         repLess = new Replacer("\\b([aeiou]*)(" + ua + ")([aeiou]*)\\b", "$1" + ac + "$3");
                     for (int j = 0; j < p0s; j++) {
-                        String k = parts0[Key.At, j];
+                        string k = parts0[Key.At, j];
                         if (uas.Equals(k)) // uas is never null, always length 1
                             v = parts0[Value.At, j];
                         else {
-                            String current = parts0[Value.At, j];
-                            String[] splits = current.Split(' ');
+                            string current = parts0[Value.At, j];
+                            string[] splits = current.Split(' ');
                             for (int s = 0; s < splits.Length; s++) {
                                 if (forbidden.Contains(uas) && splits[s].Contains(uas))
                                     forbidden.Add(splits[s].Replace(ua, ac));
@@ -1227,20 +1227,21 @@ namespace SquidLib.SquidText {
                     Array.Empty<string>(),
                     Array.Empty<string>(), lengths, chances, vowelHeavy, vowelHeavy * 1.8, 0.0, 0.0, GenericSanityChecks, true);
             lang.Summary = "0#" + seed + "@1";
+            lang.Name = lang.Word(rng, true);
             return lang;
         }
-        private static String[] ProcessParts(IndexedDictionary<string, string> parts, IndexedSet<string> missingSounds,
+        private static string[] ProcessParts(IndexedDictionary<string, string> parts, IndexedSet<string> missingSounds,
                                      IndexedSet<string> forbidden, IRNG rng, double repeatSingleChance,
                                      int preferredLimit) {
             int l, sz = parts.Count;
             List<string> working = new List<string>(sz * 24);
-            String pair;
+            string pair;
             for (int e = 0; e < parts.Count; e++) {
                 string snk = parts[Key.At, e];
                 string snv = parts[Value.At, e];
                 if (missingSounds.Contains(snk))
                     continue;
-                foreach (String t in snv.Split(' ')) {
+                foreach (string t in snv.Split(' ')) {
                     if (forbidden.Contains(t))
                         continue;
                     l = t.Length;
