@@ -337,6 +337,114 @@ namespace SquidLib.SquidText {
 
         private static readonly string[] mid = new string[] { ",", ",", ",", ";" }, end = new string[] { ".", ".", ".", ".", "!", "?", "..." };
 
+        private static readonly IndexedDictionary<string, string> openVowels = new IndexedDictionary<string, string>() {
+        {"a", "a aa ae ai au ea ia oa ua" },
+        {"e", "e ae ea ee ei eo eu ie ue" },
+        {"i", "i ai ei ia ie io iu oi ui" },
+        {"o", "o eo io oa oi oo ou" },
+        {"u", "u au eu iu ou ua ue ui" }
+        };
+
+        private static readonly IndexedDictionary<string, string> openCons = new IndexedDictionary<string, string>() {
+{"b", "b bl br by bw bh"},
+{"bh", "bh"},
+{"c", "c cl cr cz cth sc scl"},
+{"ch", "ch ch chw"},
+{"d", "d dr dz dy dw dh"},
+{"dh", "dh"},
+{"f", "f fl fr fy fw sf"},
+{"g", "g gl gr gw gy gn"},
+{"h", "bh cth ch ch chw dh h hm hy hw kh khl khw ph phl phr sh shl shqu shk shp shm shn shr shw shpl th th thr thl thw"},
+{"j", "j j"},
+{"k", "k kr kl ky kn sk skl shk"},
+{"kh", "kh khl khw"},
+{"l", "bl cl fl gl kl khl l pl phl scl skl spl sl shl shpl tl thl vl zl"},
+{"m", "hm m mr mw my sm smr shm"},
+{"n", "gn kn n nw ny pn sn shn"},
+{"p", "p pl pr py pw pn sp spr spl shp shpl ph phl phr"},
+{"ph", "ph phl phr"},
+{"q", "q"},
+{"qu", "qu squ shqu"},
+{"r", "br cr dr fr gr kr mr pr phr r str spr smr shr tr thr vr wr zvr"},
+{"s", "s sc scl sf sk skl st str sp spr spl sl sm smr sn sw sy squ ts sh shl shqu shk shp shm shn shr shw shpl"},
+{"sh", "sh shl shqu shk shp shm shn shr shw shpl"},
+{"t", "st str t ts tr tl ty tw tl"},
+{"th", "cth th thr thl thw"},
+{"tl", "tl"},
+{"v", "v vr vy zv zvr vl"},
+{"w", "bw chw dw fw gw hw khw mw nw pw sw shw tw thw w wr zw"},
+{"x", "x"},
+{"y", "by dy fy gy hy ky my ny py sy ty vy y zy"},
+{"z", "cz dz z zv zvr zl zy zw"}
+        };
+
+        private static readonly IndexedDictionary<string, string> midCons = new IndexedDictionary<string, string>() {
+{"b", "lb rb bj bl br lbr rbl skbr scbr zb bq bdh dbh bbh lbh rbh bb"},
+{"bh", "bbh dbh lbh rbh"},
+{"c", "lc lsc rc rsc cl cqu cr ct lcr rcl sctr scdr scbr scpr msc mscr nsc nscr ngscr ndscr cc"},
+{"ch", "lch rch rch"},
+{"d", "ld ld rd rd skdr scdr dr dr dr rdr ldr zd zdr ndr ndscr ndskr ndst dq ldh rdh dbh bdh ddh dd"},
+{"dh", "bdh ddh ldh rdh"},
+{"f", "lf rf fl fr fl fr fl fr lfr rfl ft ff"},
+{"g", "lg lg rg rg gl gr gl gr gl gr lgr rgl zg zgr ngr ngl ngscr ngskr gq gg"},
+{"h", "lch lph lth lsh rch rph rsh rth phl phr lphr rphl shl shr lshr rshl msh mshr zth bbh dbh lbh rbh bdh ddh ldh rdh"},
+{"j", "bj lj rj"},
+{"k", "lk lsk rk rsk kl kr lkr rkl sktr skdr skbr skpr tk zk zkr msk mskr nsk nskr ngskr ndskr kq kk"},
+{"kh", "lkh rkh"},
+{"l", "lb lc lch ld lf lg lj lk lm ln lp lph ls lst lt lth lsc lsk lsp lv lz lsh bl lbr rbl cl lcr rcl fl lfr rfl gl lgr rgl kl lkr rkl pl lpr rpl phl lphr rphl shl lshr rshl sl rsl lsl ldr ltr lx ngl nsl msl nsl ll lth tl ltl rtl vl"},
+{"m", "lm rm zm msl msc mscr msh mshr mst msp msk mskr mm"},
+{"n", "ln rn nx zn zn ndr nj ntr ntr ngr ngl nsl nsl nsc nscr ngscr ndscr nsk nskr ngskr ndskr nst ndst nsp nn"},
+{"p", "lp lsp rp rsp pl pr lpr rpl skpr scpr zp msp nsp lph rph phl phr lphr rphl pq pp"},
+{"ph", "lph lph rph rph phl phr lphr rphl"},
+{"q", "bq dq gq kq pq tq"},
+{"qu", "cqu lqu rqu"},
+{"r", "rb rc rch rd rf rg rj rk rm rn rp rph rs rsh rst rt rth rsc rsk rsp rv rz br br br lbr rbl cr cr cr lcr rcl fr fr fr lfr rfl gr gr gr lgr rgl kr kr kr lkr rkl pr pr pr lpr rpl phr phr phr lphr rphl shr shr shr lshr rshl rsl sktr sctr skdr scdr skbr scbr skpr scpr dr dr dr rdr ldr tr tr tr rtr ltr vr rx zr zdr ztr zgr zkr ntr ntr ndr ngr mscr mshr mskr nscr ngscr ndscr nskr ngskr ndskr rr"},
+{"s", "ls lst lsc lsk lsp rs rst rsc rsk rsp sl rsl lsl sktr sctr skdr scdr skbr scbr skpr scpr nsl msl msc mscr mst msp msk mskr nsl nsc nscr ngscr ndscr nsk nskr ngskr ndskr nst ndst nsp lsh rsh sh shl shqu shk shp shm shn shr shw shpl lshr rshl msh mshr ss"},
+{"sh", "lsh rsh sh shl shqu shk shp shm shn shr shw shpl lshr rshl msh mshr"},
+{"t", "ct ft lst lt rst rt sktr sctr tk tr rtr ltr zt ztr ntr ntr mst nst ndst tq ltl rtl tt"},
+{"th", "lth rth zth cth"},
+{"tl", "ltl rtl"},
+{"v", "lv rv vv vl vr"},
+{"w", "bw chw dw fw gw hw khw mw nw pw sw shw tw thw w wr wy zw"},
+{"x", "nx rx lx"},
+{"y", "by dy fy gy hy ky my ny py sy ty vy wy zy"},
+{"z", "lz rz zn zd zt zg zk zm zn zp zb zr zdr ztr zgr zkr zth zz"}
+        };
+
+        private static readonly IndexedDictionary<string, string> closeCons = new IndexedDictionary<string, string>() {
+{"b", "b lb rb bs bz mb mbs bh bh lbh rbh mbh bb"},
+{"bh", "bh lbh rbh mbh"},
+{"c", "c ck cks lc rc cs cz ct cz cth sc"},
+{"ch", "ch lch rch tch pch kch mch nch"},
+{"d", "d ld rd ds dz dt dsh dth gd nd nds dh dh ldh rdh ndh dd"},
+{"dh", "dh ldh rdh ndh"},
+{"f", "f lf rf fs fz ft fsh ft fth ff"},
+{"g", "g lg rg gs gz gd gsh gth ng ngs gg"},
+{"h", "cth ch lch rch tch pch kch mch nch dsh dth fsh fth gsh gth h hs ksh kth psh pth ph ph ph ph ph ph lph rph phs pht phth"},
+{"j", "j"},
+{"k", "ck cks kch k lk rk ks kz kt ksh kth nk nks sk"},
+{"kh", "kh"},
+{"l", "lb lc lch ld lf lg lk l ls lz lp lph ll"},
+{"m", "mch m ms mb mt mp mbs mps mz sm mm"},
+{"n", "nch n ns nd nt nk nds nks nz ng ngs nn"},
+{"p", "pch mp mps p lp rp ps pz pt psh pth sp sp ph lph rph phs pht phth"},
+{"ph", "ph lph rph phs pht phth"},
+{"q", "q"},
+{"qu", ""},
+{"r", "rb rc rch rd rf rg rk rp rph r rs rz"},
+{"s", "bs cks cs ds fs gs hs ks ls ms mbs mps ns nds nks ngs ps phs rs s st sp st sp sc sk sm ts lsh rsh sh shk shp msh ss"},
+{"sh", "lsh rsh sh shk shp msh"},
+{"t", "ct ft tch dt ft kt mt nt pt pht st st t ts tz tt"},
+{"th", "cth dth fth gth kth pth phth th ths"},
+{"tl", "tl"},
+{"v", "v"},
+{"w", ""},
+{"x", "x"},
+{"y", ""},
+{"z", "bz cz dz fz gz kz lz mz nz pz rz tz z zz"}
+        };
+
+
         protected static bool CheckAll(string testing, Regex[] checks) {
             if (checks == null || checks.Length == 0) return true;
             testing = RemoveAccents(testing);
@@ -963,6 +1071,313 @@ namespace SquidLib.SquidText {
             } else
                 return Array.Empty<string>();
             return ret;
+        }
+
+        public static LanguageGen RandomLanguage(IRNG rng) {
+            if (rng == null) rng = new RNG();
+            string seed = rng.StateCode;
+            int[] lengths = new int[rng.NextInt(3, 5)];
+            double[] chances = new double[lengths.Length];
+            for (int i = 0; i < lengths.Length; i++) {
+                lengths[i] = i + 1;
+            }
+            chances[0] = rng.NextDouble(5, 9);
+            chances[1] = rng.NextDouble(13, 22);
+            chances[2] = rng.NextDouble(3, 6);
+            if(lengths.Length == 4)
+                chances[3] = rng.NextDouble(1, 3);
+            double vowelHeavy = rng.NextDouble(0.2, 0.5), removalRate = rng.NextDouble(0.15, 0.65);
+            int sz = openCons.Count;
+            int[] reordering = new int[sz], vOrd = new int[openVowels.Count];
+            for (int i = 0; i < sz; i++)
+                reordering[i] = i;
+            for (int i = 0; i < openVowels.Count; i++)
+                vOrd[i] = i;
+            rng.ShuffleInPlace(reordering);
+            rng.ShuffleInPlace(vOrd);
+            IndexedDictionary<string, string>
+                    parts0 = new IndexedDictionary<string, string>(openVowels),
+                    parts1 = new IndexedDictionary<string, string>(openCons),
+                    parts2 = new IndexedDictionary<string, string>(midCons),
+                    parts3 = new IndexedDictionary<string, string>(closeCons);
+            IndexedSet<string> forbidden = new IndexedSet<string>(), missingSounds = new IndexedSet<string>();
+            ArrayTools.Reorder(parts1.Ordering, reordering);
+            ArrayTools.Reorder(parts2.Ordering, reordering);
+            ArrayTools.Reorder(parts3.Ordering, reordering);
+            ArrayTools.Reorder(parts0.Ordering, vOrd);
+            int n;
+
+            int mn = Math.Min(rng.NextInt(3), rng.NextInt(3)), sz0, p0s;
+
+            for (n = 0; n < mn; n++) {
+                missingSounds.Add(parts0[Key.At, 0]);
+                forbidden.AddAll(parts0[Value.At, 0].Split(' '));
+                parts0.Remove(parts0[Key.At, 0]);
+            }
+            p0s = parts0.Count;
+            sz0 = Math.Max(rng.NextInt(1, p0s + 1), rng.NextInt(1, p0s + 1));
+            char[] nextAccents = new char[sz0], unaccented = new char[sz0];
+            int vowelAccent = rng.NextInt(1, 7);
+            for (int i = 0; i < sz0; i++) {
+                nextAccents[i] = accentedVowels[vOrd[i + mn]][vowelAccent];
+                unaccented[i] = accentedVowels[vOrd[i + mn]][0];
+            }
+            if (rng.NextDouble() < 0.8) {
+                for (int i = 0; i < sz0; i++) {
+                    char ac = nextAccents[i], ua = unaccented[i];
+                    String v = "", uas = new string(ua, 1);
+                    Replacer rep = new Replacer("\\b([aeiou]*)(" + ua + ")([aeiou]*)\\b", "$1$2$3 $1" + ac + "$3"),
+                        repLess = new Replacer("\\b([aeiou]*)(" + ua + ")([aeiou]*)\\b", "$1" + ac + "$3");
+                    for (int j = 0; j < p0s; j++) {
+                        String k = parts0[Key.At, j];
+                        if (uas.Equals(k)) // uas is never null, always length 1
+                            v = parts0[Value.At, j];
+                        else {
+                            String current = parts0[Value.At, j];
+                            String[] splits = current.Split(' ');
+                            for (int s = 0; s < splits.Length; s++) {
+                                if (forbidden.Contains(uas) && splits[s].Contains(uas))
+                                    forbidden.Add(splits[s].Replace(ua, ac));
+                            }
+                            parts0[k] = rep.Replace(current);
+                        }
+                    }
+                    parts0[ac.ToString()] = repLess.Replace(v);
+                }
+            }
+
+            n = 0;
+            if (rng.NextDouble() < 0.75) {
+                missingSounds.Add("z");
+                forbidden.AddAll(parts1["z"].Split(' '));
+                forbidden.AddAll(parts2["z"].Split(' '));
+                forbidden.AddAll(parts3["z"].Split(' '));
+                n++;
+            }
+            if (rng.NextDouble() < 0.82) {
+                missingSounds.Add("x");
+                forbidden.AddAll(parts1["x"].Split(' '));
+                forbidden.AddAll(parts2["x"].Split(' '));
+                forbidden.AddAll(parts3["x"].Split(' '));
+                n++;
+            }
+            if (rng.NextDouble() < 0.92) {
+                missingSounds.Add("qu");
+                forbidden.AddAll(parts1["qu"].Split(' '));
+                forbidden.AddAll(parts2["qu"].Split(' '));
+                forbidden.AddAll(parts3["qu"].Split(' '));
+                n++;
+            }
+            if (rng.NextDouble() < 0.96) {
+                missingSounds.Add("q");
+                forbidden.AddAll(parts1["q"].Split(' '));
+                forbidden.AddAll(parts2["q"].Split(' '));
+                forbidden.AddAll(parts3["q"].Split(' '));
+                n++;
+            }
+            if (rng.NextDouble() < 0.97) {
+                missingSounds.Add("tl");
+                forbidden.AddAll(parts1["tl"].Split(' '));
+                forbidden.AddAll(parts2["tl"].Split(' '));
+                forbidden.AddAll(parts3["tl"].Split(' '));
+                n++;
+            }
+            if (rng.NextDouble() < 0.86) {
+                missingSounds.Add("ph");
+                forbidden.AddAll(parts1["ph"].Split(' '));
+                forbidden.AddAll(parts2["ph"].Split(' '));
+                forbidden.AddAll(parts3["ph"].Split(' '));
+                n++;
+            }
+            if (rng.NextDouble() < 0.94) {
+                missingSounds.Add("kh");
+                forbidden.AddAll(parts1["kh"].Split(' '));
+                forbidden.AddAll(parts2["kh"].Split(' '));
+                forbidden.AddAll(parts3["kh"].Split(' '));
+                n++;
+            }
+            if (rng.NextDouble() < 0.96) {
+                missingSounds.Add("bh");
+                missingSounds.Add("dh");
+                forbidden.AddAll(parts1["bh"].Split(' '));
+                forbidden.AddAll(parts2["bh"].Split(' '));
+                forbidden.AddAll(parts3["bh"].Split(' '));
+                forbidden.AddAll(parts1["dh"].Split(' '));
+                forbidden.AddAll(parts2["dh"].Split(' '));
+                forbidden.AddAll(parts3["dh"].Split(' '));
+                n++;
+                n++;
+            }
+
+            for (; n < sz * removalRate; n++) {
+                missingSounds.Add(parts1[Key.At, n]);
+                missingSounds.Add(parts2[Key.At, n]);
+                missingSounds.Add(parts3[Key.At, n]);
+                forbidden.AddAll(parts1[Value.At, n].Split(' '));
+                forbidden.AddAll(parts2[Value.At, n].Split(' '));
+                forbidden.AddAll(parts3[Value.At, n].Split(' '));
+            }
+
+            LanguageGen lang = new LanguageGen(
+                    ProcessParts(parts0, missingSounds, forbidden, rng, 0.0, p0s),
+                    Array.Empty<string>(),
+                    ProcessParts(openCons, missingSounds, forbidden, rng, 0.0, 4096),
+                    ProcessParts(midCons, missingSounds, forbidden, rng, (rng.NextDouble() * 3 - 0.75) * 0.4444, 4096),
+                    ProcessParts(closeCons, missingSounds, forbidden, rng, (rng.NextDouble() * 3 - 0.75) * 0.2857, 4096),
+                    Array.Empty<string>(),
+                    Array.Empty<string>(), lengths, chances, vowelHeavy, vowelHeavy * 1.8, 0.0, 0.0, GenericSanityChecks, true);
+            lang.Summary = "0#" + seed + "@1";
+            return lang;
+        }
+        private static String[] ProcessParts(IndexedDictionary<string, string> parts, IndexedSet<string> missingSounds,
+                                     IndexedSet<string> forbidden, IRNG rng, double repeatSingleChance,
+                                     int preferredLimit) {
+            int l, sz = parts.Count;
+            List<string> working = new List<string>(sz * 24);
+            String pair;
+            for (int e = 0; e < parts.Count; e++) {
+                string snk = parts[Key.At, e];
+                string snv = parts[Value.At, e];
+                if (missingSounds.Contains(snk))
+                    continue;
+                foreach (String t in snv.Split(' ')) {
+                    if (forbidden.Contains(t))
+                        continue;
+                    l = t.Length;
+                    int num;
+                    char c;
+                    switch (l) {
+                        case 0:
+                            break;
+                        case 1:
+                            working.Add(t);
+                            working.Add(t);
+                            working.Add(t);
+                            c = t[0];
+                            num = 0;
+                            bool repeat = true;
+                            switch (c) {
+                                case 'w':
+                                    num += 10;
+                                    repeat = false;
+                                    break;
+                                case 'y':
+                                case 'h':
+                                    num += 8;
+                                    repeat = false;
+                                    break;
+                                case 'q':
+                                case 'x':
+                                    num += 4;
+                                    repeat = false;
+                                    break;
+                                case 'i':
+                                case 'u':
+                                    repeat = false;
+                                    num = 13;
+                                    break;
+                                case 'z':
+                                case 'v':
+                                    num = 4;
+                                    break;
+                                case 'j':
+                                    num = 7;
+                                    break;
+                                default:
+                                    if (e >= preferredLimit)
+                                        num = 6;
+                                    else
+                                        num = 13;
+                                    break;
+                            }
+                            for (int i = 0; i < num * 3; i++) {
+                                if (rng.NextDouble() < 0.75) {
+                                    working.Add(t);
+                                }
+                            }
+
+                            if (repeat && rng.NextDouble() < repeatSingleChance) {
+                                pair = t + t;
+                                if (missingSounds.Contains(pair))
+                                    continue;
+                                working.Add(pair);
+                                working.Add(pair);
+                                working.Add(pair);
+                                if (rng.NextDouble() < 0.7) {
+                                    working.Add(pair);
+                                    working.Add(pair);
+                                }
+                                if (rng.NextDouble() < 0.7) {
+                                    working.Add(pair);
+                                }
+                            }
+
+                            break;
+                        case 2:
+                            if (rng.NextDouble() < 0.65) {
+                                c = t[1];
+                                switch (c) {
+                                    case 'z':
+                                        num = 1;
+                                        break;
+                                    case 'w':
+                                        num = 3;
+                                        break;
+                                    case 'n':
+                                        num = 4;
+                                        break;
+                                    default:
+                                        if (e >= preferredLimit)
+                                            num = 2;
+                                        else
+                                            num = 7;
+                                        break;
+                                }
+                                working.Add(t);
+                                for (int i = 0; i < num; i++) {
+                                    if (rng.NextDouble() < 0.25) {
+                                        working.Add(t);
+                                    }
+                                }
+                            }
+                            break;
+                        case 3:
+                            if (rng.NextDouble() < 0.5) {
+                                c = t[0];
+                                switch (c) {
+                                    case 'z':
+                                        num = 1;
+                                        break;
+                                    case 'w':
+                                        num = 3;
+                                        break;
+                                    case 'n':
+                                        num = 4;
+                                        break;
+                                    default:
+                                        if (e >= preferredLimit)
+                                            num = 2;
+                                        else
+                                            num = 6;
+                                        break;
+                                }
+                                working.Add(t);
+                                for (int i = 0; i < num; i++) {
+                                    if (rng.NextDouble() < 0.2) {
+                                        working.Add(t);
+                                    }
+                                }
+                            }
+                            break;
+                        default:
+                            if (rng.NextDouble() < 0.3 && (t[l - 1] != 'z' || rng.NextDouble() < 0.1)) {
+                                working.Add(t);
+                            }
+                            break;
+                    }
+                }
+            }
+            return working.ToArray();
         }
 
 

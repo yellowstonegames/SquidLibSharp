@@ -48,7 +48,7 @@ namespace Test {
             LanguageTest test = new LanguageTest();
             //test.TestSupportedLanguages();
             test.TestSentences();
-            test.WriteSentences();
+            //test.WriteSentences();
         }
     }
 }
