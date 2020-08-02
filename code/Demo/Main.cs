@@ -18,7 +18,7 @@ namespace Demo {
                 ("Logo", LogoDemo.Main),
                 ("Noise", NoiseDemo.Main),
                 ("Polynomino", Polynomino.Main),
-                ("Glyph", GlyphDemo.Main),
+                ("Alien Glyphs", AlienGlyphDemo.Main),
                 ("Quit", () => System.Environment.Exit(0))
             };
 
@@ -183,12 +183,14 @@ namespace Demo {
         }
     }
 
-    public static class GlyphDemo {
+    public static class AlienGlyphDemo {
         private static RNG rng = new RNG();
 
         private static Color[] mixers = new Color[] { Color.White, Color.Black, Color.AliceBlue, Color.DarkSlateGray, Color.Gray };
 
         public static void Main() {
+            AlienGlyphGenerator alienGen = new AlienGlyphGenerator(rng);
+
             bool keepRunning = true;
             Terminal.Open();
             //Terminal.Set("log: level=trace");
@@ -207,7 +209,6 @@ namespace Demo {
             Color color = Color.White;
             SquidLib.SquidGrid.Region painting = new SquidLib.SquidGrid.Region();
             List<List<Coord>> strokes = new List<List<Coord>>();
-            Direction[] directions = (Direction[])Enum.GetValues(typeof(Direction));
             Elias los = new Elias();
 
             while (keepRunning) {
@@ -225,29 +226,13 @@ namespace Demo {
                         } while (color.R < 90 && color.G < 90 && color.B < 90); // try to avoid colors that are too dark
                         strokes.Clear();
 
-                        int points = 3;// rng.NextInt(3, 7);
+                        int points = rng.NextInt(3, 5);
                         double pointDistance = size / (double)points;
-                        for (int x = 0; x < points; x++) {
-                            for (int y = 0; y < points; y++) {
-                                for (int tries = Math.Min(rng.NextInt(1, 3), rng.NextInt(1, 3)); tries >= 0; tries--) {
-                                    Direction dir = rng.RandomElement(directions); // need to include NONE value to preserve original "skipping" behavior
-                                    if (dir == Direction.None) {
-                                        continue;
-                                    }
-                                    List<Coord> line = los.Line(
-                                        x * pointDistance,
-                                        y * pointDistance,
-                                        x * pointDistance + dir.DeltaX() * (pointDistance),
-                                        y * pointDistance + dir.DeltaY() * (pointDistance));
 
-                                    // don't want no short short lines
-                                    if (line.Count < 2) {
-                                        continue;
-                                    }
-
-                                    strokes.Add(new List<Coord>(line));
-                                }
-                            }
+                        if (rng.NextBoolean()) {
+                            strokes = alienGen.OrthogonalStrokes(points, pointDistance);
+                        } else {
+                            strokes = alienGen.IrregularStrokes(width, height, 4, 12, 5);
                         }
                         Terminal.Refresh();
 
@@ -270,7 +255,7 @@ namespace Demo {
 
                         painting = new SquidLib.SquidGrid.Region(size + 4, size + 4);
                         painting.AddAll(stroke.Select(p => p.Add(2, 2))); // pad so there's room for widening the strokes
-                        painting.Expand8Way(1).Expand(1);
+                        painting.Expand(1);
 
                         painting.Ordering.ForEach(p => Terminal.Put(p.X + 1, p.Y + 1, '#'));
                         Terminal.Refresh();

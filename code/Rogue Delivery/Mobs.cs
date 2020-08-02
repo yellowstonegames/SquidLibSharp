@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
+using SquidLib.SquidMisc;
 
 namespace RogueDelivery {
     public class Representation {

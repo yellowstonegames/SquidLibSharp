@@ -13,7 +13,7 @@ using SadConsole.Input;
 
 using SquidLib.SquidGrid;
 using SquidLib.SquidMath;
-using SquidLib;
+using SquidLib.SquidMisc;
 
 namespace RogueDelivery {
     class RogueDelivery {
@@ -315,7 +315,7 @@ namespace RogueDelivery {
 
         private void PutOnMap(BigMob bigMob) {
             Coord drawingOffset = bigMob.DrawingOffset();
-            foreach (var (coord, rep) in bigMob.Reps[bigMob.Facing].Tiles) {
+            foreach ((var coord, var rep) in bigMob.Reps[bigMob.Facing].Tiles) {
                 console.DefaultForeground = rep.Color;
                 PutOnMap(drawingOffset + coord, rep.Glyph);
             }
