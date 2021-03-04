@@ -6,7 +6,7 @@
     <h1>Roguelike Blazor Demo</h1>
 
     <div>
-        <button @onclick="Randomize">Randomize</button>
+        <button disabled="@generating" @onclick="Randomize">Randomize</button>
     </div>
 
     <div>
@@ -17,15 +17,22 @@
 @code {
     private MapDisplay map;
 
-    private RNG rng = new RNG();
+    private RNG rng = new();
     private WanderingRoomGenerator gen;
 
+    private bool generating;
+
     protected override  void OnAfterRender(bool firstRender) {
+        gen = new WanderingRoomGenerator(map.GridWidth(), map.GridHeight(), rng);
         map.OnLoad(() => Randomize());
     }
 
     protected async Task Randomize() {
-        gen = new WanderingRoomGenerator(map.GridWidth(), map.GridHeight(), rng);
+        if (generating) {
+            return; // make sure it doesn't try to restart after it's already started
+        }
+        generating = true;
+
         Grid<char> dungeon = gen.Generate();
         await map.Clear();
         for (int x = 0; x < dungeon.Width; x++) {
@@ -33,5 +40,7 @@
                 await map.Put(x, y, dungeon[x, y].ToString());
             }
         }
+
+        generating = false;
     }
 }

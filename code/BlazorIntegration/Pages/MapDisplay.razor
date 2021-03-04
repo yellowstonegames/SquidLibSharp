@@ -14,6 +14,10 @@
         "M", "y", "😀", "😆", "🤪", "🤔", "🤠"
     };
 
+    private string[] colors = new string[] {
+        "#f5f5f0", "#cbf2bf", "#ffeef8"
+    };
+
     private RNG rng = new RNG();
     private bool initialized = false;
     private Action onLoad = () => { };
@@ -46,7 +50,7 @@
     }
 
     public async Task Clear() {
-        await mapContext.SetFillStyleAsync("#f5f5f0");
+        await mapContext.SetFillStyleAsync(rng.RandomElement(colors));
         await mapContext.FillRectAsync(0, 0, pixelWidth, pixelHeight);
         await mapContext.SetFillStyleAsync("#000000");
     }
