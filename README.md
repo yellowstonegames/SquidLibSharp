@@ -2,7 +2,7 @@
 A C# .NET port of some of SquidLib  
 ![Apache 2.0](https://img.shields.io/github/license/yellowstonegames/SquidLibSharp)
 
-This library targetrs .NET Standard 2.0. This ensures compatability with Unity projects, as well as any other modern .NET targets.
+This library targets .NET Standard 2.0. This ensures compatability with Unity projects, as well as any other modern .NET targets.
 
 ### Caution!
 Extremely early state, expect there to be lots of sweeping changes as things are added and assessed.
